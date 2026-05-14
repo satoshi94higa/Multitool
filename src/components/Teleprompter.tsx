@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   X, Play, Pause, RotateCcw, Type, Gauge, FlipHorizontal, 
   ChevronUp, ChevronDown, Monitor, Maximize2, Minimize2, Palette, Clock, FileText, Coffee, Zap,
@@ -40,6 +40,25 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   const analyserRef = useRef<AnalyserNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
 
+  // Handle Play with Countdown
+  const handlePlayToggle = useCallback(() => {
+    if (!isPlaying && text.length > 0) {
+      setCountdown(3);
+    } else {
+      setIsPlaying(false);
+      setCountdown(null);
+    }
+  }, [isPlaying, text]);
+
+  const resetScroll = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+      setIsPlaying(false);
+      setCountdown(null);
+      setProgress(0);
+    }
+  }, []);
+
   // Sync wpm and duration
   useEffect(() => {
     if (controlMode === 'wpm') {
@@ -50,9 +69,12 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
     }
   }, [targetWpm, controlMode, text]);
 
+  const [micLevel, setMicLevel] = useState(0);
+
   // Voice Detection Logic
   useEffect(() => {
     if (!isVoiceEnabled) {
+      setMicLevel(0);
       if (micStreamRef.current) {
         micStreamRef.current.getTracks().forEach(t => t.stop());
         micStreamRef.current = null;
@@ -68,6 +90,11 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
         audioContextRef.current = audioCtx;
         
+        // Resume if suspended (browser security)
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume();
+        }
+
         const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;
         analyserRef.current = analyser;
@@ -89,9 +116,10 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
             sum += dataArray[i];
           }
           const average = sum / bufferLength;
+          setMicLevel(average);
           
           // Simple thresholding
-          if (average > 10) { // Detection threshold
+          if (average > 12) { // Slightly higher threshold
             if (!isPlaying && !countdown) setIsPlaying(true);
             silenceCount = 0;
           } else {
@@ -117,15 +145,17 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
       if (micStreamRef.current) micStreamRef.current.getTracks().forEach(t => t.stop());
       if (audioContextRef.current) audioContextRef.current.close();
     };
-  }, [isVoiceEnabled]);
+  }, [isVoiceEnabled, isPlaying, countdown]);
 
   // Remote Control Polling
   useEffect(() => {
     const pollRemote = async () => {
       try {
         const res = await fetch(`/api/remote/${remoteSessionId}`);
+        if (!res.ok) throw new Error("Backend unreachable");
         const data = await res.json();
         
+        setRemoteStatus('connected');
         if (data.command === 'play_pause') {
           handlePlayToggle();
         } else if (data.command === 'reset') {
@@ -133,12 +163,13 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
         }
       } catch (err) {
         console.error("Remote poll failed", err);
+        setRemoteStatus('idle');
       }
     };
 
     const interval = setInterval(pollRemote, 1000);
     return () => clearInterval(interval);
-  }, [remoteSessionId, isPlaying, countdown]);
+  }, [remoteSessionId, handlePlayToggle, resetScroll]);
 
   const renderText = () => {
     return text;
@@ -162,15 +193,6 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   }, [text, targetDuration]);
 
   // Handle Play with Countdown
-  const handlePlayToggle = () => {
-    if (!isPlaying && text.length > 0) {
-      setCountdown(3);
-    } else {
-      setIsPlaying(false);
-      setCountdown(null);
-    }
-  };
-
   useEffect(() => {
     if (countdown === null) return;
     if (countdown === 0) {
@@ -241,12 +263,6 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, onClose]);
-
-  const resetScroll = () => {
-    setIsPlaying(false);
-    scrollPosRef.current = 0;
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -394,6 +410,16 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isVoiceEnabled ? 'right-1' : 'left-1'}`} />
                 </button>
               </div>
+              {isVoiceEnabled && (
+                <div className="flex gap-0.5 h-1 mt-2">
+                  {[...Array(10)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`flex-1 rounded-full transition-all duration-75 ${micLevel > (i * 5) ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,1)]' : 'bg-zinc-800'}`} 
+                    />
+                  ))}
+                </div>
+              )}
               <p className="text-[9px] text-zinc-500 italic">El scroll se pausa cuando dejas de hablar.</p>
             </div>
 
@@ -413,13 +439,19 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
             </div>
 
             <div className="space-y-4 pt-4 border-t border-zinc-800">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <QrCode size={12} />
-                Control Remoto
+               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <QrCode size={12} />
+                  Control Remoto
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className={`w-1 h-1 rounded-full ${remoteStatus === 'connected' ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
+                  <span className="text-[7px] font-black">{remoteStatus === 'connected' ? 'ONLINE' : 'LINKING'}</span>
+                </div>
               </label>
               <div className="bg-white p-4 rounded-xl flex flex-col items-center gap-4">
                 <QRCodeSVG 
-                  value={`${window.location.origin}/remote/${remoteSessionId}`} 
+                  value={`${window.location.href.split('?')[0].split('#')[0].replace(/\/$/, '')}/remote/${remoteSessionId}`} 
                   size={140}
                   level="H"
                 />
@@ -487,12 +519,13 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
 
           {/* Line Highlight Overlay */}
           {isLineHighlightEnabled && (
-             <div className="absolute inset-0 pointer-events-none z-10">
-                <div className="h-full w-full flex flex-col">
-                  <div className="flex-1 bg-black/40 backdrop-blur-[2px]" />
-                  <div className="h-[1.5em] bg-transparent border-y border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ marginTop: 'calc(50vh - 1em)' }} />
-                  <div className="flex-1 bg-black/40 backdrop-blur-[2px]" />
-                </div>
+             <div className="absolute inset-0 pointer-events-none z-10 flex flex-col">
+                <div className="flex-1 bg-black/60 backdrop-blur-[1px]" />
+                <div 
+                  className="bg-transparent border-y border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)]" 
+                  style={{ height: `${fontSize * 1.5}px` }} 
+                />
+                <div className="flex-1 bg-black/60 backdrop-blur-[1px]" />
              </div>
           )}
 

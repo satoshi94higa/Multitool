@@ -54,8 +54,8 @@ const INITIAL_LAYOUTS = {
 
 export default function App() {
   const path = window.location.pathname;
-  const isRemoteRoute = path.startsWith('/remote/');
-  const remoteId = isRemoteRoute ? path.split('/')[2] : null;
+  const isRemoteRoute = path.includes('/remote/');
+  const remoteId = isRemoteRoute ? path.split('/remote/')[1]?.split('/')[0] : null;
 
   if (isRemoteRoute && remoteId) {
     return <RemoteControl sessionId={remoteId} />;
