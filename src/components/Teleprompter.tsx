@@ -20,6 +20,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   const [isMirrored, setIsMirrored] = useState(false);
   const [theme, setTheme] = useState<Theme>('classic');
   const [showConfig, setShowConfig] = useState(true);
+  const [sidebarPosition, setSidebarPosition] = useState<'left' | 'right'>('left');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -195,6 +196,17 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   };
 
+  const resetToDefaults = () => {
+    setFontSize(64);
+    setTargetWpm(140);
+    setIndicatorSize(120);
+    setTheme('classic');
+    setLineHeight(1.4);
+    setShowIndicator(true);
+    setIsMirrored(false);
+    setSidebarPosition('left');
+  };
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -240,10 +252,31 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
         </div>
       </div>
 
-      <div className="flex-1 relative flex overflow-hidden">
+      <div className={`flex-1 relative flex overflow-hidden ${sidebarPosition === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Sidebar Config (Collapsible) */}
         {showConfig && (
-          <div className="w-64 bg-zinc-900 border-r border-zinc-800 p-4 space-y-5 overflow-y-auto max-h-full scrollbar-hide">
+          <div className={`w-60 bg-zinc-900 ${sidebarPosition === 'left' ? 'border-r' : 'border-l'} border-zinc-800 p-3 space-y-4 overflow-y-auto max-h-full scrollbar-hide`}>
+            <div className="space-y-3 pb-3 border-b border-zinc-800">
+               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <Monitor size={12} />
+                Posición Panel
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button 
+                  onClick={() => setSidebarPosition('left')}
+                  className={`py-1.5 rounded-lg border text-[9px] font-bold uppercase ${sidebarPosition === 'left' ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500'}`}
+                >
+                  Izquierda
+                </button>
+                <button 
+                  onClick={() => setSidebarPosition('right')}
+                  className={`py-1.5 rounded-lg border text-[9px] font-bold uppercase ${sidebarPosition === 'right' ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500'}`}
+                >
+                  Derecha
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Type size={12} />
@@ -379,6 +412,16 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
                 onChange={(e) => setText(e.target.value)}
                 className="w-full h-32 bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-400 focus:outline-none focus:border-zinc-600 resize-none leading-relaxed"
                />
+            </div>
+
+            <div className="pt-3 border-t border-zinc-800">
+              <button 
+                onClick={resetToDefaults}
+                className="w-full py-2 bg-zinc-800 text-zinc-400 text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                <RotateCcw size={12} />
+                Restablecer Diseño
+              </button>
             </div>
           </div>
         )}
