@@ -30,6 +30,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   const scrollRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number | undefined>(undefined);
   const scrollPosRef = useRef(0);
+  const wakeLockRef = useRef<any>(null);
 
   // Sync duration with wpm
   useEffect(() => {
@@ -38,6 +39,53 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
       setTargetDuration(words / targetWpm);
     }
   }, [targetWpm, text]);
+
+  // Screen Wake Lock Management
+  const requestWakeLock = async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        console.log('Wake Lock is active');
+      } catch (err: any) {
+        console.error(`${err.name}, ${err.message}`);
+      }
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    if (wakeLockRef.current) {
+      try {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        console.log('Wake Lock released');
+      } catch (err: any) {
+        console.error(`${err.name}, ${err.message}`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isPlaying) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [isPlaying]);
+
+  // Re-request wake lock when returning to tab
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && isPlaying) {
+        await requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [isPlaying]);
 
   const renderText = () => {
     return text;
@@ -195,27 +243,27 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
       <div className="flex-1 relative flex overflow-hidden">
         {/* Sidebar Config (Collapsible) */}
         {showConfig && (
-          <div className="w-80 bg-zinc-900 border-r border-zinc-800 p-6 space-y-8 overflow-y-auto max-h-full">
-            <div className="space-y-4">
+          <div className="w-64 bg-zinc-900 border-r border-zinc-800 p-4 space-y-5 overflow-y-auto max-h-full scrollbar-hide">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Type size={12} />
                 Tamaño de texto
               </label>
-              <div className="flex items-center gap-4">
-                <button onClick={() => setFontSize(f => Math.max(f - 8, 24))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronDown size={16} /></button>
-                <span className="flex-1 text-center font-mono font-bold text-xl text-white">{fontSize}px</span>
-                <button onClick={() => setFontSize(f => Math.min(f + 8, 200))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronUp size={16} /></button>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setFontSize(f => Math.max(f - 8, 24))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronDown size={14} /></button>
+                <span className="flex-1 text-center font-mono font-bold text-lg text-white">{fontSize}px</span>
+                <button onClick={() => setFontSize(f => Math.min(f + 8, 200))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronUp size={14} /></button>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Gauge size={12} />
                 Ritmo de Voz
               </label>
 
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
-                <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
+                <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { label: 'Calmo', wpm: 120, icon: <Coffee size={12} /> },
                     { label: 'Natural', wpm: 145, icon: <Zap size={12} className="text-blue-400" /> },
@@ -226,11 +274,11 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
                       onClick={() => {
                         setTargetWpm(style.wpm);
                       }}
-                      className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all group ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'}`}
+                      className={`flex flex-col items-center justify-center p-1.5 rounded-xl border transition-all group ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'}`}
                     >
-                      <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-white'} transition-colors mb-1`}>{style.icon}</span>
-                      <span className={`text-[8px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{style.label}</span>
-                      <span className={`text-[7px] font-mono ${targetWpm === style.wpm ? 'text-zinc-600' : 'text-zinc-700'}`}>{style.wpm} WPM</span>
+                      <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-white'} transition-colors mb-0.5`}>{style.icon}</span>
+                      <span className={`text-[7px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{style.label}</span>
+                      <span className={`text-[6px] font-mono ${targetWpm === style.wpm ? 'text-zinc-600' : 'text-zinc-700'}`}>{style.wpm}</span>
                     </button>
                   ))}
                 </div>
@@ -238,9 +286,9 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
                   <input 
                     type="range" min="60" max="250" step="5" value={targetWpm} 
                     onChange={(e) => setTargetWpm(parseInt(e.target.value))}
-                    className="w-full accent-white"
+                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
                   />
-                  <div className="flex justify-between text-[10px] font-mono text-zinc-600">
+                  <div className="flex justify-between text-[9px] font-mono text-zinc-600">
                     <span>Lento</span>
                     <span className="text-white font-bold">{targetWpm} WPM</span>
                     <span>Pro</span>
@@ -249,7 +297,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Maximize2 size={12} />
                 Altura Foco ({indicatorSize}px)
@@ -257,42 +305,42 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
               <input 
                 type="range" min="40" max="250" step="10" value={indicatorSize} 
                 onChange={(e) => setIndicatorSize(parseInt(e.target.value))}
-                className="w-full accent-white"
+                className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
               />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Palette size={12} />
                 Temas
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5">
                 {(['classic', 'high-contrast', 'safe-green'] as Theme[]).map(t => (
                    <button 
                     key={t}
                     onClick={() => setTheme(t)}
-                    className={`h-10 rounded-lg border-2 transition-all ${theme === t ? 'border-white' : 'border-zinc-800 hover:border-zinc-700'}`}
+                    className={`h-9 rounded-lg border-2 transition-all ${theme === t ? 'border-white' : 'border-zinc-800 hover:border-zinc-700'}`}
                     style={{ backgroundColor: t === 'classic' ? '#000' : t === 'high-contrast' ? '#000' : '#09090b' }}
                    >
-                     <div className={`w-full h-full flex items-center justify-center text-[8px] font-black uppercase ${t === 'classic' ? 'text-white' : t === 'high-contrast' ? 'text-yellow-400' : 'text-green-500'}`}>
-                        {t === 'classic' ? 'ABC' : t === 'high-contrast' ? 'ABC' : 'ABC'}
+                     <div className={`w-full h-full flex items-center justify-center text-[7px] font-black uppercase ${t === 'classic' ? 'text-white' : t === 'high-contrast' ? 'text-yellow-400' : 'text-green-500'}`}>
+                        {t === 'classic' ? 'Classic' : t === 'high-contrast' ? 'Contrast' : 'Green'}
                      </div>
                    </button>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <FileText size={12} />
                 Interlineado
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5">
                 {[1.2, 1.4, 1.8].map(lh => (
                   <button 
                     key={lh}
                     onClick={() => setLineHeight(lh)}
-                    className={`p-2 rounded-lg border text-[10px] font-bold ${lineHeight === lh ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                    className={`p-1.5 rounded-lg border text-[9px] font-bold ${lineHeight === lh ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
                   >
                     {lh}x
                   </button>
@@ -300,36 +348,36 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
+            <div className="space-y-3 pt-3 border-t border-zinc-800">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Guía Visual</label>
                 <button 
                   onClick={() => setShowIndicator(!showIndicator)}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${showIndicator ? 'bg-emerald-500' : 'bg-zinc-800'}`}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${showIndicator ? 'bg-emerald-500' : 'bg-zinc-800'}`}
                 >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${showIndicator ? 'right-1' : 'left-1'}`} />
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${showIndicator ? 'right-0.5' : 'left-0.5'}`} />
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
+            <div className="space-y-3 pt-3 border-t border-zinc-800">
               <button 
                 onClick={() => setIsMirrored(!isMirrored)}
-                className={`w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
-                  isMirrored ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-700'
+                className={`w-full py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 border transition-all ${
+                  isMirrored ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-700'
                 }`}
               >
-                <FlipHorizontal size={16} />
+                <FlipHorizontal size={14} />
                 MODO ESPEJO {isMirrored ? 'ON' : 'OFF'}
               </button>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-zinc-800">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest text-zinc-400">Edición de Guion</label>
+            <div className="space-y-2 pt-3 border-t border-zinc-800">
+               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest text-zinc-400">Guion</label>
                <textarea 
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-400 focus:outline-none focus:border-zinc-600 resize-none leading-relaxed"
+                className="w-full h-32 bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-400 focus:outline-none focus:border-zinc-600 resize-none leading-relaxed"
                />
             </div>
           </div>
@@ -369,7 +417,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
 
           <div 
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto px-[15%] pt-[40vh] pb-[70vh] transition-transform duration-300 scroll-smooth ${isMirrored ? '-scale-x-100' : ''}`}
+            className={`flex-1 overflow-y-auto px-[15%] pt-[40vh] pb-[50vh] transition-transform duration-300 scroll-smooth ${isMirrored ? '-scale-x-100' : ''}`}
             id="teleprompter-content"
           >
             <div 
@@ -384,23 +432,23 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
           </div>
 
           {/* Floating Controls Overlay */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-zinc-950/90 backdrop-blur-2xl border border-zinc-800/50 p-2 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-zinc-950/90 backdrop-blur-2xl border border-zinc-800/50 p-1.5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 transition-all">
             <button 
               onClick={resetScroll}
-              className="p-3 text-zinc-500 hover:text-white transition-colors"
+              className="p-2.5 text-zinc-500 hover:text-white transition-colors"
             >
-              <RotateCcw size={20} />
+              <RotateCcw size={18} />
             </button>
             <button 
               onClick={handlePlayToggle}
-              className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
+              className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
             >
-              {isPlaying ? <Pause size={24} fill="black" /> : <Play size={24} className="ml-0.5" fill="black" />}
+              {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} className="ml-0.5" fill="black" />}
             </button>
-            <div className="flex flex-col items-center px-4 border-l border-zinc-800 min-w-[120px]">
+            <div className="flex flex-col items-center px-4 border-l border-zinc-800 min-w-[100px]">
                <div className="flex items-center gap-1.5 mb-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${stats.status === 'bad' ? 'bg-red-500' : stats.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">
+                  <span className="text-[7px] font-black uppercase tracking-widest text-zinc-500">
                     {stats.wpm} WPM
                   </span>
                </div>
