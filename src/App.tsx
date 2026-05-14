@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout/legacy';
-import { GripVertical, Lock, Unlock, LayoutDashboard } from 'lucide-react';
+import { GripVertical, Lock, Unlock, LayoutDashboard, Monitor } from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
@@ -10,6 +10,7 @@ import JournalistIA from './components/JournalistIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import DirectorIA from './components/DirectorIA';
 import QRGenerator from './components/QRGenerator';
+import Teleprompter from './components/Teleprompter';
 
 // @ts-ignore
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -52,6 +53,9 @@ const INITIAL_LAYOUTS = {
 
 export default function App() {
   const [isDraggable, setIsDraggable] = useState(false);
+  const [showTeleprompter, setShowTeleprompter] = useState(false);
+
+  const toggleTeleprompter = () => setShowTeleprompter(prev => !prev);
   const [layouts, setLayouts] = useState(() => {
     const saved = localStorage.getItem('hub-layouts');
     if (saved) {
@@ -96,6 +100,14 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-4">
+            <button
+              onClick={toggleTeleprompter}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg border border-zinc-700"
+            >
+              <Monitor size={14} />
+              Teleprompter
+            </button>
+            
             {isDraggable && (
               <button
                 onClick={resetLayout}
@@ -235,6 +247,10 @@ export default function App() {
           </ResponsiveGridLayout>
         </div>
       </main>
+
+      {showTeleprompter && (
+        <Teleprompter onClose={() => setShowTeleprompter(false)} />
+      )}
 
       <footer className="py-4 px-6 border-t bg-white text-center text-[10px] text-gray-400 font-medium">
         Workspace v4.0.0 • 2026 © Digital Utilities
