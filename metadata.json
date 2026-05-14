@@ -1,6 +1,6 @@
 {
   "name": "MultiUtility Hub",
   "description": "Una suite de herramientas diarias: procesador de texto, calculadora de porcentajes y formateador de redes sociales con IA.",
-  "requestFramePermissions": ["microphone"],
+  "requestFramePermissions": [],
   "majorCapabilities": []
 }

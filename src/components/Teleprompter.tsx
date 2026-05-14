@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   X, Play, Pause, RotateCcw, Type, Gauge, FlipHorizontal, 
-  ChevronUp, ChevronDown, Monitor, Maximize2, Minimize2, Palette, Clock, FileText, Coffee, Zap,
-  Mic, MicOff, MousePointer2, QrCode
+  ChevronUp, ChevronDown, Monitor, Maximize2, Minimize2, Palette, Clock, FileText, Coffee, Zap 
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 
 interface TeleprompterProps {
   initialText?: string;
@@ -18,158 +16,28 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   const [isPlaying, setIsPlaying] = useState(false);
   const [targetDuration, setTargetDuration] = useState(3); // In minutes
   const [fontSize, setFontSize] = useState(64); // px
+  const [lineHeight, setLineHeight] = useState(1.4);
   const [isMirrored, setIsMirrored] = useState(false);
   const [theme, setTheme] = useState<Theme>('classic');
   const [showConfig, setShowConfig] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
-  
-  // New features
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
-  const [isLineHighlightEnabled, setIsLineHighlightEnabled] = useState(true);
+  const [showIndicator, setShowIndicator] = useState(true);
   const [targetWpm, setTargetWpm] = useState(140);
-  const [controlMode, setControlMode] = useState<'wpm' | 'duration'>('duration');
-  const [remoteSessionId] = useState(() => Math.random().toString(36).substring(2, 9));
-  const [remoteStatus, setRemoteStatus] = useState<'idle' | 'connected'>('idle');
+  const [indicatorSize, setIndicatorSize] = useState(120);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number | undefined>(undefined);
   const scrollPosRef = useRef(0);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
 
-  // Handle Play with Countdown
-  const handlePlayToggle = useCallback(() => {
-    if (!isPlaying && text.length > 0) {
-      setCountdown(3);
-    } else {
-      setIsPlaying(false);
-      setCountdown(null);
-    }
-  }, [isPlaying, text]);
-
-  const resetScroll = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-      setIsPlaying(false);
-      setCountdown(null);
-      setProgress(0);
-    }
-  }, []);
-
-  // Sync wpm and duration
+  // Sync duration with wpm
   useEffect(() => {
-    if (controlMode === 'wpm') {
-      const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
-      if (words > 0) {
-        setTargetDuration(words / targetWpm);
-      }
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+    if (words > 0) {
+      setTargetDuration(words / targetWpm);
     }
-  }, [targetWpm, controlMode, text]);
-
-  const [micLevel, setMicLevel] = useState(0);
-
-  // Voice Detection Logic
-  useEffect(() => {
-    if (!isVoiceEnabled) {
-      setMicLevel(0);
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach(t => t.stop());
-        micStreamRef.current = null;
-      }
-      return;
-    }
-
-    const startMic = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micStreamRef.current = stream;
-        
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        audioContextRef.current = audioCtx;
-        
-        // Resume if suspended (browser security)
-        if (audioCtx.state === 'suspended') {
-          await audioCtx.resume();
-        }
-
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        analyserRef.current = analyser;
-        
-        const source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-        
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        
-        let silenceCount = 0;
-        
-        const checkVolume = () => {
-          if (!isVoiceEnabled) return;
-          analyser.getByteFrequencyData(dataArray);
-          
-          let sum = 0;
-          for (let i = 0; i < bufferLength; i++) {
-            sum += dataArray[i];
-          }
-          const average = sum / bufferLength;
-          setMicLevel(average);
-          
-          // Simple thresholding
-          if (average > 12) { // Slightly higher threshold
-            if (!isPlaying && !countdown) setIsPlaying(true);
-            silenceCount = 0;
-          } else {
-            silenceCount++;
-            if (silenceCount > 60 && isPlaying) { // ~1 second of silence
-              setIsPlaying(false);
-            }
-          }
-          
-          requestAnimationFrame(checkVolume);
-        };
-        
-        checkVolume();
-      } catch (err) {
-        console.error("Mic access denied", err);
-        setIsVoiceEnabled(false);
-      }
-    };
-
-    startMic();
-    
-    return () => {
-      if (micStreamRef.current) micStreamRef.current.getTracks().forEach(t => t.stop());
-      if (audioContextRef.current) audioContextRef.current.close();
-    };
-  }, [isVoiceEnabled, isPlaying, countdown]);
-
-  // Remote Control Polling
-  useEffect(() => {
-    const pollRemote = async () => {
-      try {
-        const res = await fetch(`/api/remote/${remoteSessionId}`);
-        if (!res.ok) throw new Error("Backend unreachable");
-        const data = await res.json();
-        
-        setRemoteStatus('connected');
-        if (data.command === 'play_pause') {
-          handlePlayToggle();
-        } else if (data.command === 'reset') {
-          resetScroll();
-        }
-      } catch (err) {
-        console.error("Remote poll failed", err);
-        setRemoteStatus('idle');
-      }
-    };
-
-    const interval = setInterval(pollRemote, 1000);
-    return () => clearInterval(interval);
-  }, [remoteSessionId, handlePlayToggle, resetScroll]);
+  }, [targetWpm, text]);
 
   const renderText = () => {
     return text;
@@ -193,6 +61,15 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   }, [text, targetDuration]);
 
   // Handle Play with Countdown
+  const handlePlayToggle = () => {
+    if (!isPlaying && text.length > 0) {
+      setCountdown(3);
+    } else {
+      setIsPlaying(false);
+      setCountdown(null);
+    }
+  };
+
   useEffect(() => {
     if (countdown === null) return;
     if (countdown === 0) {
@@ -264,6 +141,12 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, onClose]);
 
+  const resetScroll = () => {
+    setIsPlaying(false);
+    scrollPosRef.current = 0;
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  };
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -326,144 +209,60 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                  <Gauge size={12} />
-                  Ritmo de Voz
-                </label>
-                <div className="flex bg-zinc-950 p-1 rounded-lg border border-zinc-800">
-                  <button 
-                    onClick={() => setControlMode('wpm')}
-                    className={`px-2 py-1 rounded text-[8px] font-bold uppercase transition-all ${controlMode === 'wpm' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
-                  >
-                    WPM
-                  </button>
-                  <button 
-                    onClick={() => setControlMode('duration')}
-                    className={`px-2 py-1 rounded text-[8px] font-bold uppercase transition-all ${controlMode === 'duration' ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
-                  >
-                    Tiempo
-                  </button>
-                </div>
-              </div>
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <Gauge size={12} />
+                Ritmo de Voz
+              </label>
 
-              {controlMode === 'wpm' ? (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { label: 'Calmo', wpm: 120, icon: <Coffee size={12} /> },
-                      { label: 'Natural', wpm: 145, icon: <Zap size={12} className="text-blue-400" /> },
-                      { label: 'Rápido', wpm: 175, icon: <Zap size={12} className="text-amber-400" /> }
-                    ].map(style => (
-                      <button
-                        key={style.label}
-                        onClick={() => {
-                          setTargetWpm(style.wpm);
-                        }}
-                        className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all group ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'}`}
-                      >
-                        <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-white'} transition-colors mb-1`}>{style.icon}</span>
-                        <span className={`text-[8px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{style.label}</span>
-                        <span className={`text-[7px] font-mono ${targetWpm === style.wpm ? 'text-zinc-600' : 'text-zinc-700'}`}>{style.wpm} WPM</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="space-y-1">
-                    <input 
-                      type="range" min="60" max="250" step="5" value={targetWpm} 
-                      onChange={(e) => setTargetWpm(parseInt(e.target.value))}
-                      className="w-full accent-white"
-                    />
-                    <div className="flex justify-between text-[10px] font-mono text-zinc-600">
-                      <span>Lento</span>
-                      <span className="text-white font-bold">{targetWpm} WPM</span>
-                      <span>Pro</span>
-                    </div>
-                  </div>
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-1">
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Calmo', wpm: 120, icon: <Coffee size={12} /> },
+                    { label: 'Natural', wpm: 145, icon: <Zap size={12} className="text-blue-400" /> },
+                    { label: 'Rápido', wpm: 175, icon: <Zap size={12} className="text-amber-400" /> }
+                  ].map(style => (
+                    <button
+                      key={style.label}
+                      onClick={() => {
+                        setTargetWpm(style.wpm);
+                      }}
+                      className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all group ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'}`}
+                    >
+                      <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-white'} transition-colors mb-1`}>{style.icon}</span>
+                      <span className={`text-[8px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{style.label}</span>
+                      <span className={`text-[7px] font-mono ${targetWpm === style.wpm ? 'text-zinc-600' : 'text-zinc-700'}`}>{style.wpm} WPM</span>
+                    </button>
+                  ))}
                 </div>
-              ) : (
                 <div className="space-y-1">
                   <input 
-                    type="range" min="0.1" max="15" step="0.1" value={targetDuration} 
-                    onChange={(e) => setTargetDuration(parseFloat(e.target.value))}
+                    type="range" min="60" max="250" step="5" value={targetWpm} 
+                    onChange={(e) => setTargetWpm(parseInt(e.target.value))}
                     className="w-full accent-white"
                   />
                   <div className="flex justify-between text-[10px] font-mono text-zinc-600">
-                    <span>Breve</span>
-                    <span className="text-white font-bold">{targetDuration.toFixed(1)} min</span>
-                    <span>Largo</span>
+                    <span>Lento</span>
+                    <span className="text-white font-bold">{targetWpm} WPM</span>
+                    <span>Pro</span>
                   </div>
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                  <Mic size={12} className={isVoiceEnabled ? 'text-emerald-500' : ''} />
-                  Activación por Voz
-                </label>
-                <button 
-                  onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${isVoiceEnabled ? 'bg-emerald-500' : 'bg-zinc-800'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isVoiceEnabled ? 'right-1' : 'left-1'}`} />
-                </button>
-              </div>
-              {isVoiceEnabled && (
-                <div className="flex gap-0.5 h-1 mt-2">
-                  {[...Array(10)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`flex-1 rounded-full transition-all duration-75 ${micLevel > (i * 5) ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,1)]' : 'bg-zinc-800'}`} 
-                    />
-                  ))}
-                </div>
-              )}
-              <p className="text-[9px] text-zinc-500 italic">El scroll se pausa cuando dejas de hablar.</p>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                  <MousePointer2 size={12} className={isLineHighlightEnabled ? 'text-emerald-500' : ''} />
-                  Resaltado de Línea
-                </label>
-                <button 
-                  onClick={() => setIsLineHighlightEnabled(!isLineHighlightEnabled)}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${isLineHighlightEnabled ? 'bg-emerald-500' : 'bg-zinc-800'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isLineHighlightEnabled ? 'right-1' : 'left-1'}`} />
-                </button>
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <QrCode size={12} />
-                  Control Remoto
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={`w-1 h-1 rounded-full ${remoteStatus === 'connected' ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
-                  <span className="text-[7px] font-black">{remoteStatus === 'connected' ? 'ONLINE' : 'LINKING'}</span>
-                </div>
-              </label>
-              <div className="bg-white p-4 rounded-xl flex flex-col items-center gap-4">
-                <QRCodeSVG 
-                  value={`${window.location.href.split('?')[0].split('#')[0].replace(/\/$/, '')}/remote/${remoteSessionId}`} 
-                  size={140}
-                  level="H"
-                />
-                <div className="text-center space-y-1">
-                  <p className="text-[9px] font-black text-black uppercase tracking-tight">Escanea para controlar</p>
-                  <p className="text-[8px] text-zinc-400 break-all font-mono">ID: {remoteSessionId}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-zinc-800">
+            <div className="space-y-4">
                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <Maximize2 size={12} />
+                Altura Foco ({indicatorSize}px)
+              </label>
+              <input 
+                type="range" min="40" max="250" step="10" value={indicatorSize} 
+                onChange={(e) => setIndicatorSize(parseInt(e.target.value))}
+                className="w-full accent-white"
+              />
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
                 <Palette size={12} />
                 Temas
               </label>
@@ -480,6 +279,36 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
                      </div>
                    </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                <FileText size={12} />
+                Interlineado
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[1.2, 1.4, 1.8].map(lh => (
+                  <button 
+                    key={lh}
+                    onClick={() => setLineHeight(lh)}
+                    className={`p-2 rounded-lg border text-[10px] font-bold ${lineHeight === lh ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                  >
+                    {lh}x
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-zinc-800">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Guía Visual</label>
+                <button 
+                  onClick={() => setShowIndicator(!showIndicator)}
+                  className={`w-12 h-6 rounded-full relative transition-colors ${showIndicator ? 'bg-emerald-500' : 'bg-zinc-800'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${showIndicator ? 'right-1' : 'left-1'}`} />
+                </button>
               </div>
             </div>
 
@@ -517,16 +346,17 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
             </div>
           )}
 
-          {/* Line Highlight Overlay */}
-          {isLineHighlightEnabled && (
-             <div className="absolute inset-0 pointer-events-none z-10 flex flex-col">
-                <div className="flex-1 bg-black/60 backdrop-blur-[1px]" />
-                <div 
-                  className="bg-transparent border-y border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)]" 
-                  style={{ height: `${fontSize * 1.5}px` }} 
-                />
-                <div className="flex-1 bg-black/60 backdrop-blur-[1px]" />
-             </div>
+          {/* Visual Indicator (Middle lines) */}
+          {showIndicator && (
+             <>
+              <div 
+                style={{ height: `${indicatorSize}px` }}
+                className="absolute top-1/2 left-0 right-0 bg-white/5 pointer-events-none transform -translate-y-1/2 border-y border-white/10 z-10" 
+              />
+              <div className="absolute top-1/2 left-6 transform -translate-y-1/2 z-20 pointer-events-none opacity-80">
+                <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[15px] border-l-red-500 border-b-[10px] border-b-transparent animate-pulse" />
+              </div>
+             </>
           )}
 
           {/* Progress Bar */}
@@ -539,12 +369,12 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
 
           <div 
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto px-[15%] pt-[45vh] pb-[70vh] transition-transform duration-300 scroll-smooth ${isMirrored ? '-scale-x-100' : ''}`}
+            className={`flex-1 overflow-y-auto px-[15%] pt-[40vh] pb-[70vh] transition-transform duration-300 scroll-smooth ${isMirrored ? '-scale-x-100' : ''}`}
             id="teleprompter-content"
           >
             <div 
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.4 }} 
-              className={`font-bold text-center whitespace-pre-wrap select-none tracking-tight break-words ${isLineHighlightEnabled ? 'opacity-80' : ''}`}
+              style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight }} 
+              className={`font-bold text-center whitespace-pre-wrap select-none tracking-tight break-words`}
             >
               {renderText()}
               <div className="mt-20 pt-10 border-t border-zinc-800/30 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-700 text-center">
