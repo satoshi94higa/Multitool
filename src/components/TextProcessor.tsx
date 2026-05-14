@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Trash2, ArrowUp, ArrowDown, Clock } from 'lucide-react';
+import { Copy, Check, Trash2, ArrowUp, ArrowDown, Clock, Eye, Edit3 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function TextProcessor() {
   const [text, setText] = useState(() => {
@@ -10,6 +12,22 @@ export default function TextProcessor() {
     }
   });
   const [copied, setCopied] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
+
+  useEffect(() => {
+    const handleSetText = (e: CustomEvent<{ text: string, append?: boolean }>) => {
+      if (e.detail.append) {
+        setText(prev => prev ? prev + '\n\n' + e.detail.text : e.detail.text);
+      } else {
+        setText(e.detail.text);
+      }
+      // Automáticamente cambiar a preview si estamos enviando algo con formato (opcional)
+      // setIsPreview(true);
+    };
+
+    window.addEventListener('app-set-text' as any, handleSetText);
+    return () => window.removeEventListener('app-set-text' as any, handleSetText);
+  }, []);
 
   useEffect(() => {
     try {
@@ -93,6 +111,16 @@ export default function TextProcessor() {
           >
             <ArrowDown size={14} className="text-gray-600" />
           </button>
+          <button 
+            onClick={() => setIsPreview(!isPreview)}
+            title={isPreview ? "Editar texto" : "Vista previa formateada"}
+            className={`flex items-center gap-1 px-2 py-1 border rounded text-[10px] font-bold uppercase transition-all ${
+              isPreview ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-400 opacity-60'
+            }`}
+          >
+            {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
+            <span>{isPreview ? 'Editor' : 'Vista'}</span>
+          </button>
           <div className="w-px h-6 bg-gray-100 mx-1" />
           <button 
             onClick={copyToClipboard}
@@ -110,13 +138,21 @@ export default function TextProcessor() {
         </div>
       </div>
       
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Empieza a escribir aquí..."
-        spellCheck="false"
-        className="w-full h-64 md:h-80 lg:h-96 resize-none border-none outline-none text-base text-gray-700 placeholder-gray-200 leading-relaxed font-sans mb-4"
-      />
+      {isPreview ? (
+        <div className="w-full h-64 md:h-80 lg:h-94 overflow-auto p-4 bg-gray-50/30 rounded-xl border border-gray-100 markdown-body prose prose-sm max-w-none mb-4">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {text}
+          </ReactMarkdown>
+        </div>
+      ) : (
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Empieza a escribir aquí..."
+          spellCheck="false"
+          className="w-full h-64 md:h-80 lg:h-96 resize-none border-none outline-none text-base text-gray-700 placeholder-gray-200 leading-relaxed font-sans mb-4"
+        />
+      )}
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-50 text-[10px] font-bold uppercase tracking-tighter text-gray-400">
         <div className="flex gap-4 items-center">

@@ -2,6 +2,10 @@ import React from 'react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
+import ScreenwriterIA from './components/ScreenwriterIA';
+import FuelCalculator from './components/FuelCalculator';
+import ShotPlannerIA from './components/ShotPlannerIA';
+import JournalistIA from './components/JournalistIA';
 
 export default function App() {
   return (
@@ -20,6 +24,15 @@ export default function App() {
             <section className="bg-white p-6 rounded-xl border shadow-sm">
               <TextProcessor />
             </section>
+            <section className="bg-white p-6 rounded-xl border shadow-sm">
+              <ScreenwriterIA />
+            </section>
+            <section className="bg-white p-6 rounded-xl border shadow-sm">
+              <ShotPlannerIA />
+            </section>
+            <section className="bg-white p-6 rounded-xl border shadow-sm">
+              <JournalistIA />
+            </section>
           </div>
 
           {/* Utils Column */}
@@ -29,6 +42,9 @@ export default function App() {
             </section>
             <section className="bg-white p-6 rounded-xl border shadow-sm">
               <SocialFormatter />
+            </section>
+            <section className="bg-white p-6 rounded-xl border shadow-sm">
+              <FuelCalculator />
             </section>
           </div>
         </div>
