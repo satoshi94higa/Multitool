@@ -9,6 +9,7 @@ import FuelCalculator from './components/FuelCalculator';
 import JournalistIA from './components/JournalistIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import DirectorIA from './components/DirectorIA';
+import QRGenerator from './components/QRGenerator';
 
 // @ts-ignore
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -20,9 +21,10 @@ const INITIAL_LAYOUTS = {
     { i: 'journalist', x: 0, y: 14, w: 1, h: 15 },
     { i: 'social', x: 1, y: 24, w: 1, h: 12 },
     { i: 'brainstormer', x: 0, y: 29, w: 1, h: 14 },
+    { i: 'qr-generator', x: 0, y: 43, w: 1, h: 14 },
     { i: 'percentage', x: 1, y: 36, w: 1, h: 7 },
     { i: 'fuel', x: 1, y: 43, w: 1, h: 7 },
-    { i: 'director', x: 0, y: 50, w: 2, h: 22 },
+    { i: 'director', x: 0, y: 57, w: 2, h: 22 },
   ],
   md: [
     { i: 'text-processor', x: 0, y: 0, w: 1, h: 14 },
@@ -30,9 +32,10 @@ const INITIAL_LAYOUTS = {
     { i: 'journalist', x: 0, y: 14, w: 1, h: 15 },
     { i: 'social', x: 1, y: 24, w: 1, h: 12 },
     { i: 'brainstormer', x: 0, y: 29, w: 1, h: 14 },
+    { i: 'qr-generator', x: 0, y: 43, w: 1, h: 14 },
     { i: 'percentage', x: 1, y: 36, w: 1, h: 7 },
     { i: 'fuel', x: 1, y: 43, w: 1, h: 7 },
-    { i: 'director', x: 0, y: 50, w: 2, h: 22 },
+    { i: 'director', x: 0, y: 57, w: 2, h: 22 },
   ],
   sm: [
     { i: 'text-processor', x: 0, y: 0, w: 1, h: 14 },
@@ -40,9 +43,10 @@ const INITIAL_LAYOUTS = {
     { i: 'director', x: 0, y: 36, w: 1, h: 22 },
     { i: 'journalist', x: 0, y: 58, w: 1, h: 15 },
     { i: 'brainstormer', x: 0, y: 73, w: 1, h: 14 },
-    { i: 'social', x: 0, y: 87, w: 1, h: 12 },
-    { i: 'percentage', x: 0, y: 99, w: 1, h: 7 },
-    { i: 'fuel', x: 0, y: 106, w: 1, h: 7 },
+    { i: 'qr-generator', x: 0, y: 87, w: 1, h: 14 },
+    { i: 'social', x: 0, y: 101, w: 1, h: 12 },
+    { i: 'percentage', x: 0, y: 113, w: 1, h: 7 },
+    { i: 'fuel', x: 0, y: 120, w: 1, h: 7 },
   ]
 };
 
@@ -215,6 +219,17 @@ export default function App() {
               )}
               <div className="p-6 flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 scroll-smooth">
                 <DirectorIA />
+              </div>
+            </div>
+
+            <div key="qr-generator" className="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col h-full">
+              {isDraggable && (
+                <div className="drag-handle h-8 bg-gray-50 border-b flex items-center justify-center text-gray-300 hover:text-gray-400 transition-colors shrink-0">
+                  <GripVertical size={16} />
+                </div>
+              )}
+              <div className="p-6 flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 scroll-smooth">
+                <QRGenerator />
               </div>
             </div>
           </ResponsiveGridLayout>
