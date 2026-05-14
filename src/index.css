@@ -29,3 +29,19 @@
     @apply border-l-4 border-gray-200 pl-4 italic my-4 text-gray-500;
   }
 }
+
+/* React Grid Layout Styles */
+@import "react-grid-layout/css/styles.css";
+
+.react-grid-item.react-grid-placeholder {
+  @apply !bg-blue-50 !border-2 !border-dashed !border-blue-200 !rounded-xl;
+  opacity: 0.5 !important;
+}
+
+.drag-handle {
+  cursor: grab;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+

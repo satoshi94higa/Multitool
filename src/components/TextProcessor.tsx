@@ -121,6 +121,13 @@ export default function TextProcessor() {
             {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
             <span>{isPreview ? 'Editor' : 'Vista'}</span>
           </button>
+          <button 
+            onClick={clearText}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold uppercase hover:bg-red-100 transition-all shadow-sm"
+          >
+            <Trash2 size={12} />
+            <span>Borrar</span>
+          </button>
           <div className="w-px h-6 bg-gray-100 mx-1" />
           <button 
             onClick={copyToClipboard}
@@ -128,12 +135,6 @@ export default function TextProcessor() {
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? 'Listo' : 'Copiar'}
-          </button>
-          <button 
-            onClick={clearText}
-            className="p-1.5 text-gray-300 hover:text-red-500 transition-colors"
-          >
-            <Trash2 size={14} />
           </button>
         </div>
       </div>

@@ -11,6 +11,12 @@ interface Scene {
   audio: string;
   duration: string;
   sfx?: string;
+  technical?: {
+    shot: string;    // Plano/Angulo
+    lens: string;    // Lente
+    motion: string;  // Movimiento
+    lighting: string; // Iluminacion
+  };
 }
 
 interface ScriptData {
@@ -38,7 +44,7 @@ export default function ScreenwriterIA() {
   const [copiedTable, setCopiedTable] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
   const generateScript = async () => {
     if (!input.trim()) return;
@@ -65,8 +71,19 @@ export default function ScreenwriterIA() {
            {
              "full_script": "Texto completo listo para leer",
              "rundown": [
-               { "scene": "Gancho", "visual": "descripción visual", "audio": "qué se dice", "duration": "0-3s", "sfx": "sugerencia de sonido o música" },
-               ...
+               { 
+                 "scene": "Gancho", 
+                 "visual": "descripción visual", 
+                 "audio": "qué se dice", 
+                 "duration": "0-3s", 
+                 "sfx": "sugerencia de sonido",
+                 "technical": {
+                   "shot": "Plano/Ángulo (ej: Primer plano, Zenital)",
+                   "lens": "Lente sugerida (ej: 35mm, Wide)",
+                   "motion": "Movimiento (ej: Steady, Zoom)",
+                   "lighting": "Iluminación (ej: Natural, Key Light)"
+                 }
+               }
              ],
              "thumbnail": { "idea": "idea visual para la portada", "text_overlay": "texto corto para la portada" },
              "keywords": ["tag1", "tag2", ...]
@@ -82,15 +99,26 @@ export default function ScreenwriterIA() {
            {
              "full_script": "Texto completo del guion con indicaciones de entonación",
              "rundown": [
-               { "scene": "Intro", "visual": "descripción de la toma", "audio": "diálogo detallado", "duration": "0:30s", "sfx": "música de fondo sugerida" },
-               ...
+               { 
+                 "scene": "Intro", 
+                 "visual": "descripción de la toma", 
+                 "audio": "diálogo detallado", 
+                 "duration": "0:30s", 
+                 "sfx": "SFX",
+                 "technical": {
+                   "shot": "Plano/Ángulo",
+                   "lens": "Lente",
+                   "motion": "Movimiento",
+                   "lighting": "Iluminación"
+                 }
+               }
              ],
              "thumbnail": { "idea": "composición de la miniatura", "text_overlay": "título clickbait para la miniatura" },
              "keywords": ["tag1", "tag2", ...]
            }`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json"
@@ -116,10 +144,11 @@ export default function ScreenwriterIA() {
   };
 
   const sendToProcessor = () => {
-    const mdHeader = "| Escena | Duración | Visual | Audio | SFX |\n|---|---|---|---|---|";
-    const mdRows = rundown.map(item => 
-      `| ${item.scene} | ${item.duration} | ${item.visual} | ${item.audio} | ${item.sfx || '-'} |`
-    ).join('\n');
+    const mdHeader = "| Escena | Duración | Visual | Audio | Datos Técnicos |\n|---|---|---|---|---|";
+    const mdRows = rundown.map(item => {
+      const techStr = item.technical ? `[${item.technical.shot}] [${item.technical.lens}] [${item.technical.motion}] [${item.technical.lighting}]` : '-';
+      return `| ${item.scene} | ${item.duration} | ${item.visual} | ${item.audio} | ${techStr} |`;
+    }).join('\n');
     const tableMD = `${mdHeader}\n${mdRows}`;
     
     const extraInfo = `IDEAS DE MINIATURA:\n- Idea: ${thumbnail?.idea}\n- Texto: ${thumbnail?.text_overlay}\n\nKEYWORDS: ${keywords.join(', ')}`;
@@ -135,31 +164,46 @@ export default function ScreenwriterIA() {
   };
 
   const copyTableToClipboard = async () => {
-    const headers = ['Escena', 'Duración', 'Visual', 'Audio', 'SFX/Música'].join('\t');
+    const headers = ['Escena', 'Duración', 'Visual', 'Audio', 'Plano/Ángulo', 'Lente', 'Movimiento', 'Iluminación'].join('\t');
     const rowsTSV = rundown.map(item => 
-      [item.scene, item.duration, item.visual, item.audio, item.sfx || ''].join('\t')
+      [
+        item.scene, 
+        item.duration, 
+        item.visual, 
+        item.audio, 
+        item.technical?.shot || '', 
+        item.technical?.lens || '', 
+        item.technical?.motion || '', 
+        item.technical?.lighting || ''
+      ].join('\t')
     );
     const tableStringTSV = [headers, ...rowsTSV].join('\n');
 
     const tableHTML = `
-      <table border="1" style="border-collapse: collapse; width: 100%; font-family: sans-serif; font-size: 11pt;">
+      <table border="1" style="border-collapse: collapse; width: 100%; font-family: sans-serif; font-size: 10pt;">
         <thead>
           <tr style="background-color: #f3f4f6; font-weight: bold;">
-            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Escena</th>
-            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Duración</th>
-            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Visual</th>
-            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">Audio</th>
-            <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">SFX/Música</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Escena</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Dura.</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Visual</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Audio</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Plano</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Lente</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Mov.</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Luz</th>
           </tr>
         </thead>
         <tbody>
           ${rundown.map(item => `
             <tr>
-              <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${item.scene}</td>
-              <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${item.duration}</td>
-              <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; font-style: italic; color: #4b5563;">${item.visual}</td>
-              <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top;">${item.audio}</td>
-              <td style="padding: 8px; border: 1px solid #ccc; vertical-align: top; color: #2563eb;">${item.sfx || ''}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.scene}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.duration}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top; font-style: italic;">${item.visual}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.audio}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.technical?.shot || '-'}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.technical?.lens || '-'}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.technical?.motion || '-'}</td>
+              <td style="padding: 6px; border: 1px solid #ccc; vertical-align: top;">${item.technical?.lighting || '-'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -194,7 +238,7 @@ export default function ScreenwriterIA() {
           </div>
           <div>
             <h2 className="text-sm font-bold">Screenwriter IA</h2>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Guionista de Contenido</p>
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Escaleta Técnica Avanzada</p>
           </div>
         </div>
         
@@ -338,7 +382,7 @@ export default function ScreenwriterIA() {
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 <MonitorSmartphone size={12} />
-                <span>Escaleta Técnica ({platform === 'instagram' ? '9:16' : '16:9'})</span>
+                <span>Escaleta Técnica Avanzada ({platform === 'instagram' ? '9:16' : '16:9'})</span>
               </div>
               {rundown.length > 0 && (
                 <button 
@@ -354,31 +398,53 @@ export default function ScreenwriterIA() {
             
             <div className="grid gap-3">
               {rundown.map((item, idx) => (
-                <div key={idx} className="group flex gap-3 p-3 bg-white border border-gray-100 rounded-xl hover:border-blue-100 hover:shadow-sm transition-all">
-                  <div className="flex-none w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                    {idx + 1}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[11px] font-bold text-gray-900">{item.scene}</span>
-                      <div className="flex items-center gap-1 text-[9px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">
-                        <Clock size={10} />
-                        {item.duration}
+                <div key={idx} className="group flex flex-col p-4 bg-white border border-gray-100 rounded-xl hover:border-blue-100 hover:shadow-sm transition-all gap-3">
+                  <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gray-50 rounded flex items-center justify-center text-[10px] font-bold text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        {idx + 1}
                       </div>
+                      <span className="text-[11px] font-bold text-gray-900 uppercase tracking-wide">{item.scene}</span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="flex items-center gap-1 text-[9px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">
+                      <Clock size={10} />
+                      {item.duration}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
                       <div>
-                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-tighter mb-1">Visual</span>
+                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Visual</span>
                         <p className="text-[11px] text-gray-600 italic leading-snug">{item.visual}</p>
                       </div>
                       <div>
-                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-tighter mb-1">Audio / Locución</span>
+                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Audio / Locución</span>
                         <p className="text-[11px] text-gray-600 leading-snug">{item.audio}</p>
                       </div>
+                    </div>
+                    
+                    <div className="bg-gray-50/50 rounded-lg p-3 grid grid-cols-2 gap-y-3 gap-x-4">
+                      <div>
+                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Plano/Ángulo</span>
+                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.shot || '-'}</p>
+                      </div>
+                      <div>
+                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Lente</span>
+                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.lens || '-'}</p>
+                      </div>
+                      <div>
+                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Movimiento</span>
+                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.motion || '-'}</p>
+                      </div>
+                      <div>
+                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Iluminación</span>
+                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.lighting || '-'}</p>
+                      </div>
                       {item.sfx && (
-                        <div>
-                          <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-tighter mb-1">SFX / Música</span>
-                          <p className="text-[11px] text-blue-600 font-medium leading-snug">{item.sfx}</p>
+                        <div className="col-span-2 pt-1 border-t border-gray-100">
+                          <span className="block text-[8px] font-bold text-pink-400 uppercase tracking-wider mb-0.5">SFX / Música</span>
+                          <p className="text-[10px] text-pink-600 font-medium">{item.sfx}</p>
                         </div>
                       )}
                     </div>
