@@ -230,60 +230,55 @@ export default function ScreenwriterIA() {
   const estReadingTime = Math.ceil(wordCount / 160) || 0;
 
   return (
-    <div className="space-y-6" id="screenwriter-ia">
+    <div className="space-y-4" id="screenwriter-ia">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-            <Video size={20} />
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+            <Video size={18} />
           </div>
           <div>
-            <h2 className="text-sm font-bold">Screenwriter IA</h2>
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Escaleta Técnica Avanzada</p>
+            <h2 className="text-xs font-bold leading-tight">Screenwriter IA</h2>
+            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Escaleta Técnica</p>
           </div>
         </div>
         
         <div className="flex bg-gray-50 p-1 rounded-lg border border-gray-100">
           <button
             onClick={() => setPlatform('instagram')}
-            className={`p-1.5 rounded-md transition-all ${platform === 'instagram' ? 'bg-white shadow-sm text-pink-600' : 'text-gray-400 hover:text-gray-600'}`}
-            title="Optimizado para Instagram/TikTok (Vertical)"
+            className={`p-1 rounded-md transition-all ${platform === 'instagram' ? 'bg-white shadow-sm text-pink-600' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            <Instagram size={16} />
+            <Instagram size={14} />
           </button>
           <button
             onClick={() => setPlatform('youtube')}
-            className={`p-1.5 rounded-md transition-all ${platform === 'youtube' ? 'bg-white shadow-sm text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
-            title="Optimizado para YouTube (Horizontal)"
+            className={`p-1 rounded-md transition-all ${platform === 'youtube' ? 'bg-white shadow-sm text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            <Youtube size={16} />
+            <Youtube size={14} />
           </button>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-2 items-center">
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTone(t)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${
+              className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all border ${
                 tone === t ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-400 hover:border-blue-100 hover:text-blue-500'
               }`}
             >
-              {t === 'energetic' ? 'Enérgico' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humor' : 'Profesional'}
+              {t === 'energetic' ? 'Ener' : t === 'casual' ? 'Casu' : t === 'humorous' ? 'Hum' : 'Prof'}
             </button>
           ))}
           
-          <div className="flex-1" />
-          
           <button
             onClick={() => setPowerHook(!powerHook)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all border ${
               powerHook ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-white border-gray-100 text-gray-400 opacity-60'
             }`}
           >
-            <div className={`w-2 h-2 rounded-full ${powerHook ? 'bg-amber-500 animate-pulse' : 'bg-gray-300'}`} />
-            Hook Potenciado
+            Hook
           </button>
         </div>
 
@@ -291,162 +286,109 @@ export default function ScreenwriterIA() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pega aquí la idea o el texto base para tu video..."
-            className="w-full h-36 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-200 resize-none font-sans"
+            placeholder="Idea o texto base..."
+            className="w-full h-24 p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs focus:outline-none focus:border-blue-200 resize-none font-sans"
           />
-          <div className="flex gap-4 mt-1.5 ml-1 text-[9px] font-bold text-gray-400 uppercase">
-            <span>Palabras: {wordCount}</span>
-            <span>~{estReadingTime} seg lectura</span>
+          <div className="flex gap-2 mt-1 ml-1 text-[8px] font-bold text-gray-400 uppercase">
+            <span>{wordCount} palabras</span>
+            <span>~{estReadingTime}s lectura</span>
           </div>
         </div>
 
         <div className="relative group">
-          <div className="absolute left-3 top-3 text-gray-300">
-            <MessageSquarePlus size={14} />
+          <div className="absolute left-3 top-2.5 text-gray-300">
+            <MessageSquarePlus size={12} />
           </div>
           <input
             type="text"
             value={extraPrompt}
             onChange={(e) => setExtraPrompt(e.target.value)}
-            placeholder="Instrucciones extra (ej: menciona mi marca, empieza con un dato...)"
-            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:border-blue-100 placeholder:text-gray-300"
+            placeholder="Instrucciones extra..."
+            className="w-full pl-8 pr-3 py-2 bg-white border border-gray-100 rounded-xl text-[10px] focus:outline-none focus:border-blue-100 placeholder:text-gray-300"
           />
         </div>
         
         <button
           onClick={generateScript}
           disabled={loading || !input.trim()}
-          className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-30 transition-all shadow-md shadow-blue-100"
+          className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-30 transition-all shadow-sm"
         >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
-          {loading ? 'Redactando guion...' : 'Generar Guion Profesional'}
+          {loading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} fill="currentColor" />}
+          {loading ? 'Redactando...' : 'Generar Guion'}
         </button>
       </div>
 
       {(script || rundown.length > 0) && (
-        <div className="space-y-6 pt-4 border-t border-gray-50">
-          <div className="bg-gray-50 rounded-xl p-4 relative border border-gray-100">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                <ScrollText size={12} />
-                <span>Guion Final</span>
+        <div className="space-y-4 pt-3 border-t border-gray-50 animate-in fade-in slide-in-from-top-2 duration-400">
+          <div className="bg-gray-50 rounded-xl p-3 relative border border-gray-100">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                <ScrollText size={10} />
+                <span>Guion</span>
               </div>
               <div className="flex gap-1">
-                <button 
-                  onClick={sendToProcessor}
-                  title="Enviar al Procesador de Texto"
-                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-md text-blue-500 transition-all"
-                >
-                  {sent ? <Check size={14} className="text-green-500" /> : <Send size={14} />}
+                <button onClick={sendToProcessor} className={`p-1 rounded-md transition-all ${sent ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:bg-white'}`}>
+                  {sent ? <Check size={14} /> : <Send size={14} />}
                 </button>
-                <button 
-                  onClick={copyToClipboard}
-                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-md text-gray-400 transition-all"
-                >
-                  {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                <button onClick={copyToClipboard} className={`p-1 rounded-md transition-all ${copied ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:bg-white'}`}>
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
                 </button>
               </div>
             </div>
-            <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{script}</p>
+            <p className="text-[11px] leading-relaxed text-gray-700 whitespace-pre-wrap max-h-32 overflow-y-auto pr-1 scrollbar-hide">{script}</p>
           </div>
 
-          {(thumbnail || keywords.length > 0) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {thumbnail && (
-                <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-2">
-                    <Video size={12} />
-                    <span>Idea de Miniatura</span>
-                  </div>
-                  <p className="text-[11px] font-bold text-blue-900 mb-1">{thumbnail.text_overlay}</p>
-                  <p className="text-[10px] text-blue-700 italic leading-relaxed">{thumbnail.idea}</p>
-                </div>
-              )}
-              {keywords.length > 0 && (
-                <div className="bg-purple-50/50 rounded-xl p-4 border border-purple-100">
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-2">
-                    <ScrollText size={12} />
-                    <span>Keywords / Tags</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {keywords.map((k, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-white border border-purple-100 rounded text-[9px] text-purple-600 font-medium">#{k}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                <MonitorSmartphone size={12} />
-                <span>Escaleta Técnica Avanzada ({platform === 'instagram' ? '9:16' : '16:9'})</span>
+          <div className="grid grid-cols-2 gap-2">
+            {thumbnail && (
+              <div className="bg-blue-50/50 rounded-xl p-2.5 border border-blue-100">
+                <span className="block text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1">Miniatura</span>
+                <p className="text-[10px] font-bold text-blue-900 leading-tight mb-0.5 truncate">{thumbnail.text_overlay}</p>
+                <p className="text-[9px] text-blue-700 italic leading-tight truncate">{thumbnail.idea}</p>
               </div>
+            )}
+            {keywords.length > 0 && (
+              <div className="bg-purple-50/50 rounded-xl p-2.5 border border-purple-100">
+                <span className="block text-[8px] font-black text-purple-400 uppercase tracking-widest mb-1">Tags</span>
+                <div className="flex flex-wrap gap-1">
+                  {keywords.slice(0, 4).map((k, i) => (
+                    <span key={i} className="text-[9px] text-purple-600 font-medium">#{k}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Escaleta</span>
               {rundown.length > 0 && (
-                <button 
-                  onClick={copyTableToClipboard}
-                  className="flex items-center gap-1.5 px-2 py-1 hover:bg-gray-50 rounded-md text-[9px] font-bold text-gray-400 transition-colors border border-transparent hover:border-gray-100"
-                  title="Copiar para Word/Excel"
-                >
-                  {copiedTable ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                  <span>{copiedTable ? 'Copiado' : 'Copiar Tabla'}</span>
+                <button onClick={copyTableToClipboard} className="text-[8px] font-black text-gray-400 uppercase hover:text-blue-500 transition-colors">
+                  {copiedTable ? 'Copiado' : 'Copiar Tabla'}
                 </button>
               )}
             </div>
             
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {rundown.map((item, idx) => (
-                <div key={idx} className="group flex flex-col p-4 bg-white border border-gray-100 rounded-xl hover:border-blue-100 hover:shadow-sm transition-all gap-3">
-                  <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gray-50 rounded flex items-center justify-center text-[10px] font-bold text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                        {idx + 1}
-                      </div>
-                      <span className="text-[11px] font-bold text-gray-900 uppercase tracking-wide">{item.scene}</span>
+                <div key={idx} className="group p-3 bg-white border border-gray-100 rounded-xl hover:border-blue-100 transition-all space-y-2">
+                  <div className="flex justify-between items-center border-b border-gray-50 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-black text-blue-500">{idx + 1}</span>
+                      <span className="text-[10px] font-bold text-gray-900 uppercase">{item.scene}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">
-                      <Clock size={10} />
-                      {item.duration}
-                    </div>
+                    <span className="text-[8px] font-black text-blue-400 bg-blue-50 px-1 py-0.5 rounded">{item.duration}</span>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <div>
-                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Visual</span>
-                        <p className="text-[11px] text-gray-600 italic leading-snug">{item.visual}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-1">Audio / Locución</span>
-                        <p className="text-[11px] text-gray-600 leading-snug">{item.audio}</p>
-                      </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1.5">
+                      <p className="text-[10px] text-gray-600 leading-tight"><span className="text-[8px] font-bold uppercase text-gray-400 mr-1">Vis:</span>{item.visual}</p>
+                      <p className="text-[10px] text-gray-600 leading-tight font-medium"><span className="text-[8px] font-bold uppercase text-gray-400 mr-1">Aud:</span>{item.audio}</p>
                     </div>
                     
-                    <div className="bg-gray-50/50 rounded-lg p-3 grid grid-cols-2 gap-y-3 gap-x-4">
-                      <div>
-                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Plano/Ángulo</span>
-                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.shot || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Lente</span>
-                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.lens || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Movimiento</span>
-                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.motion || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[8px] font-bold text-blue-400 uppercase tracking-wider mb-0.5">Iluminación</span>
-                        <p className="text-[10px] text-gray-700 font-medium">{item.technical?.lighting || '-'}</p>
-                      </div>
-                      {item.sfx && (
-                        <div className="col-span-2 pt-1 border-t border-gray-100">
-                          <span className="block text-[8px] font-bold text-pink-400 uppercase tracking-wider mb-0.5">SFX / Música</span>
-                          <p className="text-[10px] text-pink-600 font-medium">{item.sfx}</p>
-                        </div>
-                      )}
+                    <div className="bg-gray-50/50 rounded-lg p-1.5 grid grid-cols-2 gap-1 text-[8px]">
+                      <div><span className="text-blue-400 uppercase font-bold">P:</span> {item.technical?.shot || '-'}</div>
+                      <div><span className="text-blue-400 uppercase font-bold">L:</span> {item.technical?.lens || '-'}</div>
+                      <div className="col-span-2 truncate"><span className="text-blue-400 uppercase font-bold">M:</span> {item.technical?.motion || '-'}</div>
                     </div>
                   </div>
                 </div>
