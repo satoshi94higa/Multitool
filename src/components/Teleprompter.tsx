@@ -206,183 +206,42 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   };
 
   return (
-    <div className={`fixed inset-0 z-[100] ${themes[theme].bg} ${themes[theme].text} flex flex-col font-sans select-none overflow-hidden h-screen`} id="teleprompter-overlay">
-      {/* Header / Top Controls */}
-      <div className={`flex items-center justify-between p-4 bg-zinc-900 border-b border-zinc-800 transition-opacity duration-500 ${isPlaying && !showConfig ? 'opacity-0' : 'opacity-100'}`}>
+    <div className={`fixed inset-0 z-[100] ${themes[theme].bg} ${themes[theme].text} flex flex-col font-sans select-none overflow-hidden h-screen`} id="teleprompter-overlay">      {/* Header / Top Controls */}
+      <div className={`absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-500 ${isPlaying && !showConfig ? 'opacity-0' : 'opacity-100'}`}>
         <div className="flex items-center gap-3">
-          <Monitor className="text-zinc-500" size={20} />
-          <h2 className="text-sm font-bold tracking-tight text-white uppercase">Teleprompter Pro v2</h2>
+          <div className="bg-white/10 p-1.5 rounded-lg backdrop-blur-md border border-white/10">
+            <Monitor className="text-white" size={16} />
+          </div>
+          <h2 className="text-[10px] font-black tracking-[0.2em] text-white uppercase opacity-70">Teleprompter Pro</h2>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-4 px-4 border-r border-zinc-800">
-             <div className="flex items-center gap-2">
-                <FileText size={14} className="text-zinc-500" />
-                <span className="text-[10px] font-bold text-zinc-400">{stats.words} palabras</span>
+        <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-3 px-3 mr-2">
+             <div className="flex items-center gap-1.5">
+                <FileText size={12} className="text-zinc-500" />
+                <span className="text-[9px] font-black text-zinc-400 uppercase">{stats.words} wds</span>
              </div>
-             <div className="flex items-center gap-2">
-                <Clock size={14} className="text-zinc-500" />
-                <span className="text-[10px] font-bold text-zinc-400">Est: {stats.time}</span>
+             <div className="flex items-center gap-1.5">
+                <Clock size={12} className="text-zinc-500" />
+                <span className="text-[9px] font-black text-zinc-400 uppercase">{stats.time}</span>
              </div>
           </div>
+          <button onClick={toggleFullscreen} className="p-2 text-zinc-400 hover:text-white transition-colors">
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
           <button 
             onClick={() => setShowConfig(!showConfig)}
-            className={`p-2 rounded-lg transition-colors ${showConfig ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'}`}
+            className={`p-2 rounded-lg transition-all ${showConfig ? 'bg-white text-black' : 'text-zinc-400 hover:text-white bg-white/5'}`}
           >
-            <Settings2 size={20} />
+            <Settings2 size={18} />
           </button>
-          <button onClick={toggleFullscreen} className="p-2 text-zinc-500 hover:text-white">
-            {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-          </button>
-          <button onClick={onClose} className="p-2 text-zinc-500 hover:text-red-500 transition-colors">
-            <X size={24} />
+          <button onClick={onClose} className="p-2 text-zinc-400 hover:text-red-500 transition-colors ml-2">
+            <X size={22} />
           </button>
         </div>
       </div>
 
       <div className="flex-1 relative flex overflow-hidden">
-        {/* Sidebar Config (Collapsible) */}
-        {showConfig && (
-          <div className="w-64 bg-zinc-900 border-r border-zinc-800 p-4 space-y-5 overflow-y-auto max-h-full scrollbar-hide">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <Type size={12} />
-                Tamaño de texto
-              </label>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setFontSize(f => Math.max(f - 8, 24))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronDown size={14} /></button>
-                <span className="flex-1 text-center font-mono font-bold text-lg text-white">{fontSize}px</span>
-                <button onClick={() => setFontSize(f => Math.min(f + 8, 200))} className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 text-white"><ChevronUp size={14} /></button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <Gauge size={12} />
-                Ritmo de Voz
-              </label>
-
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { label: 'Calmo', wpm: 120, icon: <Coffee size={12} /> },
-                    { label: 'Natural', wpm: 145, icon: <Zap size={12} className="text-blue-400" /> },
-                    { label: 'Rápido', wpm: 175, icon: <Zap size={12} className="text-amber-400" /> }
-                  ].map(style => (
-                    <button
-                      key={style.label}
-                      onClick={() => {
-                        setTargetWpm(style.wpm);
-                      }}
-                      className={`flex flex-col items-center justify-center p-1.5 rounded-xl border transition-all group ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'}`}
-                    >
-                      <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-white'} transition-colors mb-0.5`}>{style.icon}</span>
-                      <span className={`text-[7px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{style.label}</span>
-                      <span className={`text-[6px] font-mono ${targetWpm === style.wpm ? 'text-zinc-600' : 'text-zinc-700'}`}>{style.wpm}</span>
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-1">
-                  <input 
-                    type="range" min="60" max="250" step="5" value={targetWpm} 
-                    onChange={(e) => setTargetWpm(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[9px] font-mono text-zinc-600">
-                    <span>Lento</span>
-                    <span className="text-white font-bold">{targetWpm} WPM</span>
-                    <span>Pro</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <Maximize2 size={12} />
-                Altura Foco ({indicatorSize}px)
-              </label>
-              <input 
-                type="range" min="40" max="250" step="10" value={indicatorSize} 
-                onChange={(e) => setIndicatorSize(parseInt(e.target.value))}
-                className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <Palette size={12} />
-                Temas
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['classic', 'high-contrast', 'safe-green'] as Theme[]).map(t => (
-                   <button 
-                    key={t}
-                    onClick={() => setTheme(t)}
-                    className={`h-9 rounded-lg border-2 transition-all ${theme === t ? 'border-white' : 'border-zinc-800 hover:border-zinc-700'}`}
-                    style={{ backgroundColor: t === 'classic' ? '#000' : t === 'high-contrast' ? '#000' : '#09090b' }}
-                   >
-                     <div className={`w-full h-full flex items-center justify-center text-[7px] font-black uppercase ${t === 'classic' ? 'text-white' : t === 'high-contrast' ? 'text-yellow-400' : 'text-green-500'}`}>
-                        {t === 'classic' ? 'Classic' : t === 'high-contrast' ? 'Contrast' : 'Green'}
-                     </div>
-                   </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                <FileText size={12} />
-                Interlineado
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {[1.2, 1.4, 1.8].map(lh => (
-                  <button 
-                    key={lh}
-                    onClick={() => setLineHeight(lh)}
-                    className={`p-1.5 rounded-lg border text-[9px] font-bold ${lineHeight === lh ? 'bg-white text-black' : 'border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
-                  >
-                    {lh}x
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-3 border-t border-zinc-800">
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Guía Visual</label>
-                <button 
-                  onClick={() => setShowIndicator(!showIndicator)}
-                  className={`w-10 h-5 rounded-full relative transition-colors ${showIndicator ? 'bg-emerald-500' : 'bg-zinc-800'}`}
-                >
-                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${showIndicator ? 'right-0.5' : 'left-0.5'}`} />
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-3 border-t border-zinc-800">
-              <button 
-                onClick={() => setIsMirrored(!isMirrored)}
-                className={`w-full py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 border transition-all ${
-                  isMirrored ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-700'
-                }`}
-              >
-                <FlipHorizontal size={14} />
-                MODO ESPEJO {isMirrored ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            <div className="space-y-2 pt-3 border-t border-zinc-800">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest text-zinc-400">Guion</label>
-               <textarea 
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="w-full h-32 bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-[11px] text-zinc-400 focus:outline-none focus:border-zinc-600 resize-none leading-relaxed"
-               />
-            </div>
-          </div>
-        )}
-
         {/* Teleprompter Area */}
         <div className="flex-1 relative flex flex-col bg-inherit">
           {/* Countdown Overlay */}
@@ -408,16 +267,16 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
           )}
 
           {/* Progress Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-900/50 z-50">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-zinc-900/30 z-50">
             <div 
-              className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-300"
+              className="h-full bg-emerald-500 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
 
           <div 
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto px-[15%] pt-[40vh] pb-[50vh] transition-transform duration-300 scroll-smooth ${isMirrored ? '-scale-x-100' : ''}`}
+            className={`flex-1 overflow-y-auto px-[10%] sm:px-[15%] pt-[45vh] pb-[55vh] transition-all duration-500 scroll-smooth ${isMirrored ? '-scale-x-100' : ''} ${showConfig ? 'sm:mr-72 mr-0' : 'mr-0'}`}
             id="teleprompter-content"
           >
             <div 
@@ -425,37 +284,178 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
               className={`font-bold text-center whitespace-pre-wrap select-none tracking-tight break-words`}
             >
               {renderText()}
-              <div className="mt-20 pt-10 border-t border-zinc-800/30 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-700 text-center">
-                FIN DEL GUION
+              <div className="mt-24 pt-12 border-t border-zinc-800/20 text-[9px] font-black uppercase tracking-[0.8em] text-zinc-800 text-center">
+                FIN DE LA SESIÓN
               </div>
             </div>
           </div>
 
           {/* Floating Controls Overlay */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-zinc-950/90 backdrop-blur-2xl border border-zinc-800/50 p-1.5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 transition-all">
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-zinc-900/80 backdrop-blur-xl border border-white/5 p-2 rounded-2xl shadow-2xl z-50 transition-all duration-500 ${isPlaying && !showConfig ? 'opacity-20 hover:opacity-100 scale-95 hover:scale-100' : 'opacity-100'}`}>
             <button 
               onClick={resetScroll}
-              className="p-2.5 text-zinc-500 hover:text-white transition-colors"
+              className="p-3 text-zinc-500 hover:text-white transition-colors"
             >
               <RotateCcw size={18} />
             </button>
+            
             <button 
               onClick={handlePlayToggle}
-              className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
+              className="w-12 h-12 bg-white text-black rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-white/10"
             >
-              {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} className="ml-0.5" fill="black" />}
+              {isPlaying ? <Pause size={22} fill="black" /> : <Play size={22} className="ml-0.5" fill="black" />}
             </button>
-            <div className="flex flex-col items-center px-4 border-l border-zinc-800 min-w-[100px]">
-               <div className="flex items-center gap-1.5 mb-0.5">
+
+            <div className="flex flex-col items-center px-5 border-l border-white/5 min-w-[110px]">
+               <div className="flex items-center gap-2 mb-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${stats.status === 'bad' ? 'bg-red-500' : stats.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                  <span className="text-[7px] font-black uppercase tracking-widest text-zinc-500">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">
                     {stats.wpm} WPM
                   </span>
                </div>
-               <span className="text-xs font-mono font-bold text-white leading-none">{stats.time}</span>
+               <span className="text-xs font-mono font-black text-white">{stats.time}</span>
             </div>
           </div>
         </div>
+
+        {/* Sidebar Config (Now on Right, Floating-style) */}
+        {showConfig && (
+          <div className="absolute top-0 right-0 bottom-0 w-full sm:w-72 bg-zinc-950/95 backdrop-blur-2xl border-l border-white/5 p-5 space-y-6 overflow-y-auto scrollbar-hide z-[60] shadow-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50">Ajustes</h3>
+              <button onClick={() => setShowConfig(false)} className="p-1 hover:text-white text-zinc-500 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between group">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                  <Type size={12} className="text-zinc-400" />
+                  Tipografía
+                </label>
+                <span className="text-[10px] font-mono font-bold text-white/40">{fontSize}px</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setFontSize(f => Math.max(f - 4, 24))} className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all text-white"><ChevronDown size={14} className="mx-auto" /></button>
+                <button onClick={() => setFontSize(f => Math.min(f + 4, 200))} className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all text-white"><ChevronUp size={14} className="mx-auto" /></button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[9px] font-black text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                <Gauge size={12} className="text-zinc-400" />
+                Velocidad
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: 'Relax', wpm: 120, icon: <Coffee size={10} /> },
+                  { label: 'Pro', wpm: 145, icon: <Zap size={10} className="text-blue-400" /> },
+                  { label: 'Fast', wpm: 180, icon: <Zap size={10} className="text-amber-400" /> }
+                ].map(style => (
+                  <button
+                    key={style.label}
+                    onClick={() => setTargetWpm(style.wpm)}
+                    className={`flex flex-col items-center justify-center py-2.5 rounded-lg border transition-all ${targetWpm === style.wpm ? 'bg-white border-white scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                  >
+                    <span className={`${targetWpm === style.wpm ? 'text-black' : 'text-zinc-500 opacity-50'} mb-1`}>{style.icon}</span>
+                    <span className={`text-[7px] font-black uppercase tracking-tighter ${targetWpm === style.wpm ? 'text-black' : 'text-zinc-400'}`}>{style.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <input 
+                  type="range" min="60" max="250" step="5" value={targetWpm} 
+                  onChange={(e) => setTargetWpm(parseInt(e.target.value))}
+                  className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                />
+                <div className="flex justify-between text-[8px] font-mono text-zinc-500 font-bold uppercase tracking-widest px-1">
+                  <span>Slow</span>
+                  <span className="text-white">{targetWpm} WPM</span>
+                  <span>Hyper</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block">Foco</label>
+                <input 
+                  type="range" min="40" max="250" step="10" value={indicatorSize} 
+                  onChange={(e) => setIndicatorSize(parseInt(e.target.value))}
+                  className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block">Interlineado</label>
+                <div className="flex gap-1">
+                  {[1.2, 1.6].map(lh => (
+                    <button 
+                      key={lh}
+                      onClick={() => setLineHeight(lh)}
+                      className={`flex-1 py-1.5 rounded-md border text-[8px] font-black ${lineHeight === lh ? 'bg-white text-black' : 'border-white/5 text-zinc-600'}`}
+                    >
+                      {lh}X
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[9px] font-black text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                <Palette size={12} className="text-zinc-400" />
+                Estilo
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['classic', 'high-contrast', 'safe-green'] as Theme[]).map(t => (
+                   <button 
+                    key={t}
+                    onClick={() => setTheme(t)}
+                    className={`h-8 rounded-md border transition-all ${theme === t ? 'border-white ring-2 ring-white/20' : 'border-white/5 hover:border-white/20'}`}
+                    style={{ backgroundColor: t === 'classic' ? '#000' : t === 'high-contrast' ? '#000' : '#050505' }}
+                   >
+                     <div className={`w-full h-full flex items-center justify-center text-[7px] font-black uppercase ${t === 'classic' ? 'text-white' : t === 'high-contrast' ? 'text-yellow-400' : 'text-green-500'}`}>
+                        {t === 'classic' ? 'CLA' : t === 'high-contrast' ? 'HI' : 'GRN'}
+                     </div>
+                   </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-white/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Guía de Lectura</span>
+                <button 
+                  onClick={() => setShowIndicator(!showIndicator)}
+                  className={`w-9 h-4.5 rounded-full relative transition-all ${showIndicator ? 'bg-emerald-500' : 'bg-white/10'}`}
+                >
+                  <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all ${showIndicator ? 'right-0.5 underline' : 'left-0.5'}`} />
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setIsMirrored(!isMirrored)}
+                className={`w-full py-2.5 rounded-lg font-bold text-[9px] flex items-center justify-center gap-2 border transition-all ${
+                  isMirrored ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 border-white/5 hover:border-white/10'
+                }`}
+              >
+                <FlipHorizontal size={14} />
+                MODO ESPEJO {isMirrored ? 'OK' : 'OFF'}
+              </button>
+            </div>
+
+            <div className="pt-4 border-t border-white/5 space-y-2">
+               <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Editor de Guion</label>
+               <textarea 
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="w-full h-40 bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] text-zinc-400 focus:outline-none focus:border-white/20 resize-none leading-relaxed"
+               />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
