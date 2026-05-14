@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Copy, Check, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-type Mode = 'social' | 'grammar' | 'emojis';
+type Mode = 'social' | 'grammar' | 'emojis' | 'cta' | 'hooks';
 type Tone = 'casual' | 'professional' | 'energetic';
 
 export default function SocialFormatter() {
@@ -14,6 +14,12 @@ export default function SocialFormatter() {
   const [mode, setMode] = useState<Mode>('social');
   const [tone, setTone] = useState<Tone>('casual');
   const [noMarkdown, setNoMarkdown] = useState(true);
+
+  const charLimits = {
+    twitter: 280,
+    linkedin: 3000,
+    instagram: 2200
+  };
 
   const processText = async () => {
     if (!input.trim()) return;
@@ -41,6 +47,14 @@ export default function SocialFormatter() {
         }`;
       } else if (mode === 'emojis') {
         prompt = `Toma el siguiente texto y agrega emojis relevantes al final de las frases o palabras clave. No cambies las palabras originales. Solo devuelve el texto con emojis agregados.`;
+      } else if (mode === 'cta') {
+        prompt = `Genera un "Call to Action" (Llamado a la acción) potente y corto basado en el siguiente texto. Debe invitar a comentar, compartir o hacer clic. Genera 3 opciones diferentes separadas por líneas.
+        Mantén un tono ${tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico'}.
+        Devuelve solo las 3 opciones.`;
+      } else if (mode === 'hooks') {
+        prompt = `Genera un "Hook" (Gancho inicial) impactante para redes sociales basado en el siguiente texto. Debe ser algo que detenga el scroll. Genera 3 estilos diferentes: una pregunta intrigante, un dato impactante y un beneficio directo.
+        Mantén un tono ${tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico'}.
+        Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
       const response = await ai.models.generateContent({
@@ -93,8 +107,8 @@ export default function SocialFormatter() {
       </div>
       
       <div className="space-y-4">
-        <div className="flex gap-2 text-xs font-bold">
-          {(['social', 'grammar', 'emojis'] as const).map((m) => (
+        <div className="flex flex-wrap gap-2 text-xs font-bold">
+          {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
             <button
               key={m}
               onClick={() => { setMode(m); setOutput(''); setReport(null); }}
@@ -102,12 +116,15 @@ export default function SocialFormatter() {
                 mode === m ? 'bg-black text-white border-black' : 'bg-gray-50 border-gray-100 text-gray-400 hover:bg-gray-100'
               }`}
             >
-              {m === 'social' ? 'Optimizar' : m === 'grammar' ? 'Gramática' : 'Efecto Emojis'}
+              {m === 'social' ? 'Optimizar' : 
+               m === 'grammar' ? 'Gramática' : 
+               m === 'emojis' ? 'Efecto Emojis' :
+               m === 'cta' ? 'CTA' : 'Hooks'}
             </button>
           ))}
         </div>
 
-        {mode === 'social' && (
+        {(mode === 'social' || mode === 'cta' || mode === 'hooks') && (
           <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wider">
             {(['casual', 'professional', 'energetic'] as const).map((t) => (
               <button
@@ -121,12 +138,26 @@ export default function SocialFormatter() {
           </div>
         )}
 
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe aquí tu mensaje..."
-          className="w-full h-24 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-200 resize-none font-sans"
-        />
+        <div className="relative">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Escribe aquí tu mensaje..."
+            className="w-full h-28 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-200 resize-none font-sans"
+          />
+          <div className="flex gap-3 mt-1.5 ml-1 transition-opacity duration-300">
+            {Object.entries(charLimits).map(([key, limit]) => {
+              const current = input.length;
+              const isOver = current > limit;
+              return (
+                <div key={key} className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-tighter ${isOver ? 'text-red-500' : 'text-gray-400'}`}>
+                  <span className="opacity-70">{key}:</span>
+                  <span>{current}/{limit}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         <button
           onClick={processText}
@@ -134,7 +165,10 @@ export default function SocialFormatter() {
           className="w-full py-3 bg-black text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-30 transition-all shadow-sm"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-          {mode === 'social' ? 'Optimizar para redes' : mode === 'grammar' ? 'Corregir Texto' : 'Agregar Emojis'}
+          {mode === 'social' ? 'Optimizar para redes' : 
+           mode === 'grammar' ? 'Corregir Texto' : 
+           mode === 'emojis' ? 'Agregar Emojis' :
+           mode === 'cta' ? 'Generar CTA' : 'Generar Hooks'}
         </button>
 
         {output && (
