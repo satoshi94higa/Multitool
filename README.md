@@ -1,20 +1,54 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# MultiUtility Hub 🚀
 
-# Run and deploy your AI Studio app
+Una suite de herramientas diarias diseñada para la productividad, con inteligencia artificial integrada.
 
-This contains everything you need to run your app locally.
+## ✨ Características
 
-View your app in AI Studio: https://ai.studio/apps/0ed71728-db1c-42d3-a4f6-11081f044801
+- **Procesador de Texto**: Herramientas rápidas para cambiar mayúsculas, limpiar espacios extra, estadísticas de lectura y descarga en `.txt`. Con autoguardado local.
+- **Calculadora de Porcentajes**: Resuelve incógnitas rápidamente (¿Cuánto es el X% de Y? o ¿Z es qué porcentaje de Y?).
+- **Social Booster IA**: Optimiza tus mensajes para redes sociales usando Google Gemini. 
+  - Modos: Optimizar (con opción de quitar formato Markdown), Corregir Gramática (con reporte detallado) y Agregar Emojis.
+  - Tonos ajustables: Casual, Profesional y Enérgico.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+- **Frontend**: React 19 + Vite
+- **Estilos**: Tailwind CSS
+- **Iconografía**: Lucide React
+- **IA**: Google Generative AI (Gemini 2.0 Flash)
+- **Animaciones**: Motion
 
+## 🚀 Empezando
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Requisitos previos
+
+- Node.js (v18 o superior)
+- Una clave de API de [Google AI Studio](https://aistudio.google.com/)
+
+### Instalación
+
+1. Clona el repositorio:
+   ```bash
+   git clone <tu-repositorio-url>
+   cd multiutility-hub
+   ```
+
+2. Instala las dependencias:
+   ```bash
+   npm install
+   ```
+
+3. Configura las variables de entorno:
+   Crea un archivo `.env` basado en `.env.example` y agrega tu clave de Gemini:
+   ```env
+   GEMINI_API_KEY=tu_clave_aqui
+   ```
+
+4. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+## 📄 Licencia
+
+MIT
