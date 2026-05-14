@@ -93,26 +93,26 @@ export default function ContentBrainstormer() {
   };
 
   return (
-    <div className="space-y-4" id="content-brainstormer">
+    <div className="space-y-6" id="content-brainstormer">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
-            <Brain size={18} />
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+            <Brain size={20} />
           </div>
           <div>
-            <h2 className="text-xs font-bold leading-tight">Brainstormer</h2>
-            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Estrategia Creativa</p>
+            <h2 className="text-sm font-bold">Brainstormer de Contenido</h2>
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Estrategia Creativa</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-1.5 bg-gray-50 p-1 rounded-lg border border-gray-100">
-          <Users size={10} className="ml-1 text-gray-400" />
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((num) => (
+        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
+          <Users size={12} className="ml-1 text-gray-400" />
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
               <button
                 key={num}
                 onClick={() => setPeopleCount(num)}
-                className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black transition-all ${
+                className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
                   peopleCount === num ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-400 hover:text-purple-500 hover:bg-white'
                 }`}
               >
@@ -123,67 +123,67 @@ export default function ContentBrainstormer() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Actividad o tema..."
-          className="w-full h-24 p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs focus:outline-none focus:border-purple-200 resize-none font-sans"
-        />
-        
-        <div className="relative">
-          <div className="absolute left-3 top-2.5 text-gray-300">
-            <MessageSquarePlus size={12} />
-          </div>
-          <input
-            type="text"
-            value={extraPrompt}
-            onChange={(e) => setExtraPrompt(e.target.value)}
-            placeholder="Foco o estilo (ej: humor)..."
-            className="w-full pl-8 pr-3 py-2 bg-white border border-gray-100 rounded-xl text-[10px] focus:outline-none focus:border-purple-100 placeholder:text-gray-300"
+      <div className="space-y-4">
+        <div className="space-y-3">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Actividad o tema a cubrir (puedes incluir enlaces)..."
+            className="w-full h-28 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-purple-200 resize-none font-sans"
           />
-        </div>
+          
+          <div className="relative">
+            <div className="absolute left-3 top-3 text-gray-300">
+              <MessageSquarePlus size={14} />
+            </div>
+            <input
+              type="text"
+              value={extraPrompt}
+              onChange={(e) => setExtraPrompt(e.target.value)}
+              placeholder="Instrucciones extra (ej: foco en humor, estilo cinematográfico...)"
+              className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-100 rounded-xl text-[11px] focus:outline-none focus:border-purple-100 placeholder:text-gray-300"
+            />
+          </div>
 
-        <button
-          onClick={generateIdeas}
-          disabled={loading || !input.trim()}
-          className="w-full py-2.5 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-700 disabled:opacity-30 transition-all shadow-sm"
-        >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {loading ? 'Generando...' : 'Lanzar Lluvia de Ideas'}
-        </button>
+          <button
+            onClick={generateIdeas}
+            disabled={loading || !input.trim()}
+            className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-700 disabled:opacity-30 transition-all shadow-md shadow-purple-100"
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+            {loading ? 'Generando ideas...' : 'Lanzar Lluvia de Ideas'}
+          </button>
+        </div>
       </div>
 
       {ideas && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-400">
+        <div className="space-y-6 animate-in fade-in duration-500">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-              <Zap size={10} className="text-purple-500" />
-              <span>Resultados para {peopleCount} pax</span>
+            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <Zap size={12} className="text-purple-500" />
+              <span>Resultados para {peopleCount} {peopleCount === 1 ? 'persona' : 'personas'}</span>
             </div>
             <button 
               onClick={sendToProcessor}
-              className={`p-1 rounded-md transition-all ${sent ? 'text-green-500 bg-green-50' : 'text-purple-600 hover:bg-purple-50'}`}
+              className="flex items-center gap-1.5 px-2 py-1 hover:bg-purple-50 rounded-md text-[9px] font-bold text-purple-600 transition-colors border border-transparent hover:border-purple-100"
             >
-              {sent ? <Check size={14} /> : <Send size={14} />}
+              {sent ? <Check size={12} className="text-green-500" /> : <Send size={12} />}
+              <span>{sent ? 'Enviado' : 'Enviar a Procesador'}</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            <CategoryCard title="General" icon={<Brain size={12} />} items={ideas.general} color="purple" />
-            <div className="grid grid-cols-2 gap-3">
-              <CategoryCard title="Foto" icon={<Camera size={12} />} items={ideas.photographic} color="blue" />
-              <CategoryCard title="AudioV" icon={<Video size={12} />} items={ideas.audiovisual} color="red" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <CategoryCard title="Period" icon={<Newspaper size={12} />} items={ideas.journalistic} color="indigo" />
-              <CategoryCard title="Wild" icon={<Dice5 size={12} />} items={ideas.wildcard} color="amber" />
+          <div className="grid grid-cols-1 gap-4">
+            <CategoryCard title="Estrategia General" icon={<Brain size={14} />} items={ideas.general} color="purple" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CategoryCard title="Fotografía" icon={<Camera size={14} />} items={ideas.photographic} color="blue" />
+              <CategoryCard title="Audiovisual" icon={<Video size={14} />} items={ideas.audiovisual} color="red" />
+              <CategoryCard title="Periodismo" icon={<Newspaper size={14} />} items={ideas.journalistic} color="indigo" />
+              <CategoryCard title="Wild Card" icon={<Dice5 size={14} />} items={ideas.wildcard} color="amber" />
             </div>
           </div>
         </div>
       )}
     </div>
-
   );
 }
 

@@ -73,99 +73,102 @@ export default function TextProcessor() {
 
   return (
     <div className="flex flex-col h-full" id="text-processor">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Editor de Nota Central</h2>
-        <div className="flex flex-wrap gap-1 transition-opacity">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Procesador de Texto</h2>
+        <div className="flex gap-1.5 transition-opacity">
           <button 
             onClick={capitalize}
-            title="Capitalizar"
-            className="px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[9px] font-black text-gray-400 hover:text-black hover:bg-gray-100 transition-colors uppercase"
+            title="Primera letra mayúscula"
+            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
           >
             Aa
           </button>
           <button 
             onClick={cleanSpaces}
-            title="Llimpiar espacios"
-            className="px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[9px] font-black text-gray-400 hover:text-black hover:bg-gray-100 transition-colors uppercase"
+            title="Limpiar espacios extra"
+            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
           >
             Fix
           </button>
-          <div className="flex bg-gray-50 border border-gray-100 rounded p-0.5">
-            <button 
-              onClick={toUpperCase}
-              className="p-1 hover:bg-white rounded transition-all text-gray-400 hover:text-black"
-            >
-              <ArrowUp size={12} />
-            </button>
-            <button 
-              onClick={toLowerCase}
-              className="p-1 hover:bg-white rounded transition-all text-gray-400 hover:text-black"
-            >
-              <ArrowDown size={12} />
-            </button>
-          </div>
+          <button 
+            onClick={downloadTxt}
+            title="Descargar como .txt"
+            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            TXT
+          </button>
+          <button 
+            onClick={toUpperCase}
+            title="Mayúsculas"
+            className="p-1.5 bg-gray-50 border rounded hover:bg-gray-100 transition-colors"
+          >
+            <ArrowUp size={14} className="text-gray-600" />
+          </button>
+          <button 
+            onClick={toLowerCase}
+            title="Minúsculas"
+            className="p-1.5 bg-gray-50 border rounded hover:bg-gray-100 transition-colors"
+          >
+            <ArrowDown size={14} className="text-gray-600" />
+          </button>
           <button 
             onClick={() => setIsPreview(!isPreview)}
-            className={`flex items-center gap-1.5 px-3 py-1 border rounded text-[9px] font-black uppercase transition-all shadow-sm ${
-              isPreview ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-100 text-gray-400 hover:text-black hover:border-black'
+            title={isPreview ? "Editar texto" : "Vista previa formateada"}
+            className={`flex items-center gap-1 px-2 py-1 border rounded text-[10px] font-bold uppercase transition-all ${
+              isPreview ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-400 opacity-60'
             }`}
           >
-            {isPreview ? <Edit3 size={11} /> : <Eye size={11} />}
-            <span>{isPreview ? 'Editar' : 'Vista'}</span>
+            {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
+            <span>{isPreview ? 'Editor' : 'Vista'}</span>
           </button>
           <button 
             onClick={clearText}
-            className="p-1.5 bg-red-50 text-red-400 border border-red-50 rounded hover:bg-red-100 hover:text-red-600 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold uppercase hover:bg-red-100 transition-all shadow-sm"
           >
             <Trash2 size={12} />
+            <span>Borrar</span>
           </button>
+          <div className="w-px h-6 bg-gray-100 mx-1" />
           <button 
             onClick={copyToClipboard}
-            className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 text-white rounded text-[9px] font-black uppercase hover:bg-black transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded text-[10px] font-bold uppercase hover:bg-gray-800 transition-all shadow-sm"
           >
-            {copied ? <Check size={11} /> : <Copy size={11} />}
-            <span>{copied ? 'Listo' : 'Copiar'}</span>
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? 'Listo' : 'Copiar'}
           </button>
         </div>
       </div>
       
-      <div className="flex-1 min-h-[300px] mb-4 relative">
-        {isPreview ? (
-          <div className="absolute inset-0 overflow-auto p-4 bg-gray-50/20 rounded-xl border border-gray-50 markdown-body prose prose-sm max-w-none scrollbar-hide">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {text}
-            </ReactMarkdown>
-          </div>
-        ) : (
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Empieza a escribir..."
-            spellCheck="false"
-            className="w-full h-full resize-none border-none outline-none text-sm text-gray-700 placeholder-gray-200 leading-relaxed font-sans scrollbar-hide"
-          />
-        )}
-      </div>
+      {isPreview ? (
+        <div className="w-full h-64 md:h-80 lg:h-94 overflow-auto p-4 bg-gray-50/30 rounded-xl border border-gray-100 markdown-body prose prose-sm max-w-none mb-4">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {text}
+          </ReactMarkdown>
+        </div>
+      ) : (
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Empieza a escribir aquí..."
+          spellCheck="false"
+          className="w-full h-64 md:h-80 lg:h-96 resize-none border-none outline-none text-base text-gray-700 placeholder-gray-200 leading-relaxed font-sans mb-4"
+        />
+      )}
 
-      <div className="flex justify-between items-center pt-3 border-t border-gray-50 text-[9px] font-black uppercase tracking-widest text-gray-400">
+      <div className="flex justify-between items-center pt-4 border-t border-gray-50 text-[10px] font-bold uppercase tracking-tighter text-gray-400">
         <div className="flex gap-4 items-center">
-          <div className="flex gap-3">
-            <span>W: <span className="text-gray-900 font-bold">{wordCount}</span></span>
-            <span>C: <span className="text-gray-900 font-bold">{charCount}</span></span>
-          </div>
-          <div className="flex items-center gap-1.5 border-l border-gray-100 pl-4 h-3">
+          <span>Palabras: <span className="text-gray-900">{wordCount}</span></span>
+          <span>Caracteres: <span className="text-gray-900">{charCount}</span></span>
+          <div className="flex items-center gap-1 border-l pl-4">
             <Clock size={10} />
-            <span>~{readingTime} min</span>
+            <span>Lectura: <span className="text-gray-900">~{readingTime} min</span></span>
           </div>
         </div>
-        <button 
-          onClick={downloadTxt}
-          className="text-gray-300 hover:text-black transition-colors"
-        >
-          DESCARGAR .TXT
-        </button>
+        <div className="italic opacity-50 tracking-widest flex items-center gap-1">
+          <div className="w-1 h-1 bg-green-500 rounded-full" />
+          Auto-saved
+        </div>
       </div>
     </div>
-
   );
 }
