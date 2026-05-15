@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
@@ -43,8 +42,6 @@ export default function ScreenwriterIA() {
   const [copied, setCopied] = useState(false);
   const [copiedTable, setCopiedTable] = useState(false);
   const [sent, setSent] = useState(false);
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
   const generateScript = async () => {
     if (!input.trim()) return;
@@ -117,15 +114,15 @@ export default function ScreenwriterIA() {
              "keywords": ["tag1", "tag2", ...]
            }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
+      const response = await fetch("/api/gemini/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      const data: ScriptData = JSON.parse(response.text);
+      if (!response.ok) throw new Error("Processing failed");
+      const dataResponse = await response.json();
+      const data: ScriptData = JSON.parse(dataResponse.text.replace(/```json|```/g, '').trim());
       setScript(data.full_script);
       setRundown(data.rundown || []);
       setThumbnail(data.thumbnail || null);

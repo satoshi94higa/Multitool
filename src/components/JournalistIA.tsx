@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Newspaper, Quote, Heading1, Send, Check, Copy, Loader2, Zap, Info, FileText } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 interface JournalismOutput {
   news_story: string;
@@ -19,8 +18,6 @@ export default function JournalistIA() {
   const [data, setData] = useState<JournalismOutput | null>(null);
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   const processNews = async () => {
     if (!input.trim()) return;
@@ -49,13 +46,15 @@ export default function JournalistIA() {
         "angles": ["Ángulo humano...", "Ángulo económico..."]
       }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
+      const response = await fetch("/api/gemini/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      const result = JSON.parse(response.text);
+      if (!response.ok) throw new Error("Processing failed");
+      const data = await response.json();
+      const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setData(result);
     } catch (error) {
       console.error('Error processing news:', error);

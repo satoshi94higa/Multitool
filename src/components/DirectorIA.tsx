@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Camera, Clapperboard, Youtube, Search, Loader2, Play, Check, Copy, Send, ExternalLink, Lightbulb, ListChecks } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 interface Reference {
   platform: 'youtube' | 'web';
@@ -30,8 +29,6 @@ export default function DirectorIA() {
   const [data, setData] = useState<DirectorData | null>(null);
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
   const analyzeIdea = async () => {
     if (!idea.trim()) return;
@@ -64,15 +61,15 @@ export default function DirectorIA() {
           "search_keywords": ["...", "...", ...]
         }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
+      const response = await fetch("/api/gemini/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      const result: DirectorData = JSON.parse(response.text);
+      if (!response.ok) throw new Error("Processing failed");
+      const data = await response.json();
+      const result: DirectorData = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setData(result);
     } catch (error) {
       console.error('Error in Director IA:', error);

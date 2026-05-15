@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 interface BrainstormOutput {
   general: string[];
@@ -17,8 +16,6 @@ export default function ContentBrainstormer() {
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState<BrainstormOutput | null>(null);
   const [sent, setSent] = useState(false);
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   const generateIdeas = async () => {
     if (!input.trim()) return;
@@ -48,13 +45,15 @@ export default function ContentBrainstormer() {
         "wildcard": ["idea 1", "idea 2"]
       }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
+      const response = await fetch("/api/gemini/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      const result = JSON.parse(response.text);
+      if (!response.ok) throw new Error("Processing failed");
+      const data = await response.json();
+      const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setIdeas(result);
     } catch (error) {
       console.error('Error generating ideas:', error);

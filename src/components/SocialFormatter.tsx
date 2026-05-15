@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Sparkles, Copy, Check, Loader2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 
 type Mode = 'social' | 'grammar' | 'emojis' | 'cta' | 'hooks';
 type Tone = 'casual' | 'professional' | 'energetic';
@@ -28,41 +27,15 @@ export default function SocialFormatter() {
     setOutput('');
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      let prompt = '';
-
-      if (mode === 'social') {
-        prompt = `Actúa como un experto en redes sociales. Toma el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
-        Agrega emojis relevantes. Mantén un tono ${tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico'}.
-        ${noMarkdown ? 'IMPORTANTE: No uses negritas, cursivas o caracteres de formato como asteriscos (*) o guiones bajos (_).' : ''}
-        Preserva el mensaje original pero hazlo más legible.
-        Solo devuelve el texto final formateado.`;
-      } else if (mode === 'grammar') {
-        prompt = `Corrige la gramática y ortografía del siguiente texto. 
-        IMPORTANTE: Devuelve la respuesta estrictamente en este formato JSON:
-        {
-          "corrected": "el texto completo corregido",
-          "changes": ["lista breve de cambios clave realizados"],
-          "tips": ["recomendaciones para mejorar la escritura a futuro"]
-        }`;
-      } else if (mode === 'emojis') {
-        prompt = `Toma el siguiente texto y agrega emojis relevantes al final de las frases o palabras clave. No cambies las palabras originales. Solo devuelve el texto con emojis agregados.`;
-      } else if (mode === 'cta') {
-        prompt = `Genera un "Call to Action" (Llamado a la acción) potente y corto basado en el siguiente texto. Debe invitar a comentar, compartir o hacer clic. Genera 3 opciones diferentes separadas por líneas.
-        Mantén un tono ${tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico'}.
-        Devuelve solo las 3 opciones.`;
-      } else if (mode === 'hooks') {
-        prompt = `Genera un "Hook" (Gancho inicial) impactante para redes sociales basado en el siguiente texto. Debe ser algo que detenga el scroll. Genera 3 estilos diferentes: una pregunta intrigante, un dato impactante y un beneficio directo.
-        Mantén un tono ${tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico'}.
-        Devuelve solo las 3 opciones separadas por líneas.`;
-      }
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `${prompt}\n\nTexto: "${input}"`,
+      const response = await fetch("/api/gemini/social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, mode, tone, noMarkdown }),
       });
 
-      const responseText = response.text || '';
+      if (!response.ok) throw new Error("Processing failed");
+      const data = await response.json();
+      const responseText = data.text || '';
 
       if (mode === 'grammar') {
         try {
