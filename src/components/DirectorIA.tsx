@@ -112,65 +112,71 @@ export default function DirectorIA() {
   };
 
   return (
-    <div className="space-y-6" id="director-ia">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-          <Clapperboard size={20} />
+    <div className="space-y-12 bg-transparent pb-4" id="director-ia">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo del Director</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">AI.VISUAL_STRATEGY_ENGINE</span>
         </div>
-        <div>
-          <h2 className="text-sm font-bold">Director IA</h2>
-          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Estrategia & Referencias</p>
+        <div className="p-3 bg-black text-white rounded-none shadow-2xl">
+          <Clapperboard size={20} />
         </div>
       </div>
 
-      <div className="space-y-3">
-        <textarea
-          value={idea}
-          onChange={(e) => setIdea(e.target.value)}
-          placeholder="Plantea tu idea de video o sesión de fotos aquí..."
-          className="w-full h-24 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-indigo-200 resize-none"
-        />
-        <button
-          onClick={analyzeIdea}
-          disabled={loading || !idea.trim()}
-          className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-indigo-700 disabled:opacity-30 transition-all shadow-md shadow-indigo-100"
-        >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-          {loading ? 'Analizando producción...' : 'Planificar Ejecución Técnica'}
-        </button>
+      <div className="space-y-6">
+        <div className="space-y-6">
+          <textarea
+            value={idea}
+            onChange={(e) => setIdea(e.target.value)}
+            placeholder="Inicializar concepto visual o requisitos de rodaje..."
+            className="w-full h-40 p-8 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black resize-none font-sans text-black placeholder-zinc-300 scrollbar-hide shadow-sm"
+          />
+          <button
+            onClick={analyzeIdea}
+            disabled={loading || !idea.trim()}
+            className="w-full py-6 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-[0.98]"
+          >
+            {loading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+            {loading ? 'Analizando Metadatos de Producción...' : 'PLANIFICAR_EJECUCIÓN_TÉCNICA'}
+          </button>
+        </div>
       </div>
 
       {data && (
-        <div className="space-y-6 pt-4 border-t border-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 space-y-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
-                <Lightbulb size={12} />
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="bg-white rounded-none p-10 border-2 border-black space-y-8 shadow-2xl group">
+              <div className="flex items-center gap-4 text-[11px] font-black text-black uppercase tracking-[0.3em]">
+                <div className="p-4 bg-zinc-50 border border-zinc-100 shadow-sm group-hover:bg-black group-hover:text-white transition-colors">
+                  <Lightbulb size={18} />
+                </div>
                 <span>Propuesta Estética</span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-8">
                 <div>
-                  <span className="block text-[8px] font-bold text-indigo-400 uppercase">Estilo Visual</span>
-                  <p className="text-xs text-indigo-900 font-medium">{data.visual_style}</p>
+                  <span className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 italic">Vector de Estilo Visual</span>
+                  <p className="text-xl font-black text-black leading-tight uppercase transition-transform group-hover:translate-x-2">{data.visual_style}</p>
                 </div>
-                <div>
-                  <span className="block text-[8px] font-bold text-indigo-400 uppercase">Iluminación</span>
-                  <p className="text-xs text-indigo-900 leading-tight">{data.lighting_mood}</p>
+                <div className="pt-8 border-t-2 border-zinc-50">
+                  <span className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 italic">Atmósfera de Iluminación</span>
+                  <p className="text-[13px] text-zinc-600 leading-relaxed font-medium uppercase tracking-tight">{data.lighting_mood}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-amber-50/50 rounded-xl p-4 border border-amber-100 space-y-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest">
-                <Camera size={12} />
-                <span>Técnica de Cámara</span>
+            <div className="bg-white rounded-none p-10 border-2 border-black space-y-8 shadow-2xl group">
+              <div className="flex items-center gap-4 text-[11px] font-black text-black uppercase tracking-[0.3em]">
+                <div className="p-4 bg-zinc-50 border border-zinc-100 shadow-sm group-hover:bg-black group-hover:text-white transition-colors">
+                  <Camera size={18} />
+                </div>
+                <span>Dinámica de Cámara</span>
               </div>
-              <p className="text-xs text-amber-900 leading-relaxed font-medium">{data.camera_strategy}</p>
-              <div className="pt-2 border-t border-amber-100/50">
-                <span className="block text-[8px] font-bold text-amber-400 uppercase mb-1">Equipo Recomendado</span>
-                <div className="flex flex-wrap gap-1">
+              <p className="text-xl font-black text-black leading-tight uppercase transition-transform group-hover:translate-x-2">{data.camera_strategy}</p>
+              <div className="pt-8 border-t-2 border-zinc-50">
+                <span className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 italic">Carga Técnica</span>
+                <div className="flex flex-wrap gap-3">
                   {data.equipment_suggestions.map((eq, i) => (
-                    <span key={i} className="px-1.5 py-0.5 bg-white border border-amber-100 rounded text-[9px] text-amber-700">
+                    <span key={i} className="px-5 py-2 bg-zinc-50 border border-zinc-100 rounded-none text-[11px] font-mono font-black text-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors">
                       {eq}
                     </span>
                   ))}
@@ -179,52 +185,59 @@ export default function DirectorIA() {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                <Youtube size={12} />
-                <span>Búsqueda de Referencias</span>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between border-b-2 border-black pb-8">
+              <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.6em]">
+                <Youtube size={18} className="text-black" />
+                <span>Referencias de Inteligencia</span>
               </div>
-              <div className="flex gap-2">
-                <button onClick={sendToProcessor} className="p-1.5 hover:bg-gray-100 rounded-md text-indigo-500 transition-all">
-                  {sent ? <Check size={14} className="text-green-500" /> : <Send size={14} />}
+              <div className="flex gap-4">
+                <button 
+                  onClick={sendToProcessor} 
+                  className="p-4 bg-black text-white hover:bg-zinc-800 rounded-none transition-all active:scale-95 shadow-2xl border-2 border-black"
+                >
+                  {sent ? <Check size={20} /> : <Send size={20} />}
                 </button>
-                <button onClick={copyToClipboard} className="p-1.5 hover:bg-gray-100 rounded-md text-gray-400 transition-all">
-                  {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                <button 
+                  onClick={copyToClipboard} 
+                  className="p-4 bg-white hover:bg-zinc-50 border-2 border-black rounded-none text-black transition-all active:scale-95 shadow-xl"
+                >
+                  {copied ? <Check size={20} /> : <Copy size={20} />}
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {data.search_keywords.map((kw, i) => (
                 <a
                   key={i}
                   href={`https://www.youtube.com/results?search_query=${encodeURIComponent(kw)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all group"
+                  className="flex items-center justify-between p-6 bg-zinc-50 border-2 border-zinc-100 rounded-none hover:border-black hover:shadow-2xl transition-all group"
                 >
-                  <span className="text-[10px] font-bold text-gray-600 truncate mr-2">{kw}</span>
-                  <ExternalLink size={12} className="text-gray-300 group-hover:text-indigo-500" />
+                  <span className="text-[11px] font-black text-zinc-400 uppercase tracking-widest truncate mr-6 group-hover:text-black transition-colors italic">{kw}</span>
+                  <ExternalLink size={18} className="text-zinc-300 group-hover:text-black transition-colors flex-none" />
                 </a>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">
-              <ListChecks size={12} />
-              <span>Cobertura Esencial (Shotlist sugerido)</span>
+          <div className="space-y-10">
+            <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] px-1 italic">
+              <ListChecks size={20} className="text-black" />
+              <span>Lista de Tomas Operativa</span>
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-6">
               {data.essential_coverage.map((item, idx) => (
-                <div key={idx} className="flex gap-3 p-3 bg-white border border-gray-50 rounded-xl hover:border-indigo-100 transition-all">
-                  <div className="flex-none w-10 flex flex-col items-center justify-center border-r border-gray-50 pr-2">
-                    <span className="text-[8px] font-black text-indigo-300 uppercase">Tipo</span>
-                    <span className="text-[10px] font-bold text-indigo-600">{item.type}</span>
+                <div key={idx} className="flex gap-10 p-8 bg-white border-2 border-zinc-100 hover:border-black transition-all group shadow-sm hover:shadow-2xl relative overflow-hidden">
+                   <div className="absolute left-0 top-0 w-1.5 h-full bg-black scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-top" />
+                  <div className="flex-none w-20 flex flex-col items-center justify-center border-r-2 border-zinc-50 pr-8">
+                    <span className="text-[9px] font-black text-zinc-400 uppercase mb-2 tracking-widest">Tipo</span>
+                    <span className="text-[12px] font-mono font-black text-black group-hover:italic transition-all uppercase tracking-tighter">{item.type}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-gray-900 truncate">{item.description}</p>
-                    <p className="text-[10px] text-gray-500 italic truncate">{item.purpose}</p>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <p className="text-base font-black text-black truncate mb-2 uppercase tracking-wide italic">{item.description}</p>
+                    <p className="text-[11px] text-zinc-400 italic truncate font-mono uppercase tracking-[0.2em] font-bold underline decoration-zinc-100 underline-offset-4">{item.purpose}</p>
                   </div>
                 </div>
               ))}

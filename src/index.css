@@ -1,32 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-brand: #000000;
+  --color-surface-bg: #ffffff;
+  --color-surface-card: #ffffff;
+  --color-surface-border: #e5e7eb;
 }
 
 @layer base {
+  body {
+    @apply bg-[var(--color-surface-bg)] text-zinc-950;
+  }
+  
   .markdown-body table {
     @apply w-full border-collapse mb-4 text-sm;
   }
   .markdown-body th {
-    @apply bg-gray-50 border border-gray-200 px-3 py-2 text-left font-bold;
+    @apply bg-zinc-50 border border-zinc-200 px-3 py-2 text-left font-bold text-zinc-950;
   }
   .markdown-body td {
-    @apply border border-gray-100 px-3 py-2 align-top text-gray-600;
+    @apply border border-zinc-200 px-3 py-2 align-top text-zinc-700;
   }
   .markdown-body p {
     @apply mb-4 leading-relaxed;
   }
   .markdown-body h1 {
-    @apply text-2xl font-bold mb-4 mt-6;
+    @apply text-2xl font-black mb-4 mt-6 text-zinc-950 tracking-tight;
   }
   .markdown-body h2 {
-    @apply text-xl font-bold mb-3 mt-5;
+    @apply text-xl font-bold mb-3 mt-5 text-zinc-900 tracking-tight;
   }
   .markdown-body blockquote {
-    @apply border-l-4 border-gray-200 pl-4 italic my-4 text-gray-500;
+    @apply border-l-4 border-zinc-200 pl-4 italic my-4 text-zinc-500;
   }
 }
 
@@ -34,7 +42,7 @@
 @import "react-grid-layout/css/styles.css";
 
 .react-grid-item.react-grid-placeholder {
-  @apply !bg-blue-50 !border-2 !border-dashed !border-blue-200 !rounded-xl;
+  @apply !bg-zinc-100 !border-2 !border-dashed !border-zinc-300 !rounded-2xl;
   opacity: 0.5 !important;
 }
 
@@ -47,5 +55,18 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom UI elements */
+.glass-panel {
+  @apply bg-white border border-zinc-200 shadow-sm;
+}
+
+.technical-border {
+  @apply border border-zinc-100;
+}
+
+.mono-label {
+  @apply font-mono text-[10px] uppercase tracking-widest text-zinc-400;
 }
 

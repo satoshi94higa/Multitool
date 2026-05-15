@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Check, Trash2, ArrowUp, ArrowDown, Clock, Eye, Edit3 } from 'lucide-react';
+import { Copy, Check, Trash2, ArrowUp, ArrowDown, Clock, Eye, SquarePen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -72,101 +72,123 @@ export default function TextProcessor() {
   };
 
   return (
-    <div className="flex flex-col h-full" id="text-processor">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Procesador de Texto</h2>
-        <div className="flex gap-1.5 transition-opacity">
-          <button 
-            onClick={capitalize}
-            title="Primera letra mayúscula"
-            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            Aa
-          </button>
-          <button 
-            onClick={cleanSpaces}
-            title="Limpiar espacios extra"
-            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            Fix
-          </button>
-          <button 
-            onClick={downloadTxt}
-            title="Descargar como .txt"
-            className="px-2 py-1 bg-gray-50 border rounded text-[10px] font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            TXT
-          </button>
-          <button 
-            onClick={toUpperCase}
-            title="Mayúsculas"
-            className="p-1.5 bg-gray-50 border rounded hover:bg-gray-100 transition-colors"
-          >
-            <ArrowUp size={14} className="text-gray-600" />
-          </button>
-          <button 
-            onClick={toLowerCase}
-            title="Minúsculas"
-            className="p-1.5 bg-gray-50 border rounded hover:bg-gray-100 transition-colors"
-          >
-            <ArrowDown size={14} className="text-gray-600" />
-          </button>
+    <div className="flex flex-col h-full bg-transparent" id="text-processor">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Procesador de Texto</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">DATOS.PROCESANDO</span>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 transition-opacity">
+          <div className="flex bg-zinc-50 p-1 rounded-none border border-zinc-200">
+            <button 
+              onClick={capitalize}
+              title="Mayúscula primera letra"
+              className="px-2 py-1 text-[9px] font-black text-zinc-500 hover:text-black transition-colors"
+            >
+              Aa
+            </button>
+            <div className="w-px h-3 bg-zinc-200 mx-1 self-center" />
+            <button 
+              onClick={cleanSpaces}
+              title="Limpiar espacios extra"
+              className="px-2 py-1 text-[9px] font-black text-zinc-500 hover:text-black transition-colors"
+            >
+              FIX
+            </button>
+            <div className="w-px h-3 bg-zinc-200 mx-1 self-center" />
+            <button 
+              onClick={downloadTxt}
+              title="Descargar como .txt"
+              className="px-2 py-1 text-[9px] font-black text-zinc-500 hover:text-black transition-colors"
+            >
+              TXT
+            </button>
+          </div>
+
+          <div className="flex bg-zinc-50 p-1 rounded-none border border-zinc-200">
+             <button 
+              onClick={toUpperCase}
+              title="MAYÚSCULAS"
+              className="p-1.5 text-zinc-500 hover:text-black transition-colors"
+            >
+              <ArrowUp size={12} />
+            </button>
+            <button 
+              onClick={toLowerCase}
+              title="minúsculas"
+              className="p-1.5 text-zinc-500 hover:text-black transition-colors"
+            >
+              <ArrowDown size={12} />
+            </button>
+          </div>
+
           <button 
             onClick={() => setIsPreview(!isPreview)}
-            title={isPreview ? "Editar texto" : "Vista previa formateada"}
-            className={`flex items-center gap-1 px-2 py-1 border rounded text-[10px] font-bold uppercase transition-all ${
-              isPreview ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-400 opacity-60'
+            title={isPreview ? "Editar texto" : "Vista previa con formato"}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-none text-[9px] font-black uppercase transition-all border-2 ${
+              isPreview ? 'bg-black text-white border-black' : 'bg-white border-zinc-200 text-zinc-400 hover:text-black hover:border-black'
             }`}
           >
-            {isPreview ? <Edit3 size={12} /> : <Eye size={12} />}
-            <span>{isPreview ? 'Editor' : 'Vista'}</span>
+            {isPreview ? <SquarePen size={12} /> : <Eye size={12} />}
+            <span>{isPreview ? 'Código' : 'Vista'}</span>
           </button>
+
           <button 
             onClick={clearText}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold uppercase hover:bg-red-100 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-zinc-300 border border-zinc-100 rounded-none text-[9px] font-black uppercase hover:bg-black hover:text-white hover:border-black transition-all"
           >
             <Trash2 size={12} />
-            <span>Borrar</span>
+            <span>LIMPIAR</span>
           </button>
-          <div className="w-px h-6 bg-gray-100 mx-1" />
+
           <button 
             onClick={copyToClipboard}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded text-[10px] font-bold uppercase hover:bg-gray-800 transition-all shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-black text-white rounded-none text-[9px] font-black uppercase hover:bg-zinc-800 transition-all shadow-xl"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? 'Listo' : 'Copiar'}
+            <span>{copied ? 'Copiado' : 'Copiar'}</span>
           </button>
         </div>
       </div>
       
       {isPreview ? (
-        <div className="w-full h-64 md:h-80 lg:h-94 overflow-auto p-4 bg-gray-50/30 rounded-xl border border-gray-100 markdown-body prose prose-sm max-w-none mb-4">
+        <div className="flex-1 min-h-[300px] overflow-auto p-8 bg-zinc-50 border-2 border-zinc-100 rounded-none markdown-body prose prose-sm max-w-none mb-6 scrollbar-hide text-zinc-800">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {text}
           </ReactMarkdown>
         </div>
       ) : (
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Empieza a escribir aquí..."
-          spellCheck="false"
-          className="w-full h-64 md:h-80 lg:h-96 resize-none border-none outline-none text-base text-gray-700 placeholder-gray-200 leading-relaxed font-sans mb-4"
-        />
+        <div className="flex-1 flex flex-col min-h-[300px] bg-zinc-50 border-2 border-black/5 rounded-none p-6 mb-6 focus-within:border-black transition-colors">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Escribe o pega el texto aquí..."
+            spellCheck="false"
+            className="flex-1 w-full resize-none border-none outline-none text-black placeholder-zinc-300 leading-relaxed font-mono text-sm bg-transparent scrollbar-hide"
+          />
+        </div>
       )}
 
-      <div className="flex justify-between items-center pt-4 border-t border-gray-50 text-[10px] font-bold uppercase tracking-tighter text-gray-400">
-        <div className="flex gap-4 items-center">
-          <span>Palabras: <span className="text-gray-900">{wordCount}</span></span>
-          <span>Caracteres: <span className="text-gray-900">{charCount}</span></span>
-          <div className="flex items-center gap-1 border-l pl-4">
-            <Clock size={10} />
-            <span>Lectura: <span className="text-gray-900">~{readingTime} min</span></span>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 pt-8 border-t border-zinc-100 text-[9px] font-black uppercase tracking-widest text-zinc-400">
+        <div className="flex flex-wrap gap-6 items-center">
+          <div className="flex items-center gap-2">
+            <span className="opacity-60">Palabras:</span>
+            <span className="text-zinc-600 font-mono italic">{wordCount}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="opacity-60">Caracteres:</span>
+            <span className="text-zinc-600 font-mono italic">{charCount}</span>
+          </div>
+          <div className="flex items-center gap-2 border-l border-zinc-100 pl-6">
+            <Clock size={10} className="opacity-60" />
+            <span className="opacity-60">Lectura:</span>
+            <span className="text-zinc-600 font-mono italic">{readingTime}m</span>
           </div>
         </div>
-        <div className="italic opacity-50 tracking-widest flex items-center gap-1">
-          <div className="w-1 h-1 bg-green-500 rounded-full" />
-          Auto-saved
+        <div className="flex items-center gap-2 mt-4 sm:mt-0 opacity-40">
+           <div className="w-1 h-3 bg-black" />
+           <span className="tracking-[0.3em] font-mono">SISTEMA.BUFFER_ACTIVO</span>
         </div>
       </div>
     </div>

@@ -53,144 +53,144 @@ export default function QRGenerator() {
   const effectiveBgColor = isTransparent ? 'transparent' : bgColor;
 
   return (
-    <div className="space-y-6" id="qr-generator">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-          <QrCode size={20} />
+    <div className="space-y-12 bg-transparent pb-4" id="qr-generator">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Matriz</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">SISTEMA.CODIFICADOR_QR</span>
         </div>
-        <div>
-          <h2 className="text-sm font-bold">Generador de QR</h2>
-          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Dinámico & Personalizable</p>
+        <div className="p-3 bg-black text-white rounded-none shadow-2xl">
+          <QrCode size={20} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-              <LinkIcon size={12} />
-              URL o Contenido
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="space-y-10">
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.3em] flex items-center gap-3 ml-1">
+              <LinkIcon size={14} className="text-black" />
+              Enlace de Origen (URL)
             </label>
             <div className="relative group">
               <input
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://ejemplo.com"
-                className="w-full pl-3 pr-10 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-emerald-200"
+                placeholder="https://dominio.destino"
+                className="w-full pl-6 pr-14 py-5 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black transition-all font-mono text-black placeholder-zinc-300 shadow-sm"
               />
               <button 
                 onClick={copyUrl}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-emerald-500 transition-colors"
-                title="Copiar link"
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black transition-colors active:scale-90"
+                title="Copiar Origen"
               >
-                {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                {copied ? <Check size={20} /> : <Copy size={20} />}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                <Palette size={12} />
-                Color del código
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.3em] flex items-center gap-3 ml-1">
+                <Palette size={14} className="text-black" />
+                Primer Plano
               </label>
-              <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-100 rounded-xl">
+              <div className="flex items-center gap-5 p-4 bg-zinc-50 border-2 border-black/5 rounded-none group hover:border-black transition-all shadow-sm">
                 <input
                   type="color"
                   value={fgColor}
                   onChange={(e) => setFgColor(e.target.value)}
-                  className="w-8 h-8 rounded border-0 bg-transparent cursor-pointer"
+                  className="w-12 h-12 rounded-none border-0 bg-transparent cursor-pointer ring-2 ring-black/5"
                 />
-                <span className="text-[10px] font-mono text-gray-500 font-bold">{fgColor.toUpperCase()}</span>
+                <span className="text-[12px] font-mono text-black font-black uppercase tracking-widest">{fgColor}</span>
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-4">
               <div className="flex justify-between items-center pr-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Box size={12} />
+                <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.3em] flex items-center gap-3 ml-1">
+                  <Box size={14} className="text-black" />
                   Fondo
                 </label>
                 <button 
                   onClick={() => setIsTransparent(!isTransparent)}
-                  className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase transition-all ${
-                    isTransparent ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-gray-200 text-gray-400'
+                  className={`text-[9px] font-black px-3 py-1 rounded-none border-2 uppercase transition-all ${
+                    isTransparent ? 'bg-black border-black text-white' : 'bg-transparent border-zinc-200 text-zinc-400 hover:text-black hover:border-black'
                   }`}
                 >
-                  {isTransparent ? 'Transparente ON' : 'Transparente OFF'}
+                  {isTransparent ? 'Alfa_ON' : 'Alfa_OFF'}
                 </button>
               </div>
               {!isTransparent ? (
-                <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-100 rounded-xl">
+                <div className="flex items-center gap-5 p-4 bg-zinc-50 border-2 border-black/5 rounded-none group hover:border-black transition-all shadow-sm">
                   <input
                     type="color"
                     value={bgColor}
                     onChange={(e) => setBgColor(e.target.value)}
-                    className="w-8 h-8 rounded border-0 bg-transparent cursor-pointer"
+                    className="w-12 h-12 rounded-none border-0 bg-transparent cursor-pointer ring-2 ring-black/5"
                   />
-                  <span className="text-[10px] font-mono text-gray-500 font-bold">{bgColor.toUpperCase()}</span>
+                  <span className="text-[12px] font-mono text-black font-black uppercase tracking-widest">{bgColor}</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center p-2 h-[42px] bg-emerald-50/50 border border-emerald-100 border-dashed rounded-xl">
-                  <span className="text-[10px] font-bold text-emerald-600 uppercase">Sin fondo activo</span>
+                <div className="flex items-center justify-center p-4 h-[84px] bg-zinc-50 border-2 border-zinc-200 border-dashed rounded-none">
+                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">Transparencia.Vector</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-              <Settings2 size={12} />
-              Ajustes de Lectura
+          <div className="space-y-6 p-8 bg-zinc-50 rounded-none border-2 border-zinc-100">
+            <div className="flex items-center gap-3 text-[10px] font-black text-zinc-950 uppercase tracking-[0.3em] mb-4">
+              <Settings2 size={16} className="text-black" />
+              Parámetros de Señal
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <span className="text-[9px] font-bold text-gray-500 uppercase">Redundancia</span>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] italic">Vector de Corrección</span>
                 <select 
                   value={level}
                   onChange={(e) => setLevel(e.target.value as any)}
-                  className="w-full bg-white border border-gray-100 rounded p-1.5 text-[10px] focus:outline-none"
+                  className="w-full bg-white border-2 border-zinc-100 rounded-none py-3 px-4 text-[11px] font-black text-black focus:outline-none focus:border-black transition-all appearance-none cursor-pointer uppercase tracking-widest"
                 >
-                  <option value="L">Mínima (L)</option>
-                  <option value="M">Media (M)</option>
-                  <option value="Q">Alta (Q) - Recomendada</option>
-                  <option value="H">Máxima (H)</option>
+                  <option value="L">Mínimo (L)</option>
+                  <option value="M">Medio (M)</option>
+                  <option value="Q">Alto (Q)</option>
+                  <option value="H">Ultra (H)</option>
                 </select>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4 pt-6">
                 <input
                   type="checkbox"
                   id="margin"
                   checked={includeMargin}
                   onChange={(e) => setIncludeMargin(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                  className="w-6 h-6 accent-black bg-white border-2 border-zinc-200 rounded-none cursor-pointer"
                 />
-                <label htmlFor="margin" className="text-[10px] font-bold text-gray-500 uppercase cursor-pointer select-none">
-                  Incluir Margen Blanco
+                <label htmlFor="margin" className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.2em] cursor-pointer select-none">
+                  Margen de Seguridad
                 </label>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center space-y-6 lg:border-l lg:border-gray-50 lg:pl-8">
-          <div className="relative group">
-            {/* Visual Preview (Alpha pattern if transparent) */}
-            <div className={`p-8 rounded-2xl shadow-2xl transition-all hover:scale-[1.02] relative ${isTransparent ? 'bg-[url("https://www.transparenttextures.com/patterns/carbon-fibre.png")] bg-gray-100' : 'bg-white shadow-gray-200/50'}`}>
-              <div ref={qrRef} className="flex">
+        <div className="flex flex-col items-center justify-center space-y-12 lg:pl-16 lg:border-l-4 border-black/5">
+          <div className="relative group max-w-full">
+            {/* Visual Preview */}
+            <div className={`p-8 sm:p-12 lg:p-16 rounded-none border-4 border-black shadow-2xl transition-all hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] duration-700 relative max-w-full overflow-hidden ${isTransparent ? 'bg-zinc-50 bg-[size:20px_20px] bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)]' : 'bg-white shadow-black/10'}`}>
+              <div ref={qrRef} className="flex p-4 bg-transparent rounded-none max-w-full overflow-hidden justify-center overflow-x-auto">
                 <QRCodeCanvas
                   value={url || ' '}
-                  size={200}
+                  size={240}
                   fgColor={fgColor}
                   bgColor={effectiveBgColor}
                   level={level}
                   includeMargin={includeMargin}
+                  className="max-w-full h-auto"
                 />
               </div>
-              {/* Hidden SVG for download */}
               <div ref={svgRef} className="hidden">
-                <QRCodeSVG
+                 <QRCodeSVG
                   value={url || ' '}
                   size={size}
                   fgColor={fgColor}
@@ -200,44 +200,40 @@ export default function QRGenerator() {
                 />
               </div>
             </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 text-white text-[9px] font-black uppercase rounded-full tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-              Preview Dinámico
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-black text-white text-[10px] font-black uppercase rounded-none tracking-[0.4em] shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 z-10 italic">
+              SÍNTESIS_ACTIVA:LISTO
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 w-full max-w-[280px]">
+          <div className="flex flex-col sm:flex-row gap-6 w-full max-w-[360px]">
             <button
               onClick={downloadPNG}
               disabled={!url}
-              className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 disabled:opacity-30 transition-all shadow-md shadow-emerald-100"
+              className="flex-1 py-5 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-[0.98] border-2 border-black"
             >
-              <Download size={14} />
-              PNG
+              <Download size={16} />
+              Exportar .PNG
             </button>
             <button
               onClick={downloadSVG}
               disabled={!url}
-              className="flex-1 py-3 bg-white border border-emerald-100 text-emerald-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-50 disabled:opacity-30 transition-all shadow-sm"
+              className="flex-1 py-5 bg-white border-2 border-black text-black rounded-none font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-zinc-50 disabled:opacity-30 transition-all active:scale-[0.98] shadow-xl"
             >
-              <Download size={14} />
-              SVG (Vector)
+              <Download size={16} />
+              Vector .SVG
             </button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest pt-4 border-t border-gray-50">
-        <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          HQ Vectorial
+      <div className="flex flex-wrap items-center gap-10 text-[9px] font-black text-zinc-300 uppercase tracking-[0.4em] pt-12 border-t-2 border-black/5 italic">
+        <span className="flex items-center gap-3">
+          <div className="w-2 h-2 bg-black" />
+          Cuadrícula Óptica_ALTA_EFICIENCIA
         </span>
-        <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-          Transparencia OK
-        </span>
-        <span className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-          Lectura Verificada
+        <span className="flex items-center gap-3">
+          <div className="w-2 h-2 bg-black" />
+          Integridad de Matriz_OK
         </span>
       </div>
     </div>

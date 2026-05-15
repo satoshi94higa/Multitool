@@ -90,69 +90,74 @@ export default function SocialFormatter() {
   };
 
   return (
-    <div id="social-booster">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Social Booster IA</h2>
+    <div id="social-booster" className="bg-transparent">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo Social</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">AI.SOCIAL_ENGINE</span>
+        </div>
+        
         {mode === 'social' && (
-          <label className="flex items-center gap-2 cursor-pointer group">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter group-hover:text-black transition-colors">Limpiar Formato MD</span>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-black transition-colors">Texto Plano</span>
             <input 
               type="checkbox" 
               checked={noMarkdown} 
               onChange={(e) => setNoMarkdown(e.target.checked)}
-              className="accent-black w-3 h-3"
+              className="accent-black w-4 h-4 rounded-none bg-zinc-100 border-zinc-200"
             />
           </label>
         )}
       </div>
       
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-2 text-xs font-bold">
+      <div className="space-y-8">
+        <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm">
           {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
             <button
               key={m}
               onClick={() => { setMode(m); setOutput(''); setReport(null); }}
-              className={`px-3 py-1.5 rounded-lg border transition-all ${
-                mode === m ? 'bg-black text-white border-black' : 'bg-gray-50 border-gray-100 text-gray-400 hover:bg-gray-100'
+              className={`px-4 py-2.5 rounded-none transition-all ${
+                mode === m ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'
               }`}
             >
               {m === 'social' ? 'Optimizar' : 
                m === 'grammar' ? 'Gramática' : 
-               m === 'emojis' ? 'Efecto Emojis' :
-               m === 'cta' ? 'CTA' : 'Hooks'}
+               m === 'emojis' ? 'Emojis' :
+               m === 'cta' ? 'CTA' : 'Ganchos'}
             </button>
           ))}
         </div>
 
         {(mode === 'social' || mode === 'cta' || mode === 'hooks') && (
-          <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wider">
+          <div className="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] ml-1">
             {(['casual', 'professional', 'energetic'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTone(t)}
-                className={`transition-colors border-b-2 flex items-center gap-1 leading-none h-4 ${tone === t ? 'text-black border-black' : 'text-gray-300 border-transparent'}`}
+                className={`transition-colors flex items-center gap-2 leading-none h-4 ${tone === t ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
               >
+                <div className={`w-2 h-2 rounded-none ${tone === t ? 'bg-black' : 'bg-transparent border border-zinc-300'}`} />
                 {t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}
               </button>
             ))}
           </div>
         )}
 
-        <div className="relative">
+        <div className="relative group">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Escribe aquí tu mensaje..."
-            className="w-full h-28 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-200 resize-none font-sans"
+            placeholder="Entrada de datos crudos..."
+            className="w-full h-40 p-6 bg-zinc-50 border-2 border-black/5 rounded-none text-sm focus:outline-none focus:border-black resize-none font-sans text-black placeholder-zinc-300 scrollbar-hide"
           />
-          <div className="flex gap-3 mt-1.5 ml-1 transition-opacity duration-300">
+          <div className="flex gap-6 mt-3 ml-1">
             {Object.entries(charLimits).map(([key, limit]) => {
               const current = input.length;
               const isOver = current > limit;
               return (
-                <div key={key} className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-tighter ${isOver ? 'text-red-500' : 'text-gray-400'}`}>
-                  <span className="opacity-70">{key}:</span>
-                  <span>{current}/{limit}</span>
+                <div key={key} className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] ${isOver ? 'text-red-600 underline' : 'text-zinc-400'}`}>
+                  <span className="opacity-40">{key}:</span>
+                  <span className={isOver ? 'text-red-600' : 'text-zinc-600 font-mono italic'}>{current}/{limit}</span>
                 </div>
               );
             })}
@@ -162,39 +167,36 @@ export default function SocialFormatter() {
         <button
           onClick={processText}
           disabled={loading || !input.trim()}
-          className="w-full py-3 bg-black text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-30 transition-all shadow-sm"
+          className="w-full py-5 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-95"
         >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-          {mode === 'social' ? 'Optimizar para redes' : 
-           mode === 'grammar' ? 'Corregir Texto' : 
-           mode === 'emojis' ? 'Agregar Emojis' :
-           mode === 'cta' ? 'Generar CTA' : 'Generar Hooks'}
+          {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+          {loading ? 'Sintetizando...' : `Ejecutar Lógica de ${mode.toUpperCase()}`}
         </button>
 
         {output && (
-          <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-            <div className="relative group p-4 bg-gray-50 border border-gray-100 rounded-xl text-sm italic text-gray-700">
+          <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="relative group p-8 bg-zinc-50 border-2 border-zinc-100 rounded-none text-sm text-black leading-loose font-sans shadow-2xl">
               <p className="whitespace-pre-wrap">{output}</p>
               <button 
                 onClick={copyToClipboard}
-                className="absolute top-2 right-2 p-1.5 bg-white border border-gray-100 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-4 right-4 p-3 bg-black text-white border border-black rounded-none shadow-xl opacity-0 group-hover:opacity-100 transition-opacity active:scale-90"
               >
-                {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
 
             {report && (
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-bold tracking-tighter">
-                <div className="bg-blue-50 border border-blue-100 p-2 rounded-lg text-blue-800">
-                  <p className="mb-1 uppercase opacity-50">Cambios:</p>
-                  <ul className="list-disc pl-3">
-                    {report.corrections.map((c, i) => <li key={i}>{c}</li>)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] font-black tracking-widest font-mono">
+                <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-none text-zinc-600">
+                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-200 pb-3">Cambios_Realizados:</p>
+                  <ul className="space-y-3">
+                    {report.corrections.map((c, i) => <li key={i} className="flex gap-2"><span>•</span> {c}</li>)}
                   </ul>
                 </div>
-                <div className="bg-amber-50 border border-amber-100 p-2 rounded-lg text-amber-800">
-                  <p className="mb-1 uppercase opacity-50">Tips:</p>
-                  <ul className="list-disc pl-3">
-                    {report.tips.map((t, i) => <li key={i}>{t}</li>)}
+                <div className="bg-zinc-950 border border-black p-6 rounded-none text-zinc-400">
+                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-800 pb-3 text-white">Refinamientos:</p>
+                  <ul className="space-y-3">
+                    {report.tips.map((t, i) => <li key={i} className="flex gap-2 italic"><span>›</span> {t}</li>)}
                   </ul>
                 </div>
               </div>

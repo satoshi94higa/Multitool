@@ -78,102 +78,111 @@ export default function JournalistIA() {
   };
 
   return (
-    <div className="space-y-6" id="journalist-ia">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-          <Newspaper size={20} />
+    <div className="space-y-12 bg-transparent pb-4" id="journalist-ia">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Periodismo</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">RED.SERIALIZATION_ENGINE</span>
         </div>
-        <div>
-          <h2 className="text-sm font-bold">Journalist IA</h2>
-          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Redacción y Entrevistas</p>
+        <div className="p-3 bg-black text-white rounded-none shadow-2xl">
+          <Newspaper size={20} />
         </div>
       </div>
 
-      <div className="space-y-3">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Pega aquí tus notas crudas, declaraciones sueltas o la transcripción de tu entrevista..."
-          className="w-full h-32 p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-indigo-200 resize-none font-sans"
-        />
-        
-        <button
-          onClick={processNews}
-          disabled={loading || !input.trim()}
-          className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-indigo-700 disabled:opacity-30 transition-all shadow-md shadow-indigo-100"
-        >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} fill="currentColor" />}
-          {loading ? 'Redactando noticia...' : 'Procesar Material Periodístico'}
-        </button>
+      <div className="space-y-6">
+        <div className="space-y-6">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Entrada de datos crudos, declaraciones o registros de entrevistas..."
+            className="w-full h-40 p-8 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black resize-none font-sans text-black placeholder-zinc-300 scrollbar-hide transition-all shadow-sm"
+          />
+          
+          <button
+            onClick={processNews}
+            disabled={loading || !input.trim()}
+            className="w-full py-6 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-[0.98]"
+          >
+            {loading ? <Loader2 size={20} className="animate-spin" /> : <Zap size={20} />}
+            {loading ? 'Sintetizando Narrativa...' : 'PROCESAR_INTEL.SERIALIZAR'}
+          </button>
+        </div>
       </div>
 
       {data && (
-        <div className="space-y-6 animate-in fade-in duration-500">
-          <div className="grid gap-3">
-            <div className="bg-white border border-indigo-100 rounded-xl p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-3">
-                <Heading1 size={12} />
-                <span>Propuestas de Titulares</span>
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="grid gap-10">
+            <div className="bg-white border-2 border-black rounded-none p-10 shadow-2xl group transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+              <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-50 pb-8">
+                <Heading1 size={18} />
+                <span>Matriz de Titulares de Impacto</span>
               </div>
-              <div className="space-y-3">
-                <div className="group">
-                  <span className="text-[8px] font-bold text-gray-400 uppercase">Impacto / Crónica</span>
-                  <p className="text-sm font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">{data.headlines.direct}</p>
+              <div className="space-y-10">
+                <div className="group/item">
+                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block italic underline decoration-zinc-100 underline-offset-4">Titular de Impacto Directo</span>
+                  <p className="text-2xl font-black text-black leading-[1.1] transition-transform group-hover/item:translate-x-2 duration-300">{data.headlines.direct}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 pt-10 border-t border-zinc-100">
                   <div>
-                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">SEO / Google</span>
-                    <p className="text-[11px] text-gray-600 font-medium">{data.headlines.seo}</p>
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block">Optimización SEO</span>
+                    <p className="text-[13px] text-zinc-500 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border border-zinc-100">{data.headlines.seo}</p>
                   </div>
                   <div>
-                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Narrativo</span>
-                    <p className="text-[11px] text-gray-600 font-medium">{data.headlines.narrative}</p>
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block">Contexto Narrativo</span>
+                    <p className="text-[13px] text-zinc-500 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border border-zinc-100">{data.headlines.narrative}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 relative">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  <FileText size={12} />
-                  <span>Cuerpo de la Noticia</span>
+            <div className="bg-white border-2 border-black rounded-none p-12 relative overflow-hidden shadow-[30px_30px_0px_rgba(0,0,0,0.02)]">
+              <div className="flex justify-between items-center mb-10 border-b-2 border-zinc-50 pb-8">
+                <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.6em]">
+                  <FileText size={20} />
+                  <span>Resultado de la Noticia</span>
                 </div>
                 <button 
                   onClick={sendToProcessor}
-                  className="p-1 text-indigo-500 hover:bg-indigo-50 rounded-md transition-all flex items-center gap-1"
+                  className="px-8 py-4 bg-black text-white hover:bg-zinc-800 rounded-none transition-all flex items-center gap-3 active:scale-95 shadow-xl group border-2 border-black"
                 >
-                  {sent ? <Check size={14} className="text-green-500" /> : <Send size={14} />}
-                  <span className="text-[9px] font-bold uppercase">{sent ? 'Enviado' : 'Enviar a Editor'}</span>
+                  {sent ? <Check size={16} /> : <Send size={16} />}
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em]">{sent ? 'TRANSFERENCIA_COMPLETA' : 'ENVIAR_AL_EDITOR'}</span>
                 </button>
               </div>
-              <div className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="text-[17px] text-zinc-900 leading-[1.9] whitespace-pre-wrap max-h-[600px] overflow-y-auto pr-8 scrollbar-hide font-serif relative z-10 selection:bg-black selection:text-white">
                 {data.news_story}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-indigo-50/30 border border-indigo-100/50 rounded-xl p-3">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">
-                  <Quote size={12} />
-                  <span>Quotes Destacados</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="bg-zinc-50 border-2 border-zinc-100 rounded-none p-10 group hover:border-black transition-all shadow-lg hover:shadow-2xl">
+                <div className="flex items-center gap-4 text-[10px] font-black text-black uppercase tracking-[0.3em] mb-8">
+                  <div className="p-4 bg-white border border-zinc-100 shadow-sm">
+                    <Quote size={18} />
+                  </div>
+                  <span>Citas de Alto Valor</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-6">
                   {data.key_quotes.map((quote, i) => (
-                    <p key={i} className="text-[11px] text-indigo-900 italic bg-white/50 p-2 rounded-lg border border-indigo-50">"{quote}"</p>
+                    <div key={i} className="bg-white p-8 border border-zinc-100 shadow-sm leading-relaxed relative overflow-hidden group/quote">
+                       <div className="absolute left-0 top-0 w-1 h-full bg-black scale-y-0 group-hover/quote:scale-y-100 transition-transform origin-top duration-500" />
+                       <p className="text-[14px] text-zinc-700 italic font-serif leading-loose">"{quote}"</p>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-amber-50/30 border border-amber-100/50 rounded-xl p-3">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">
-                  <Info size={12} />
-                  <span>Ángulos de Enfoque</span>
+              <div className="bg-zinc-50 border-2 border-zinc-100 rounded-none p-10 group hover:border-black transition-all shadow-lg hover:shadow-2xl">
+                <div className="flex items-center gap-4 text-[10px] font-black text-black uppercase tracking-[0.3em] mb-8">
+                  <div className="p-4 bg-white border border-zinc-100 shadow-sm">
+                    <Info size={18} />
+                  </div>
+                  <span>Ángulos de Enfoque Operativos</span>
                 </div>
-                <ul className="space-y-1.5">
+                <ul className="space-y-5">
                   {data.angles.map((angle, i) => (
-                    <li key={i} className="text-[11px] text-amber-900 flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-amber-400 mt-1.5 flex-none" />
-                      {angle}
+                    <li key={i} className="text-[13px] text-zinc-600 flex items-start gap-6 p-6 bg-white border border-zinc-100 transition-all group-hover:shadow-sm">
+                      <div className="w-2 spacer-h-2 bg-black mt-2 flex-none shrink-0" style={{'height': '2px'} as any} />
+                      <span className="uppercase font-medium tracking-tight leading-snug">{angle}</span>
                     </li>
                   ))}
                 </ul>

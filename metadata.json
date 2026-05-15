@@ -1,6 +1,6 @@
 {
-  "name": "MultiUtility Hub",
-  "description": "Una suite de herramientas diarias: procesador de texto, calculadora de porcentajes y formateador de redes sociales con IA.",
-  "requestFramePermissions": [],
-  "majorCapabilities": []
+  "name": "STUDIO_MODULAR v4",
+  "description": "Suite minimalista de alto contraste para creadores de contenido: Teleprompter, IA Generativa, Procesamiento de Texto y Utilidades de precisión.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

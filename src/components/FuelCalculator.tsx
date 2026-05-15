@@ -24,74 +24,74 @@ export default function FuelCalculator() {
   const results = calculate();
 
   return (
-    <div className="space-y-6" id="fuel-calculator">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-          <Fuel size={20} />
+    <div className="space-y-10 bg-transparent" id="fuel-calculator">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Logística</h2>
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">DATA.FUEL_OPTIMIZATION</span>
         </div>
-        <div>
-          <h2 className="text-sm font-bold">Calculadora de Nafta</h2>
-          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Viajes y Consumo</p>
+        <div className="p-3 bg-black text-white rounded-none shadow-2xl">
+          <Fuel size={20} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1 flex items-center gap-1">
-            <Ruler size={10} /> Distancia (km)
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.2em] ml-1 flex items-center gap-3">
+            <Ruler size={14} className="text-black" /> Distancia (KM)
           </label>
           <input
             type="number"
             value={distance}
             onChange={(e) => setDistance(e.target.value === '' ? '' : Math.max(0, Number(e.target.value)))}
-            placeholder="Ej: 450"
-            className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-200"
+            placeholder="0.00"
+            className="w-full p-4 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black transition-all font-mono text-black placeholder-zinc-300 shadow-sm"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1 flex items-center gap-1">
-            <Calculator size={10} /> Consumo (L/100km)
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.2em] ml-1 flex items-center gap-3">
+            <Calculator size={14} className="text-black" /> Consumo (L/100)
           </label>
           <input
             type="number"
             value={consumption}
             onChange={(e) => setConsumption(e.target.value === '' ? '' : Math.max(0, Number(e.target.value)))}
-            placeholder="Ej: 8"
-            className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-200"
+            placeholder="8.0"
+            className="w-full p-4 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black transition-all font-mono text-black placeholder-zinc-300 shadow-sm"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1 flex items-center gap-1">
-            <DollarSign size={10} /> Precio por Litro
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.2em] ml-1 flex items-center gap-3">
+            <DollarSign size={14} className="text-black" /> Precio Unitario
           </label>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value === '' ? '' : Math.max(0, Number(e.target.value)))}
-            placeholder="Ej: 1000"
-            className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-amber-200"
+            placeholder="0.00"
+            className="w-full p-4 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black transition-all font-mono text-black placeholder-zinc-300 shadow-sm"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1 flex items-center gap-1">
-            <Users size={10} /> Pasajeros
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-zinc-950 uppercase tracking-[0.2em] ml-1 flex items-center gap-3">
+            <Users size={14} className="text-black" /> Ocupantes
           </label>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-zinc-50 border-2 border-black/5 rounded-none p-1 focus-within:border-black transition-all shadow-sm">
             <button 
               onClick={() => setPeople(Math.max(1, people - 1))}
-              className="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-xl hover:bg-gray-100 transition-colors text-gray-400"
+              className="w-12 h-12 flex items-center justify-center bg-zinc-100/50 border border-zinc-200 rounded-none hover:bg-black hover:text-white transition-colors text-black font-black text-lg"
             >
               -
             </button>
-            <div className="flex-1 text-center font-bold text-sm bg-white border border-gray-100 rounded-xl py-2">
+            <div className="flex-1 text-center font-mono text-lg text-black font-bold">
               {people}
             </div>
             <button 
               onClick={() => setPeople(people + 1)}
-              className="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-xl hover:bg-gray-100 transition-colors text-gray-400"
+              className="w-12 h-12 flex items-center justify-center bg-zinc-100/50 border border-zinc-200 rounded-none hover:bg-black hover:text-white transition-colors text-black font-black text-lg"
             >
               +
             </button>
@@ -100,34 +100,39 @@ export default function FuelCalculator() {
       </div>
 
       {results ? (
-        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-4">
-            <Info size={12} />
-            <span>Resultado del Viaje</span>
+        <div className="bg-black rounded-none p-10 border-4 border-black animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900 -rotate-45 translate-x-16 -translate-y-16 pointer-events-none" />
+          
+          <div className="flex items-center gap-3 text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-10 border-b border-zinc-800 pb-6 relative z-10">
+            <Info size={14} />
+            <span>INFORME_DE_EJECUCIÓN</span>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-[8px] font-bold text-amber-400 uppercase tracking-tighter">Nafta Necesaria</p>
-              <p className="text-xl font-bold text-amber-900 leading-none">{results.liters} <span className="text-sm">L</span></p>
+          <div className="grid grid-cols-2 gap-12 relative z-10">
+            <div className="space-y-3">
+              <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">LITROS.TOTAL</p>
+              <p className="text-4xl font-black text-white leading-none font-mono tracking-tighter">{results.liters}<span className="text-xs text-zinc-700 ml-2">L</span></p>
             </div>
-            <div className="space-y-1">
-              <p className="text-[8px] font-bold text-amber-400 uppercase tracking-tighter">Costo Total</p>
-              <p className="text-xl font-bold text-amber-900 leading-none"><span className="text-sm">$</span>{results.totalCost}</p>
+            <div className="space-y-3">
+              <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">COSTE.AGREGADO</p>
+              <p className="text-4xl font-black text-white leading-none font-mono tracking-tighter"><span className="text-sm text-zinc-700 mr-1">$</span>{results.totalCost}</p>
             </div>
             {people > 1 && (
-              <div className="col-span-2 pt-3 border-t border-amber-100/50 mt-1">
-                <p className="text-[8px] font-bold text-amber-400 uppercase tracking-tighter mb-1">Por Persona ({people})</p>
-                <p className="text-2xl font-bold text-amber-900 leading-none"><span className="text-sm">$</span>{results.costPerPerson}</p>
+              <div className="col-span-2 pt-10 border-t border-zinc-800 mt-4">
+                <p className="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6 border-l-4 border-white pl-4 italic">Asignación de Coste Individual ({people} Personas)</p>
+                <div className="flex items-baseline gap-2">
+                   <span className="text-2xl text-zinc-600 font-black tracking-tighter">$</span>
+                   <p className="text-7xl font-black text-white leading-none font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{results.costPerPerson}</p>
+                </div>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 border-dashed flex flex-col items-center justify-center text-center opacity-60">
-          <Fuel className="text-gray-300 mb-2" size={32} />
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-tight">
-            Ingresa los datos para <br /> calcular el costo del viaje
+        <div className="bg-zinc-50 rounded-none p-12 border-2 border-zinc-100 border-dashed flex flex-col items-center justify-center text-center group">
+          <Fuel className="text-zinc-200 mb-6 group-hover:text-black transition-colors duration-500" size={56} />
+          <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] leading-loose max-w-[200px]">
+             Esperando parámetros de entrada logística...
           </p>
         </div>
       )}
