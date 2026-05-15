@@ -10,6 +10,8 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 
+import { processWithGemini } from '../services/geminiService';
+
 export default function TextProcessor() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,17 +46,7 @@ export default function TextProcessor() {
     const plainText = editor.getText();
     
     try {
-      const response = await fetch("/api/gemini/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, text: plainText }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
-        throw new Error(errData.error || "Failed");
-      }
-      const data = await response.json();
+      const data = await processWithGemini({ type, text: plainText }, 'process');
       
       if (type === 'spelling') {
         try {

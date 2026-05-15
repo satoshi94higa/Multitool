@@ -4,6 +4,8 @@ import { Sparkles, Copy, Check, Loader2 } from 'lucide-react';
 type Mode = 'social' | 'grammar' | 'emojis' | 'cta' | 'hooks';
 type Tone = 'casual' | 'professional' | 'energetic';
 
+import { processWithGemini } from '../services/geminiService';
+
 export default function SocialFormatter() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -29,17 +31,7 @@ export default function SocialFormatter() {
     setError(null);
     
     try {
-      const response = await fetch("/api/gemini/social", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, mode, tone, noMarkdown }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
-        throw new Error(errData.error || "Processing failed");
-      }
-      const data = await response.json();
+      const data = await processWithGemini({ input, mode, tone, noMarkdown }, 'social');
       const responseText = data.text || '';
 
       if (mode === 'grammar') {

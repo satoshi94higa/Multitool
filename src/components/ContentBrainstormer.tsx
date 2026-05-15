@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus } from 'lucide-react';
 
+import { processWithGemini } from '../services/geminiService';
+
 interface BrainstormOutput {
   general: string[];
   photographic: string[];
@@ -23,41 +25,7 @@ export default function ContentBrainstormer() {
     setLoading(true);
     setError(null);
     try {
-      const prompt = `Actúa como un estratega de contenido creativo y productor multimedia.
-      Tengo que cubrir la siguiente actividad/tema: "${input}"
-      Somos un equipo de ${peopleCount} personas.
-      
-      ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
-      
-      Genera una lluvia de ideas (brainstorming) dividida en 5 categorías. Cada categoría debe tener ideas realistas pero creativas adaptadas al tamaño del equipo (${peopleCount} personas).
-      
-      Categorías:
-      1. General: Estrategia de cobertura global.
-      2. Fotográfica: Ángulos, momentos clave, estilos visuales.
-      3. Audiovisual: Reels, entrevistas rápidas, tomas de recurso, transiciones.
-      4. Periodística/Gráfica: Hilos, crónicas, infografías, datos clave.
-      5. Wild Card: Ideas disruptivas, divertidas o fuera de lo común.
-      
-      Devuelve la respuesta estrictamente en este formato JSON:
-      {
-        "general": ["idea 1", "idea 2"],
-        "photographic": ["idea 1", "idea 2"],
-        "audiovisual": ["idea 1", "idea 2"],
-        "journalistic": ["idea 1", "idea 2"],
-        "wildcard": ["idea 1", "idea 2"]
-      }`;
-
-      const response = await fetch("/api/gemini/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customPrompt: prompt }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
-        throw new Error(errData.error || "Processing failed");
-      }
-      const data = await response.json();
+      const data = await processWithGemini({ customPrompt: prompt }, 'process');
       const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setIdeas(result);
     } catch (error: any) {

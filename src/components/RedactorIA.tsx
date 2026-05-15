@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Newspaper, Quote, Heading1, Send, Check, Copy, Loader2, Zap, Info, FileText, Share2, AlignLeft, MessageSquarePlus } from 'lucide-react';
 
+import { processWithGemini } from '../services/geminiService';
+
 interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string;
 }
@@ -101,17 +103,7 @@ export default function RedactorIA() {
         }
       }`;
 
-      const response = await fetch("/api/gemini/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customPrompt: prompt }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
-        throw new Error(errData.error || "Processing failed");
-      }
-      const data = await response.json();
+      const data = await processWithGemini({ customPrompt: prompt }, 'process');
       const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setData(result);
     } catch (error: any) {

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw } from 'lucide-react';
 
+import { processWithGemini } from '../services/geminiService';
+
 type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
 
@@ -142,17 +144,7 @@ export default function ScreenwriterIA() {
              "keywords": ["tag1", "tag2", ...]
            }`;
 
-      const response = await fetch("/api/gemini/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customPrompt: prompt }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
-        throw new Error(errData.error || "Processing failed");
-      }
-      const dataResponse = await response.json();
+      const dataResponse = await processWithGemini({ customPrompt: prompt }, 'process');
       const data: ScriptData = JSON.parse(dataResponse.text.replace(/```json|```/g, '').trim());
       setScript(data.full_script);
       setRundown(data.rundown || []);
