@@ -19,14 +19,10 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
 
   // If we have a local key, use it directly (useful for GitHub Pages)
   if (localKey) {
+    console.log("Using local API Key for Gemini");
     try {
       const ai = new GoogleGenAI({ 
-        apiKey: localKey,
-        httpOptions: {
-          headers: {
-            'User-Agent': 'aistudio-build',
-          }
-        }
+        apiKey: localKey
       });
 
       let prompt = "";
@@ -91,25 +87,37 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
       return { text: response.text };
     } catch (error: any) {
       console.error("Local Gemini Error:", error);
-      throw new Error(error.message || "Error al llamar a Gemini directamente. Verifica tu API Key.");
+      throw new Error(`Error de IA (Local): ${error.message || "Verifica tu API Key."}`);
     }
   }
 
   // Fallback to server API
+  console.log(`Falling back to server API for endpoint: ${endpoint}`);
   const response = await fetch(`/api/gemini/${endpoint}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
 
+  const contentType = response.headers.get('content-type');
   if (!response.ok) {
-    const isHtml = response.headers.get('content-type')?.includes('text/html');
-    if (isHtml) {
-      throw new Error("El servidor de backend no está disponible. Si estás en GitHub Pages, debes configurar tu API Key en los Ajustes.");
+    if (contentType?.includes('text/html')) {
+      throw new Error("El servidor no pudo procesar la solicitud (Error HTML). Si estás en GitHub Pages, debes configurar tu API Key personal en Ajustes para que funcione.");
     }
-    const errData = await response.json();
-    throw new Error(errData.error || "Error en la petición");
+    
+    try {
+      const errData = await response.json();
+      throw new Error(errData.error || "Error en el servidor de IA");
+    } catch (e) {
+      throw new Error(`Error del servidor (${response.status}): ${response.statusText}`);
+    }
   }
 
-  return response.json();
+  if (contentType?.includes('application/json')) {
+    return response.json();
+  } else {
+    const text = await response.text();
+    console.error("Non-JSON response from server:", text);
+    throw new Error("El servidor devolvió una respuesta inesperada (no JSON).");
+  }
 }
