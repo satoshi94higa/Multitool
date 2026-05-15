@@ -29,7 +29,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
     console.log("[GeminiService] Executing CLIENT-SIDE call...");
     try {
       const genAI = new GoogleGenerativeAI(localKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       let prompt = "";
       if (endpoint === 'social') {
@@ -89,8 +89,15 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
       const text = result.response.text();
       return { text };
     } catch (error: any) {
-      console.error("Local Gemini Error:", error);
-      throw new Error(`Error de IA (Local): ${error.message || "Verifica tu API Key."}`);
+      console.error("[GeminiServiceClient] Error:", error);
+      const errorMsg = error.message || "Error desconocido";
+      
+      // If it's a 404, it might be the model name or API version
+      if (errorMsg.includes("404") || errorMsg.includes("not found")) {
+        console.warn("[GeminiServiceClient] 404 detected, check model compatibility or API key permissions.");
+      }
+
+      throw new Error(`Error de IA (Navegador): ${errorMsg}. Verifica tu API Key o prueba borrarla en Ajustes para usar la del servidor.`);
     }
   }
 

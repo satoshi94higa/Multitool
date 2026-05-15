@@ -60,15 +60,17 @@ async function startServer() {
 
     for (let i = 0; i < maxRetries; i++) {
       try {
+        console.log(`[GeminiServer] Calling ${modelName}...`);
         const result = await model.generateContent(contents);
         return { text: result.response.text() };
       } catch (error: any) {
         lastError = error;
+        console.error(`[GeminiServer] Error on attempt ${i + 1}:`, error.message || error);
         // Check for 429 Too Many Requests
         if (error.message?.includes('429') || error.status === 429) {
           if (i < maxRetries - 1) {
             const delay = Math.pow(2, i) * 5000 + Math.random() * 2000;
-            console.log(`Retrying Gemini API call due to 429 error. Attempt ${i + 1}/${maxRetries}. Delaying for ${Math.round(delay)}ms...`);
+            console.log(`[GeminiServer] Retrying due to 429... Delay: ${Math.round(delay)}ms`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
@@ -113,7 +115,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", fullContent);
+      const response = await generateContentWithRetry("gemini-2.0-flash", fullContent);
 
       res.json({ text: response.text });
     } catch (error: any) {
@@ -158,7 +160,7 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", `${prompt}\n\nTexto: "${input}"`);
+      const response = await generateContentWithRetry("gemini-2.0-flash", `${prompt}\n\nTexto: "${input}"`);
 
       res.json({ text: response.text });
     } catch (error: any) {
