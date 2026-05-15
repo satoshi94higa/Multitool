@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
@@ -10,7 +11,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  app.use(cors());
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   // Request logger
   app.use((req, res, next) => {
@@ -21,9 +24,18 @@ async function startServer() {
     next();
   });
 
-  // Health check
+  // Health check and diagnostics
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", time: new Date().toISOString() });
+    res.json({ 
+      status: "ok", 
+      time: new Date().toISOString(),
+      env: process.env.NODE_ENV,
+      aiInitialized: !!ai
+    });
+  });
+
+  app.post("/api/test-post", (req, res) => {
+    res.json({ status: "post_ok", bodyReceived: !!req.body });
   });
 
   let ai: any = null;

@@ -97,13 +97,16 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
   // Fallback to server API
   console.log(`[GeminiService] Fallback to server API for endpoint: ${endpoint}`);
   
-  // Use relative path without leading slash to handle subpath deployments
-  const apiPath = `api/gemini/${endpoint}`;
+  // Use absolute path starting with /
+  const apiPath = `/api/gemini/${endpoint}`;
   
   try {
     const response = await fetch(apiPath, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(body)
     });
 
