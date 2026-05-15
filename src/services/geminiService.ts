@@ -19,7 +19,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
 
   // If we have a local key, use it directly (useful for GitHub Pages)
   if (localKey) {
-    console.log("Using local API Key for Gemini");
+    console.log("Attempting to use local API Key for Gemini...");
     try {
       const ai = new GoogleGenAI({ 
         apiKey: localKey
@@ -105,19 +105,28 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
       throw new Error("El servidor no pudo procesar la solicitud (Error HTML). Si estás en GitHub Pages, debes configurar tu API Key personal en Ajustes para que funcione.");
     }
     
+    const clone = response.clone();
     try {
       const errData = await response.json();
-      throw new Error(errData.error || "Error en el servidor de IA");
-    } catch (e) {
-      throw new Error(`Error del servidor (${response.status}): ${response.statusText}`);
+      throw new Error(errData.error || `Error del servidor: ${response.statusText}`);
+    } catch (e: any) {
+      if (e.message && e.message.includes("Error del servidor")) throw e;
+      const textBody = await clone.text().catch(() => "Sin cuerpo de respuesta");
+      throw new Error(`Error ${response.status} (${response.statusText}): ${textBody.substring(0, 100)}...`);
     }
   }
 
   if (contentType?.includes('application/json')) {
-    return response.json();
+    const clone = response.clone();
+    try {
+      return await response.json();
+    } catch (e) {
+      const textBody = await clone.text().catch(() => "Error al leer texto");
+      throw new Error(`Error al procesar JSON: ${textBody.substring(0, 100)}...`);
+    }
   } else {
-    const text = await response.text();
-    console.error("Non-JSON response from server:", text);
-    throw new Error("El servidor devolvió una respuesta inesperada (no JSON).");
+    const textBody = await response.text().catch(() => "Cuerpo ilegible");
+    console.error("Non-JSON response from server:", textBody);
+    throw new Error(`El servidor devolvió una respuesta inesperada (no JSON): ${textBody.substring(0, 50)}...`);
   }
 }

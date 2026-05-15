@@ -23,16 +23,29 @@ async function startServer() {
     res.json({ status: "ok", time: new Date().toISOString() });
   });
 
-  const ai = new GoogleGenAI({ 
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
+  let ai: any = null;
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      ai = new GoogleGenAI({ 
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+      console.log("Gemini API initialized successfully");
+    } else {
+      console.warn("GEMINI_API_KEY not found in environment. Server-side AI will be disabled.");
     }
-  });
+  } catch (err) {
+    console.error("Error initializing Gemini API:", err);
+  }
 
   async function generateContentWithRetry(model: string, contents: any, config?: any) {
+    if (!ai) {
+      throw new Error("El servidor no tiene configurada la clave de API de Gemini. Por favor, configúrala en los Ajustes del proyecto o usa tu propia clave localmente.");
+    }
     const maxRetries = 5;
     let lastError: any;
 

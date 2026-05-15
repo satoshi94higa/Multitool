@@ -9,7 +9,7 @@ import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
-import { getLocalApiKey, setLocalApiKey } from './services/geminiService';
+import { getLocalApiKey, setLocalApiKey, processWithGemini } from './services/geminiService';
 
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
@@ -17,10 +17,32 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
+  const [testingKey, setTestingKey] = useState(false);
 
   useEffect(() => {
     setTempApiKey(getLocalApiKey());
   }, []);
+
+  const handleTestKey = async () => {
+    if (!tempApiKey.trim()) {
+      showNotification('Ingresa una clave para probar');
+      return;
+    }
+    setTestingKey(true);
+    try {
+      // Usamos una operación simple para probar
+      const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process');
+      if (result.text.includes('OK')) {
+        showNotification('¡Clave válida!');
+      } else {
+        showNotification('Respuesta inesperada');
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`);
+    } finally {
+      setTestingKey(false);
+    }
+  };
 
   const handleSaveSettings = () => {
     setLocalApiKey(tempApiKey);
@@ -318,6 +340,13 @@ export default function App() {
                    <p className="text-[10px] text-zinc-500 leading-relaxed">
                      <strong className="text-black">Nota:</strong> Esta clave se guarda localmente en tu navegador. Úsala si estás en entornos estáticos como GitHub Pages donde el backend no está disponible.
                    </p>
+                   <button 
+                     onClick={handleTestKey}
+                     disabled={testingKey || !tempApiKey.trim()}
+                     className="w-full h-10 border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                   >
+                     {testingKey ? 'Probando...' : 'Probar Clave'}
+                   </button>
                 </div>
 
                 <div className="pt-4 flex gap-4">
