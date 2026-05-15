@@ -54,7 +54,7 @@ export default function ContentBrainstormer() {
       });
 
       if (!response.ok) {
-        const errData = await response.json();
+        const errData = await response.json().catch(() => ({ error: "El servidor devolvió una respuesta no válida (HTML). Esto suele ocurrir si la ruta no existe o el servidor no está configurado." }));
         throw new Error(errData.error || "Processing failed");
       }
       const data = await response.json();

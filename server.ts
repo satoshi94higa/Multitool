@@ -141,11 +141,17 @@ async function startServer() {
 
       res.json({ text: response.text });
     } catch (error: any) {
+      console.error("Gemini Error /api/gemini/social:", error);
       const isQuotaError = error.message?.includes('429') || error.status === 429;
       res.status(isQuotaError ? 429 : 500).json({ 
         error: isQuotaError ? "Límite de cuota excedido. Por favor, espera un momento." : (error.message || "Error interno del servidor")
       });
     }
+  });
+
+  // Catch-all for API routes to return JSON instead of HTML
+  app.all("/api/*", (req, res) => {
+    res.status(404).json({ error: `Ruta de API no encontrada: ${req.method} ${req.url}` });
   });
 
   // Vite middleware for development
