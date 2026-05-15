@@ -15,10 +15,16 @@ export const setLocalApiKey = (key: string) => {
 };
 
 export async function processWithGemini(body: any, endpoint: string = 'process', manualApiKey?: string) {
-  const localKey = (manualApiKey || getLocalApiKey() || '').trim();
-  console.log(`[GeminiService] Endpoint: ${endpoint} | manualApiKey: ${manualApiKey ? 'YES' : 'NO'} | localKeyLength: ${localKey.length}`);
+  const storedKey = getLocalApiKey();
+  const localKey = (manualApiKey || storedKey || '').trim();
+  
+  console.log(`[GeminiService] Processing request...`);
+  console.log(`[GeminiService] Endpoint: ${endpoint}`);
+  console.log(`[GeminiService] Manual Key provided: ${manualApiKey ? 'Yes' : 'No'}`);
+  console.log(`[GeminiService] Stored Key found: ${storedKey ? 'Yes' : 'No'}`);
+  console.log(`[GeminiService] Final key length: ${localKey.length}`);
 
-  // If we have a local key, use it directly (useful for GitHub Pages)
+  // If we have a local key, use it directly (useful for GitHub Pages or when server is restricted)
   if (localKey.length > 5) {
     console.log("[GeminiService] Executing CLIENT-SIDE call...");
     try {
@@ -89,41 +95,53 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
   }
 
   // Fallback to server API
-  console.log(`Falling back to server API for endpoint: ${endpoint}`);
-  const response = await fetch(`/api/gemini/${endpoint}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  console.log(`[GeminiService] Fallback to server API for endpoint: ${endpoint}`);
+  
+  // Use relative path without leading slash to handle subpath deployments
+  const apiPath = `api/gemini/${endpoint}`;
+  
+  try {
+    const response = await fetch(apiPath, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
-  const contentType = response.headers.get('content-type');
-  if (!response.ok) {
-    if (contentType?.includes('text/html')) {
-      throw new Error("El servidor no pudo procesar la solicitud (Error HTML). Si estás en GitHub Pages, debes configurar tu API Key personal en Ajustes para que funcione.");
-    }
+    const contentType = response.headers.get('content-type');
     
-    const clone = response.clone();
-    try {
-      const errData = await response.json();
-      throw new Error(errData.error || `Error del servidor: ${response.statusText}`);
-    } catch (e: any) {
-      if (e.message && e.message.includes("Error del servidor")) throw e;
-      const textBody = await clone.text().catch(() => "Sin cuerpo de respuesta");
-      throw new Error(`Error ${response.status} (${response.statusText}): ${textBody.substring(0, 100)}...`);
+    if (!response.ok) {
+      if (contentType?.includes('text/html')) {
+        const text = await response.text();
+        console.error("405/HTML error detected in fetch fallback");
+        throw new Error(`Error del servidor (405 Not Allowed). Por favor pégale tu propia API Key en los Ajustes para evitar este problema del servidor.`);
+      }
+      
+      const clone = response.clone();
+      try {
+        const errData = await response.json();
+        throw new Error(errData.error || `Error del servidor: ${response.statusText}`);
+      } catch (e: any) {
+        if (e.message && e.message.includes("Error del servidor")) throw e;
+        const textBody = await clone.text().catch(() => "Sin cuerpo de respuesta");
+        throw new Error(`Error ${response.status} (${response.statusText}): ${textBody.substring(0, 100)}...`);
+      }
     }
-  }
 
-  if (contentType?.includes('application/json')) {
-    const clone = response.clone();
-    try {
-      return await response.json();
-    } catch (e) {
-      const textBody = await clone.text().catch(() => "Error al leer texto");
-      throw new Error(`Error al procesar JSON: ${textBody.substring(0, 100)}...`);
+    if (contentType?.includes('application/json')) {
+      const clone = response.clone();
+      try {
+        return await response.json();
+      } catch (e) {
+        const textBody = await clone.text().catch(() => "Error al leer texto");
+        throw new Error(`Error al procesar JSON: ${textBody.substring(0, 100)}...`);
+      }
+    } else {
+      const textBody = await response.text().catch(() => "Cuerpo ilegible");
+      console.error("Non-JSON response from server:", textBody);
+      throw new Error(`El servidor devolvió una respuesta inesperada (no JSON): ${textBody.substring(0, 50)}...`);
     }
-  } else {
-    const textBody = await response.text().catch(() => "Cuerpo ilegible");
-    console.error("Non-JSON response from server:", textBody);
-    throw new Error(`El servidor devolvió una respuesta inesperada (no JSON): ${textBody.substring(0, 50)}...`);
+  } catch (error: any) {
+    console.error("Fetch error:", error);
+    throw error;
   }
 }

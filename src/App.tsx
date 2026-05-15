@@ -45,9 +45,11 @@ export default function App() {
   };
 
   const handleSaveSettings = () => {
-    setLocalApiKey(tempApiKey);
+    const trimmedKey = tempApiKey.trim();
+    setLocalApiKey(trimmedKey);
+    setTempApiKey(trimmedKey);
     setShowSettings(false);
-    showNotification('Configuración guardada');
+    showNotification('Configuración guardada correctly');
   };
 
   const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
