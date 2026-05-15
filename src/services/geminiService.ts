@@ -92,12 +92,15 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
       console.error("[GeminiServiceClient] Error:", error);
       const errorMsg = error.message || "Error desconocido";
       
-      // If it's a 404, it might be the model name or API version
+      if (errorMsg.includes("429") || errorMsg.includes("quota")) {
+        throw new Error("Cuota de IA excedida. Tu clave personal ha llegado al límite o es inválida. Revisa tu cuenta en Google AI Studio.");
+      }
+
       if (errorMsg.includes("404") || errorMsg.includes("not found")) {
         console.warn("[GeminiServiceClient] 404 detected, check model compatibility or API key permissions.");
       }
 
-      throw new Error(`Error de IA (Navegador): ${errorMsg}. Verifica tu API Key o prueba borrarla en Ajustes para usar la del servidor.`);
+      throw new Error(`Error de IA (Navegador): ${errorMsg}`);
     }
   }
 
@@ -120,6 +123,10 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
     const contentType = response.headers.get('content-type');
     
     if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error("El servidor compartido ha agotado su cuota. Por favor, ingresa tu propia API Key en Ajustes (ícono de engranaje) para seguir usando la IA gratis.");
+      }
+
       if (contentType?.includes('text/html')) {
         const text = await response.text();
         console.error("405/HTML error detected in fetch fallback");

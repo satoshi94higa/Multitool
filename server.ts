@@ -66,14 +66,16 @@ async function startServer() {
       } catch (error: any) {
         lastError = error;
         console.error(`[GeminiServer] Error on attempt ${i + 1}:`, error.message || error);
+        
         // Check for 429 Too Many Requests
         if (error.message?.includes('429') || error.status === 429) {
           if (i < maxRetries - 1) {
-            const delay = Math.pow(2, i) * 5000 + Math.random() * 2000;
-            console.log(`[GeminiServer] Retrying due to 429... Delay: ${Math.round(delay)}ms`);
+            const delay = Math.pow(2, i) * 3000 + Math.random() * 1000;
+            console.log(`[GeminiServer] Quota reached (429). Retrying in ${Math.round(delay)}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
+          throw new Error("Límite de cuota excedido (429). Por favor, intenta de nuevo en un minuto o configura tu propia API Key en Ajustes para uso ilimitado.");
         }
         throw error;
       }
