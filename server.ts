@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,6 +15,9 @@ async function startServer() {
   // Request logger
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    if (req.method === 'POST') {
+      console.log('Body keys:', Object.keys(req.body || {}));
+    }
     next();
   });
 
@@ -26,14 +29,7 @@ async function startServer() {
   let ai: any = null;
   try {
     if (process.env.GEMINI_API_KEY) {
-      ai = new GoogleGenAI({ 
-        apiKey: process.env.GEMINI_API_KEY,
-        httpOptions: {
-          headers: {
-            'User-Agent': 'aistudio-build',
-          }
-        }
-      });
+      ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       console.log("Gemini API initialized successfully");
     } else {
       console.warn("GEMINI_API_KEY not found in environment. Server-side AI will be disabled.");
@@ -42,34 +38,23 @@ async function startServer() {
     console.error("Error initializing Gemini API:", err);
   }
 
-  async function generateContentWithRetry(model: string, contents: any, config?: any) {
+  async function generateContentWithRetry(modelName: string, contents: any, config?: any) {
     if (!ai) {
       throw new Error("El servidor no tiene configurada la clave de API de Gemini. Por favor, configúrala en los Ajustes del proyecto o usa tu propia clave localmente.");
     }
+    const model = ai.getGenerativeModel({ model: modelName });
     const maxRetries = 5;
     let lastError: any;
 
     for (let i = 0; i < maxRetries; i++) {
       try {
-        return await ai.models.generateContent({
-          model,
-          contents,
-          config: {
-            ...config,
-            // Add a small safety for the system
-            maxOutputTokens: 2048,
-          }
-        });
+        const result = await model.generateContent(contents);
+        return { text: result.response.text() };
       } catch (error: any) {
         lastError = error;
         // Check for 429 Too Many Requests
         if (error.message?.includes('429') || error.status === 429) {
           if (i < maxRetries - 1) {
-            // More aggressive backoff since the quota error says to wait ~30s
-            // Attempt 0: ~5s
-            // Attempt 1: ~10s
-            // Attempt 2: ~20s
-            // Attempt 3: ~40s
             const delay = Math.pow(2, i) * 5000 + Math.random() * 2000;
             console.log(`Retrying Gemini API call due to 429 error. Attempt ${i + 1}/${maxRetries}. Delaying for ${Math.round(delay)}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
@@ -116,7 +101,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-3-flash-preview", fullContent);
+      const response = await generateContentWithRetry("gemini-1.5-flash", fullContent);
 
       res.json({ text: response.text });
     } catch (error: any) {
@@ -161,7 +146,7 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-3-flash-preview", `${prompt}\n\nTexto: "${input}"`);
+      const response = await generateContentWithRetry("gemini-1.5-flash", `${prompt}\n\nTexto: "${input}"`);
 
       res.json({ text: response.text });
     } catch (error: any) {

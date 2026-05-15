@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const STORAGE_KEY = 'utility_hub_gemini_api_key';
 
@@ -14,16 +14,16 @@ export const setLocalApiKey = (key: string) => {
   }
 };
 
-export async function processWithGemini(body: any, endpoint: string = 'process') {
-  const localKey = getLocalApiKey();
+export async function processWithGemini(body: any, endpoint: string = 'process', manualApiKey?: string) {
+  const localKey = (manualApiKey || getLocalApiKey() || '').trim();
+  console.log(`[GeminiService] Endpoint: ${endpoint} | manualApiKey: ${manualApiKey ? 'YES' : 'NO'} | localKeyLength: ${localKey.length}`);
 
   // If we have a local key, use it directly (useful for GitHub Pages)
-  if (localKey) {
-    console.log("Attempting to use local API Key for Gemini...");
+  if (localKey.length > 5) {
+    console.log("[GeminiService] Executing CLIENT-SIDE call...");
     try {
-      const ai = new GoogleGenAI({ 
-        apiKey: localKey
-      });
+      const genAI = new GoogleGenerativeAI(localKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       let prompt = "";
       if (endpoint === 'social') {
@@ -79,12 +79,9 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
         }
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt
-      });
-
-      return { text: response.text };
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      return { text };
     } catch (error: any) {
       console.error("Local Gemini Error:", error);
       throw new Error(`Error de IA (Local): ${error.message || "Verifica tu API Key."}`);
