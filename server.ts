@@ -12,6 +12,17 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Request logger
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
+
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", time: new Date().toISOString() });
+  });
+
   const ai = new GoogleGenAI({ 
     apiKey: process.env.GEMINI_API_KEY,
     httpOptions: {
