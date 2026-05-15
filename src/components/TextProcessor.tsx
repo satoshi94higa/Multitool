@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Copy, Check, Trash2, Sparkles, Loader2, 
-  Bold, Strikethrough, Type, List, ListOrdered, Download, Italic, FileText,
-  MessageSquare
+  Bold, Strikethrough, Type, List, ListOrdered, Download, Italic
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Markdown } from 'tiptap-markdown';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 
 export default function TextProcessor() {
   const [copied, setCopied] = useState(false);
-  const [copiedMd, setCopiedMd] = useState(false);
-  const [copiedWa, setCopiedWa] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [corrections, setCorrections] = useState<string[] | null>(null);
@@ -23,7 +19,6 @@ export default function TextProcessor() {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Markdown,
       Placeholder.configure({
         placeholder: 'Empieza a escribir aquí...',
       }),
@@ -55,7 +50,10 @@ export default function TextProcessor() {
         body: JSON.stringify({ type, text: plainText }),
       });
 
-      if (!response.ok) throw new Error("Failed");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed");
+      }
       const data = await response.json();
       
       if (type === 'spelling') {
@@ -73,8 +71,9 @@ export default function TextProcessor() {
         editor.commands.setContent(data.text.trim());
         setNotification("Proceso completado.");
       }
-    } catch (error) {
-      setNotification("Error de conexión con IA.");
+    } catch (error: any) {
+      console.error('TextProcessor Error:', error);
+      setNotification(error.message || "Error de conexión con IA.");
     } finally {
       setLoading(false);
       setTimeout(() => setNotification(null), 5000);
@@ -97,48 +96,6 @@ export default function TextProcessor() {
     navigator.clipboard.writeText(editor.getText());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const copyMarkdownToClipboard = () => {
-    if (!editor) return;
-    try {
-      // @ts-ignore - tiptap-markdown adds storage.markdown.getMarkdown to editor
-      const markdown = editor.storage?.markdown?.getMarkdown?.() || editor.getText();
-      navigator.clipboard.writeText(markdown);
-      setCopiedMd(true);
-      setTimeout(() => setCopiedMd(false), 2000);
-    } catch (err) {
-      console.error(err);
-      setNotification("Error al copiar Markdown.");
-    }
-  };
-
-  const copyWhatsAppToClipboard = () => {
-    if (!editor) return;
-    try {
-      // @ts-ignore - tiptap-markdown adds storage.markdown.getMarkdown to editor
-      let text = editor.storage?.markdown?.getMarkdown?.() || editor.getText();
-      
-      // Basic Markdown to WhatsApp conversion
-      // Triple asterisks for bold + italic
-      text = text.replace(/\*\*\*(.*?)\*\*\*/g, '*_$1_*');
-      // Double asterisks for bold
-      text = text.replace(/\*\*(.*?)\*\*/g, '*$1*');
-      // Single asterisks for italic (handle carefully to avoid bold collision)
-      // We look for asterisks that are not preceded or followed by another asterisk
-      text = text.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '_$1_');
-      // Single underscores for italic (standard markdown)
-      text = text.replace(/(?<!_)_(?!_)(.*?)(?<!_)_(?!_)/g, '_$1_');
-      // Double tilde for strikethrough
-      text = text.replace(/~~(.*?)~~/g, '~$1~');
-      
-      navigator.clipboard.writeText(text);
-      setCopiedWa(true);
-      setTimeout(() => setCopiedWa(false), 2000);
-    } catch (err) {
-      console.error(err);
-      setNotification("Error al copiar para WhatsApp.");
-    }
   };
 
   const getWordCount = () => {
@@ -210,14 +167,6 @@ export default function TextProcessor() {
               {copied ? <Check size={12} /> : <Copy size={12} />}
               {copied ? 'Copiado' : 'Copiar Texto'}
             </button>
-            <button onClick={copyMarkdownToClipboard} className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm">
-              {copiedMd ? <Check size={12} /> : <FileText size={12} />}
-              {copiedMd ? 'Copiado MD' : 'Copiar MD'}
-            </button>
-            <button onClick={copyWhatsAppToClipboard} className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm">
-              {copiedWa ? <Check size={12} /> : <MessageSquare size={12} />}
-              {copiedWa ? 'Copiado WA' : 'Copiar WA'}
-            </button>
             <button onClick={downloadTxt} className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm">
               <Download size={12} /> Guardar
             </button>
@@ -278,9 +227,6 @@ export default function TextProcessor() {
               </button>
               <button onClick={() => runAiOp('spelling')} className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_black]">
                 Ortografía
-              </button>
-              <button onClick={() => runAiOp('bullets')} className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_black]">
-                Puntos
               </button>
             </div>
           </div>

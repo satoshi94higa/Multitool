@@ -40,11 +40,10 @@ export default function PercentageCalculator() {
 
   return (
     <div id="percentage-calculator" className="bg-transparent">
+      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start mb-6">
+        Calculadora de Porcentajes
+      </h1>
       <div className="flex items-center justify-between mb-8">
-        <div className="flex flex-col">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Cálculo de Porcentajes</h2>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">DATA.PERCENT_LOGIC</span>
-        </div>
         <button 
           onClick={() => { setX(''); setY(''); setZ(''); }}
           className="text-[9px] text-zinc-400 hover:text-black font-black uppercase transition-colors"

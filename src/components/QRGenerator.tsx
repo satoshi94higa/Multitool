@@ -54,11 +54,10 @@ export default function QRGenerator() {
 
   return (
     <div className="space-y-12 bg-transparent pb-4" id="qr-generator">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Matriz</h2>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">SISTEMA.CODIFICADOR_QR</span>
-        </div>
+      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
+        Generador de QR
+      </h1>
+      <div className="flex items-center justify-between mt-4">
         <div className="p-3 bg-black text-white rounded-none shadow-2xl">
           <QrCode size={20} />
         </div>

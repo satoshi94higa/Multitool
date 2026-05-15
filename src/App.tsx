@@ -1,55 +1,152 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
 import ScreenwriterIA from './components/ScreenwriterIA';
 import FuelCalculator from './components/FuelCalculator';
-import JournalistIA from './components/JournalistIA';
+import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
-import DirectorIA from './components/DirectorIA';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
 
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const toggleTeleprompter = () => setShowTeleprompter(prev => !prev);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 flex font-sans text-zinc-950 selection:bg-zinc-900 selection:text-white" id="app">
       {/* Sidebar - Sharp Swiss Style */}
-      <aside className="w-16 md:w-24 border-r border-zinc-200 flex flex-col items-center py-8 bg-white shrink-0 sticky top-0 h-screen z-[60]">
-        <div className="mb-12">
-           <div className="w-12 h-12 md:w-14 md:h-14 bg-black rounded-none shadow-2xl flex items-center justify-center group cursor-pointer transition-transform hover:scale-105 active:scale-95">
+      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-zinc-200 flex flex-col items-center py-8 bg-white shrink-0 sticky top-0 h-screen z-[60] transition-all duration-300 ease-in-out group/sidebar`}>
+        <div className="mb-12 px-4 w-full flex items-center justify-between">
+           <div className={`w-12 h-12 bg-black rounded-none shadow-2xl flex items-center justify-center group cursor-pointer transition-transform hover:scale-105 active:scale-95 flex-none`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <span className="font-black text-white text-2xl tracking-tighter italic">U</span>
            </div>
+           {!sidebarCollapsed && <span className="font-black text-xs uppercase tracking-[0.3em] ml-4 animate-in fade-in duration-500">Utility.Hub</span>}
         </div>
 
-        <nav className="flex-1 space-y-6">
+        <nav className="flex-1 space-y-2 overflow-y-auto w-full flex flex-col items-center scrollbar-hide px-3">
           <button 
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-12 h-12 rounded-none flex items-center justify-center transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black'}`}
+            onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
           >
-            <LayoutDashboard size={20} />
-            <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Panel</span>
+            <LayoutDashboard size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel Control</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Panel</span>}
           </button>
+
+          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
           
           <button 
-            onClick={toggleTeleprompter}
-            className="w-12 h-12 rounded-none flex items-center justify-center transition-all group relative text-zinc-400 hover:text-black"
+            onClick={() => scrollToSection('text-processor')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
-            <Monitor size={20} />
-            <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">Apuntador</span>
+            <SquarePen size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Procesador</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Procesador</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('screenwriter-ia')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Video size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Guionista IA</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Guionista IA</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('redactor-ia')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Newspaper size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Redactor IA</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Redactor IA</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('content-brainstormer')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Brain size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Lluvia Ideas</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Lluvia de Ideas</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('social-formatter')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Share2 size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Boost Social</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Formateador Social</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('qr-generator')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <QrCode size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Generador QR</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Generador QR</span>}
+          </button>
+
+          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
+
+          <button 
+            onClick={() => scrollToSection('percentage-calc')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Calculator size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Porcentajes</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Porcentajes</span>}
+          </button>
+
+          <button 
+            onClick={() => scrollToSection('fuel-calc')}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Zap size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Combustible</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Combustible</span>}
+          </button>
+
+          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
+
+          <button 
+            onClick={toggleTeleprompter}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <Monitor size={20} className="flex-none" />
+            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Teleprompter</span>}
+            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Apuntador</span>}
           </button>
         </nav>
 
-        <div className="mt-auto space-y-6">
-          <div className="flex flex-col items-center gap-1 opacity-20">
-             <div className="w-1 h-8 bg-zinc-950" />
-             <div className="w-1 h-2 bg-zinc-950" />
-          </div>
+        <div className="mt-auto w-full px-4 mb-4">
+          <button 
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="w-full h-10 border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors"
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
       </aside>
 
@@ -85,64 +182,60 @@ export default function App() {
         <main className="flex-1 p-8 md:p-12 pb-24 overflow-x-hidden">
           <div className="max-w-[1600px] mx-auto space-y-10">
             {/* Text Processor - Full Width */}
-            <section className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+            <section id="text-processor" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
               <div className="p-10 flex-1 scroll-smooth">
                 <TextProcessor />
               </div>
             </section>
 
-            {/* Grid for other modules */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <ScreenwriterIA />
-                </div>
+            {/* Screenwriter IA - Full Width */}
+            <section id="screenwriter-ia" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <ScreenwriterIA />
               </div>
+            </section>
 
-              <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <JournalistIA />
-                </div>
+            {/* Redactor IA - Full Width */}
+            <section id="redactor-ia" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <RedactorIA />
               </div>
+            </section>
 
-              <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <ContentBrainstormer />
-                </div>
+            {/* Lluvia de Ideas - Full Width */}
+            <section id="content-brainstormer" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <ContentBrainstormer />
               </div>
+            </section>
 
-              <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <SocialFormatter />
-                </div>
+            {/* Social Formatter - Full Width */}
+            <section id="social-formatter" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <SocialFormatter />
               </div>
+            </section>
 
-              <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <QRGenerator />
-                </div>
+            {/* QR Generator - Full Width */}
+            <section id="qr-generator" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <QRGenerator />
               </div>
+            </section>
 
-              <div className="grid grid-cols-1 gap-10">
-                <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                  <div className="p-10 flex-1 scroll-smooth">
-                    <PercentageCalculator />
-                  </div>
-                </div>
-
-                <div className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                  <div className="p-10 flex-1 scroll-smooth">
-                    <FuelCalculator />
-                  </div>
-                </div>
+            {/* Percentage Calculator - Full Width */}
+            <section id="percentage-calc" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <PercentageCalculator />
               </div>
+            </section>
 
-              <div className="lg:col-span-2 bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                <div className="p-10 flex-1 scroll-smooth">
-                  <DirectorIA />
-                </div>
+            {/* Fuel Calculator - Full Width */}
+            <section id="fuel-calc" className="bg-white border-2 border-black shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-10 flex-1 scroll-smooth">
+                <FuelCalculator />
               </div>
-            </div>
+            </section>
           </div>
         </main>
         

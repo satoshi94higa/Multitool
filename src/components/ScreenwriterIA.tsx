@@ -1,8 +1,33 @@
-import React, { useState } from 'react';
-import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw } from 'lucide-react';
 
 type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
+
+interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  value: string;
+}
+
+const AutoResizeTextarea = ({ value, onChange, ...props }: AutoResizeTextareaProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={onChange}
+      {...props}
+      style={{ ...props.style, overflow: 'hidden', resize: 'none' }}
+    />
+  );
+};
 
 interface Scene {
   scene: string;
@@ -42,10 +67,13 @@ export default function ScreenwriterIA() {
   const [copied, setCopied] = useState(false);
   const [copiedTable, setCopiedTable] = useState(false);
   const [sent, setSent] = useState(false);
+  const [synced, setSynced] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const generateScript = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const toneDescriptor = {
         casual: 'casual y relajado',
@@ -120,15 +148,19 @@ export default function ScreenwriterIA() {
         body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      if (!response.ok) throw new Error("Processing failed");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Processing failed");
+      }
       const dataResponse = await response.json();
       const data: ScriptData = JSON.parse(dataResponse.text.replace(/```json|```/g, '').trim());
       setScript(data.full_script);
       setRundown(data.rundown || []);
       setThumbnail(data.thumbnail || null);
       setKeywords(data.keywords || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating script:', error);
+      setError(error.message || "Error al generar guion");
     } finally {
       setLoading(false);
     }
@@ -158,6 +190,23 @@ export default function ScreenwriterIA() {
     
     setSent(true);
     setTimeout(() => setSent(false), 2000);
+  };
+
+  const syncScriptToRundown = () => {
+    // Intenta dividir el guion por bloques de texto (párrafos)
+    const blocks = script.split(/\n\n+/).filter(b => b.trim().length > 0);
+    
+    if (rundown.length > 0) {
+      const newRundown = [...rundown];
+      // Mapeo 1:1 o secuencial de bloques a escenas
+      for (let i = 0; i < Math.min(blocks.length, rundown.length); i++) {
+        newRundown[i].audio = blocks[i].trim();
+      }
+      setRundown(newRundown);
+      
+      setSynced(true);
+      setTimeout(() => setSynced(false), 2000);
+    }
   };
 
   const copyTableToClipboard = async () => {
@@ -227,65 +276,69 @@ export default function ScreenwriterIA() {
   const estReadingTime = Math.ceil(wordCount / 160) || 0;
 
   return (
-    <div className="space-y-12 bg-transparent pb-4" id="screenwriter-ia">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <div className="flex flex-col">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Guionismo</h2>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">AI.CONTINUITY_ENGINE</span>
-        </div>
-        
-        <div className="flex items-center gap-1 bg-zinc-50 p-1.5 rounded-none border border-zinc-200">
+    <div className="space-y-12 bg-transparent pb-4 w-full max-w-none px-4 md:px-8" id="screenwriter-ia">
+      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
+        Guionista IA
+      </h1>
+
+      <div className="space-y-6 mt-4">
+        {/* Fila 1: Plataformas */}
+        <div className="grid grid-cols-2 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
           <button
             onClick={() => setPlatform('instagram')}
-            className={`w-12 h-12 rounded-none flex items-center justify-center transition-all ${platform === 'instagram' ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'}`}
-            title="Instagram / TikTok (9:16)"
+            className={`flex items-center justify-center gap-3 py-4 transition-all font-black text-[10px] uppercase tracking-widest ${platform === 'instagram' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black'}`}
           >
-            <Instagram size={20} />
+            <Instagram size={18} />
+            <span>Instagram / TikTok</span>
           </button>
           <button
             onClick={() => setPlatform('youtube')}
-            className={`w-12 h-12 rounded-none flex items-center justify-center transition-all ${platform === 'youtube' ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'}`}
-            title="YouTube (16:9)"
+            className={`flex items-center justify-center gap-3 py-4 transition-all font-black text-[10px] uppercase tracking-widest ${platform === 'youtube' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black'}`}
           >
-            <Youtube size={20} />
+            <Youtube size={18} />
+            <span>YouTube HD</span>
           </button>
         </div>
-      </div>
 
-      <div className="space-y-10">
-        <div className="flex flex-wrap gap-3 items-center">
+        {/* Fila 2: Tonos */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTone(t)}
-              className={`px-5 py-3 rounded-none text-[9px] font-black uppercase tracking-[0.2em] transition-all border-2 ${
-                tone === t ? 'bg-black border-black text-white shadow-2xl' : 'bg-transparent border-zinc-100 text-zinc-400 hover:text-black hover:border-black'
+              className={`py-4 px-2 border-2 text-[9px] font-black uppercase tracking-widest transition-all ${
+                tone === t ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
               }`}
             >
-              {t === 'energetic' ? 'Enérgico' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}
+              {t === 'energetic' ? 'Energético' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}
             </button>
           ))}
-          
-          <div className="flex-1" />
-          
-          <button
-            onClick={() => setPowerHook(!powerHook)}
-            className={`flex items-center gap-4 px-5 py-3 rounded-none text-[9px] font-black uppercase tracking-[0.2em] transition-all border-2 ${
-              powerHook ? 'bg-zinc-50 border-black text-black shadow-lg' : 'bg-transparent border-zinc-100 text-zinc-400 hover:text-black hover:border-black'
-            }`}
-          >
-            <div className={`w-2 h-2 rounded-none ${powerHook ? 'bg-black animate-pulse' : 'bg-zinc-200'}`} />
-            Gancho de Alto Impacto
-          </button>
         </div>
+
+        {/* Fila 3: Hook */}
+        <button
+          onClick={() => setPowerHook(!powerHook)}
+          className={`w-full flex items-center justify-between px-6 py-4 border-2 transition-all group ${
+            powerHook ? 'bg-zinc-900 border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <Zap size={18} className={powerHook ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-300'} />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Gancho de Alto Impacto (Psicología Inversa)</span>
+          </div>
+          <div className={`w-10 h-5 rounded-none p-1 transition-colors ${powerHook ? 'bg-zinc-700' : 'bg-zinc-200'}`}>
+            <div className={`w-3 h-3 rounded-none transition-transform ${powerHook ? 'bg-yellow-400 translate-x-5' : 'bg-white translate-x-0'}`} />
+          </div>
+        </button>
+      </div>
 
         <div className="space-y-6">
           <div className="relative group">
-            <textarea
+            <AutoResizeTextarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Inicializar inteligencia de origen (tema, objetivo)..."
-              className="w-full h-48 p-8 bg-zinc-50 border-2 border-black/5 rounded-none text-sm focus:outline-none focus:border-black resize-none font-sans text-black placeholder-zinc-300 scrollbar-hide"
+              className="w-full min-h-[200px] p-8 bg-zinc-50 border-2 border-black/5 rounded-none text-sm focus:outline-none focus:border-black font-sans text-black placeholder-zinc-300"
             />
             <div className="absolute bottom-6 right-8 flex gap-8 text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] pointer-events-none">
               <span>Palabras: {wordCount}</span>
@@ -314,8 +367,18 @@ export default function ScreenwriterIA() {
             {loading ? <Loader2 size={20} className="animate-spin" /> : <Play size={20} />}
             {loading ? 'Compilando Inteligencia...' : 'GENERAR_GUION_IA'}
           </button>
+
+          {error && (
+            <div className="p-6 bg-red-50 border-2 border-red-500 text-red-600 animate-in fade-in slide-in-from-top-4">
+              <div className="flex items-center gap-4">
+                <Zap size={18} className="animate-pulse" />
+                <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed">
+                  [ALERTA_SISTEMA]: {error}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
       {(script || rundown.length > 0) && (
         <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -326,6 +389,14 @@ export default function ScreenwriterIA() {
                 <span>Resultado.Guion</span>
               </div>
               <div className="flex gap-4">
+                <button 
+                  onClick={syncScriptToRundown}
+                  title="Sincronizar Guion con Escaleta"
+                  className={`p-4 rounded-none transition-all shadow-xl active:scale-90 flex items-center gap-2 ${synced ? 'bg-green-500 text-white' : 'bg-zinc-800 text-white hover:bg-black'}`}
+                >
+                  <RefreshCw size={18} className={synced ? '' : 'animate-spin-slow'} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">Sinc. Escaleta</span>
+                </button>
                 <button 
                   onClick={sendToProcessor}
                   title="Send to Editor"
@@ -341,7 +412,12 @@ export default function ScreenwriterIA() {
                 </button>
               </div>
             </div>
-            <p className="text-[17px] leading-[2] text-black whitespace-pre-wrap font-serif selection:bg-black selection:text-white">{script}</p>
+            <AutoResizeTextarea
+              value={script}
+              onChange={(e) => setScript(e.target.value)}
+              className="w-full text-[17px] leading-[2] text-black bg-transparent border-none focus:ring-0 font-serif selection:bg-black selection:text-white min-h-[400px] outline-none"
+              placeholder="El guion aparecerá aquí..."
+            />
           </div>
 
           {(thumbnail || keywords.length > 0) && (
@@ -389,61 +465,153 @@ export default function ScreenwriterIA() {
               )}
             </div>
             
-            <div className="grid gap-8">
-              {rundown.map((item, idx) => (
-                <div key={idx} className="group flex flex-col p-10 bg-white border-2 border-zinc-100 hover:border-black rounded-none transition-all gap-10 relative">
-                  <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                    <div className="flex items-center gap-5">
-                      <div className="w-10 h-10 bg-black text-white rounded-none flex items-center justify-center text-[12px] font-black tracking-tighter">
-                        {String(idx + 1).padStart(2, '0')}
-                      </div>
-                      <span className="text-base font-black text-black uppercase tracking-[0.1em] italic">{item.scene}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[11px] font-mono font-black text-black bg-zinc-50 px-4 py-2 border border-zinc-200 uppercase tracking-tighter">
-                      <Clock size={14} className="opacity-40" />
-                      {item.duration}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div className="space-y-8">
-                      <div className="bg-zinc-50 p-8 border border-zinc-100">
-                        <span className="block text-[9px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4">Matriz_Visual</span>
-                        <p className="text-[12px] text-zinc-500 italic leading-relaxed uppercase tracking-tight">{item.visual}</p>
-                      </div>
-                      <div className="bg-zinc-50 p-8 border border-zinc-100">
-                        <span className="block text-[9px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4">Audio_Diálogo</span>
-                        <p className="text-[13px] text-zinc-950 leading-loose font-sans">{item.audio}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-zinc-50 p-8 grid grid-cols-2 gap-y-8 gap-x-12 border border-zinc-100">
-                      <div>
-                        <span className="block text-[9px] font-black text-black uppercase tracking-[0.3em] mb-3">Toma / Ángulo</span>
-                        <p className="text-[11px] font-mono font-black text-zinc-400 uppercase tracking-tighter">{item.technical?.shot || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-black text-black uppercase tracking-[0.3em] mb-3">Lente / Óptica</span>
-                        <p className="text-[11px] font-mono font-black text-zinc-400 uppercase tracking-tighter">{item.technical?.lens || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-black text-black uppercase tracking-[0.3em] mb-3">Movimiento</span>
-                        <p className="text-[11px] font-mono font-black text-zinc-400 uppercase tracking-tighter">{item.technical?.motion || '-'}</p>
-                      </div>
-                      <div>
-                        <span className="block text-[9px] font-black text-black uppercase tracking-[0.3em] mb-3">Iluminación</span>
-                        <p className="text-[11px] font-mono font-black text-zinc-400 uppercase tracking-tighter">{item.technical?.lighting || '-'}</p>
-                      </div>
-                      {item.sfx && (
-                        <div className="col-span-2 pt-6 border-t border-zinc-200">
-                          <span className="block text-[9px] font-black text-black uppercase tracking-[0.3em] mb-3 italic underline">Efectos.SFX</span>
-                          <p className="text-[11px] font-mono font-black text-black uppercase tracking-tighter">{item.sfx}</p>
+            <div className="border-t-2 border-black pt-4">
+              <table className="w-full border-collapse md:table-auto">
+                <thead>
+                  <tr className="bg-zinc-50 border-b-2 border-black">
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-12 md:w-16">#</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[200px]">Matriz_Visual / Audio</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-20 md:w-24">Tiempo</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[250px]">Especificaciones_Técnicas</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200">
+                  {rundown.map((item, idx) => (
+                    <tr key={idx} className="group hover:bg-zinc-50 transition-colors">
+                      <td className="p-2 md:p-4 align-top">
+                        <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
+                          {String(idx + 1).padStart(2, '0')}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="p-2 md:p-4 align-top space-y-4">
+                        <div className="flex flex-col gap-1">
+                          <input 
+                            value={item.scene}
+                            onChange={(e) => {
+                              const newRundown = [...rundown];
+                              newRundown[idx].scene = e.target.value;
+                              setRundown(newRundown);
+                            }}
+                            className="text-[9px] font-black uppercase text-black tracking-widest bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                          />
+                          <AutoResizeTextarea 
+                            value={item.visual}
+                            onChange={(e) => {
+                              const newRundown = [...rundown];
+                              newRundown[idx].visual = e.target.value;
+                              setRundown(newRundown);
+                            }}
+                            className="text-[10px] md:text-[11px] text-zinc-500 italic uppercase leading-tight bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            rows={2}
+                          />
+                        </div>
+                        <div className="p-3 md:p-4 bg-white border-l-4 border-black group-hover:border-zinc-400 transition-colors shadow-sm">
+                          <AutoResizeTextarea 
+                            value={item.audio}
+                            onChange={(e) => {
+                              const newValue = e.target.value;
+                              const newRundown = [...rundown];
+                              newRundown[idx].audio = newValue;
+                              setRundown(newRundown);
+                              const fullScript = newRundown.map(r => r.audio).join('\n\n');
+                              setScript(fullScript);
+                            }}
+                            className="w-full text-[12px] md:text-[13px] leading-relaxed text-black font-sans bg-transparent border-none focus:ring-0 p-0 h-auto min-h-[50px] outline-none"
+                          />
+                        </div>
+                      </td>
+                      <td className="p-2 md:p-4 align-top">
+                        <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono font-black text-black">
+                          <Clock size={12} className="opacity-30" />
+                          <input 
+                            value={item.duration}
+                            onChange={(e) => {
+                              const newRundown = [...rundown];
+                              newRundown[idx].duration = e.target.value;
+                              setRundown(newRundown);
+                            }}
+                            className="bg-transparent border-none focus:ring-0 p-0 w-full text-left outline-none"
+                          />
+                        </div>
+                      </td>
+                      <td className="p-2 md:p-4 align-top">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                          <div className="space-y-1">
+                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Plano</span>
+                            <input 
+                              value={item.technical?.shot || ''}
+                              onChange={(e) => {
+                                const newRundown = [...rundown];
+                                if (newRundown[idx].technical) {
+                                  newRundown[idx].technical!.shot = e.target.value;
+                                  setRundown(newRundown);
+                                }
+                              }}
+                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Óptica</span>
+                            <input 
+                              value={item.technical?.lens || ''}
+                              onChange={(e) => {
+                                const newRundown = [...rundown];
+                                if (newRundown[idx].technical) {
+                                  newRundown[idx].technical!.lens = e.target.value;
+                                  setRundown(newRundown);
+                                }
+                              }}
+                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Movimiento</span>
+                            <input 
+                              value={item.technical?.motion || ''}
+                              onChange={(e) => {
+                                const newRundown = [...rundown];
+                                if (newRundown[idx].technical) {
+                                  newRundown[idx].technical!.motion = e.target.value;
+                                  setRundown(newRundown);
+                                }
+                              }}
+                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Luz</span>
+                            <input 
+                              value={item.technical?.lighting || ''}
+                              onChange={(e) => {
+                                const newRundown = [...rundown];
+                                if (newRundown[idx].technical) {
+                                  newRundown[idx].technical!.lighting = e.target.value;
+                                  setRundown(newRundown);
+                                }
+                              }}
+                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            />
+                          </div>
+                          {item.sfx && (
+                            <div className="col-span-1 sm:col-span-2 pt-2 mt-2 border-t border-zinc-100">
+                              <span className="block text-[7px] md:text-[8px] font-black text-red-500 uppercase tracking-widest italic">SFX_REQ</span>
+                              <input 
+                                value={item.sfx}
+                                onChange={(e) => {
+                                  const newRundown = [...rundown];
+                                  newRundown[idx].sfx = e.target.value;
+                                  setRundown(newRundown);
+                                }}
+                                className="text-[9px] md:text-[10px] font-mono text-black font-bold uppercase bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ export default function SocialFormatter() {
   const [mode, setMode] = useState<Mode>('social');
   const [tone, setTone] = useState<Tone>('casual');
   const [noMarkdown, setNoMarkdown] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const charLimits = {
     twitter: 280,
@@ -25,6 +26,7 @@ export default function SocialFormatter() {
     setLoading(true);
     setReport(null);
     setOutput('');
+    setError(null);
     
     try {
       const response = await fetch("/api/gemini/social", {
@@ -33,7 +35,10 @@ export default function SocialFormatter() {
         body: JSON.stringify({ input, mode, tone, noMarkdown }),
       });
 
-      if (!response.ok) throw new Error("Processing failed");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Processing failed");
+      }
       const data = await response.json();
       const responseText = data.text || '';
 
@@ -49,8 +54,9 @@ export default function SocialFormatter() {
       } else {
         setOutput(responseText);
       }
-    } catch (error) {
-      setOutput("Error al procesar.");
+    } catch (error: any) {
+      console.error('Social Booster Error:', error);
+      setError(error.message || "Error al procesar.");
     } finally {
       setLoading(false);
     }
@@ -64,12 +70,10 @@ export default function SocialFormatter() {
 
   return (
     <div id="social-booster" className="bg-transparent">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex flex-col">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo Social</h2>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">AI.SOCIAL_ENGINE</span>
-        </div>
-        
+      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start mb-6">
+        Potenciador Social
+      </h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         {mode === 'social' && (
           <label className="flex items-center gap-3 cursor-pointer group">
             <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-black transition-colors">Texto Plano</span>
@@ -145,6 +149,17 @@ export default function SocialFormatter() {
           {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
           {loading ? 'Sintetizando...' : `Ejecutar Lógica de ${mode.toUpperCase()}`}
         </button>
+
+        {error && (
+          <div className="p-6 bg-red-50 border-2 border-red-500 text-red-600 animate-in fade-in slide-in-from-top-4">
+            <div className="flex items-center gap-4">
+              <Sparkles size={18} className="animate-pulse" />
+              <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed">
+                [ALERTA_SISTEMA]: {error}
+              </p>
+            </div>
+          </div>
+        )}
 
         {output && (
           <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-700">

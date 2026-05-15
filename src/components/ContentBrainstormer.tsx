@@ -16,10 +16,12 @@ export default function ContentBrainstormer() {
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState<BrainstormOutput | null>(null);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const generateIdeas = async () => {
     if (!input.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const prompt = `Actúa como un estratega de contenido creativo y productor multimedia.
       Tengo que cubrir la siguiente actividad/tema: "${input}"
@@ -51,12 +53,16 @@ export default function ContentBrainstormer() {
         body: JSON.stringify({ customPrompt: prompt }),
       });
 
-      if (!response.ok) throw new Error("Processing failed");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Processing failed");
+      }
       const data = await response.json();
       const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setIdeas(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating ideas:', error);
+      setError(error.message || "Error al generar ideas");
     } finally {
       setLoading(false);
     }
@@ -93,12 +99,10 @@ export default function ContentBrainstormer() {
 
   return (
     <div className="space-y-12 bg-transparent pb-4" id="content-brainstormer">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <div className="flex flex-col">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Módulo de Ideación</h2>
-          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-tighter">AI.BRAINSTORM_STRATEGY</span>
-        </div>
-        
+      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
+        Lluvia de Ideas
+      </h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mt-4">
         <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-none border border-zinc-200">
           <div className="flex items-center gap-3 px-3">
             <Users size={16} className="text-zinc-400" />
@@ -152,6 +156,17 @@ export default function ContentBrainstormer() {
             {loading ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
             {loading ? 'Sintetizando Flujos Creativos...' : 'INICIAR_LLUVIA_DE_IDEAS'}
           </button>
+
+          {error && (
+            <div className="p-6 bg-red-50 border-2 border-red-500 text-red-600 animate-in fade-in slide-in-from-top-4">
+              <div className="flex items-center gap-4">
+                <Zap size={18} className="animate-pulse" />
+                <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed">
+                  [ALERTA_SISTEMA]: {error}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

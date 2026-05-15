@@ -209,10 +209,9 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
       {/* Header / Top Controls */}
       <div className={`absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 ${theme === 'light' ? 'bg-white border-b-2 border-black' : 'bg-black/40 backdrop-blur-md border-b border-white/5'} transition-all duration-500 ${isPlaying && !showConfig ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'}`}>
         <div className="flex items-center gap-4">
-          <div className={`${theme === 'light' ? 'bg-black' : 'bg-white/10'} p-2 rounded-none shadow-xl`}>
-            <Monitor className="text-white" size={18} />
-          </div>
-          <h2 className={`text-[11px] font-black tracking-[0.4em] uppercase ${theme === 'light' ? 'text-black' : 'text-white opacity-70'}`}>APUNTADOR_v4_SERIE</h2>
+          <h1 className={`text-xl font-black uppercase tracking-tighter border-b-4 pb-2 inline-block self-start ${theme === 'light' ? 'text-black border-black' : 'text-white border-white/20'}`}>
+            Teleprompter
+          </h1>
         </div>
         
         <div className="flex items-center gap-4">
