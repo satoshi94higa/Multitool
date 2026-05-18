@@ -43,7 +43,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
 }
 
 async function executeClientSide(body: any, endpoint: string, apiKey: string) {
-  console.log(`[GeminiService] Executing Gemini call via direct FETCH (Client Side) for: ${endpoint}`);
+  console.log(`[GeminiService] Executing Gemini call on Client Side for: ${endpoint}`);
   
   let prompt = "";
   if (endpoint === 'process') {
@@ -83,21 +83,34 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     }
   }
 
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
+  const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-flash-latest", "gemini-pro"];
+  let lastError = "";
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "Error en API de Google");
-    
-    return { text: data.candidates?.[0]?.content?.parts?.[0]?.text || "" };
-  } catch (error: any) {
-    console.error("[GeminiService] Client Direct Error:", error);
-    throw new Error("Error en la IA local: " + (error.message || "Verifica tu API Key"));
+  for (const model of modelsToTry) {
+    try {
+      console.log(`[GeminiService] Trying local model: ${model}`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return { text: data.candidates?.[0]?.content?.parts?.[0]?.text || "" };
+      } else {
+        lastError = data.error?.message || "Error desconocido";
+        console.warn(`[GeminiService] Model ${model} failed: ${lastError}`);
+        // Si es un error de API Key inválida, no seguimos probando modelos
+        if (response.status === 401 || response.status === 403) break;
+      }
+    } catch (err: any) {
+      lastError = err.message;
+      console.warn(`[GeminiService] Fetch error for ${model}: ${lastError}`);
+    }
   }
+
+  throw new Error(`Error en la IA local: ${lastError}. Verifica tu API Key y que el modelo esté disponible en tu región.`);
 }
