@@ -9,7 +9,7 @@ import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
-import { processWithGemini, getLocalApiKey, setLocalApiKey } from './services/geminiService';
+import { processWithGemini, getLocalApiKey, setLocalApiKey, getLocalModel, setLocalModel } from './services/geminiService';
 
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
@@ -18,10 +18,12 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
+  const [tempModel, setTempModel] = useState('gemini-2.0-flash');
   const [testingKey, setTestingKey] = useState(false);
 
   useEffect(() => {
     setTempApiKey(getLocalApiKey());
+    setTempModel(getLocalModel());
   }, []);
 
   const handleTestKey = async () => {
@@ -48,6 +50,7 @@ export default function App() {
   const handleSaveSettings = () => {
     const trimmedKey = tempApiKey.trim();
     setLocalApiKey(trimmedKey);
+    setLocalModel(tempModel);
     setTempApiKey(trimmedKey);
     setShowSettings(false);
     showNotification('Configuración guardada correctamente');
@@ -345,6 +348,33 @@ export default function App() {
                    >
                      {testingKey ? 'Probando...' : 'Probar Clave Local'}
                    </button>
+                </div>
+
+                <div className="space-y-4">
+                   <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                     <Brain size={14} />
+                     Modelo de Inteligencia Artificial
+                   </label>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {[
+                        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Rápido, estable y moderno' },
+                        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Máxima velocidad y cuota' },
+                        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', desc: 'Máxima inteligencia (lento)' },
+                        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Preview', desc: 'Experimental (Alta RPD)' }
+                      ].map(model => (
+                        <button
+                          key={model.id}
+                          onClick={() => setTempModel(model.id)}
+                          className={`p-4 border-2 text-left transition-all ${tempModel === model.id ? 'border-black bg-zinc-50 shadow-[4px_4px_0px_rgba(0,0,0,1)]' : 'border-zinc-100 bg-white hover:border-zinc-300'}`}
+                        >
+                          <div className="font-bold text-xs uppercase tracking-tighter">{model.name}</div>
+                          <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{model.desc}</div>
+                        </button>
+                      ))}
+                   </div>
+                   <p className="text-[10px] text-zinc-500 leading-relaxed">
+                     <strong className="text-black">Tip:</strong> Si tienes errores de "Quota Exceeded" (RPD), intenta cambiar a <strong className="text-black">Gemini 1.5 Flash</strong>, que suele tener límites más amplios.
+                   </p>
                 </div>
 
                 <div className="pt-4 flex gap-4">

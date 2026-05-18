@@ -1,13 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 
 const STORAGE_KEY = 'gemini_api_key_v1';
+const MODEL_KEY = 'gemini_model_v1';
 
 export const getLocalApiKey = () => typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) || '' : '';
 export const setLocalApiKey = (key: string) => typeof window !== 'undefined' ? localStorage.setItem(STORAGE_KEY, key) : null;
 
+export const getLocalModel = () => typeof window !== 'undefined' ? localStorage.getItem(MODEL_KEY) || 'gemini-2.0-flash' : 'gemini-2.0-flash';
+export const setLocalModel = (model: string) => typeof window !== 'undefined' ? localStorage.setItem(MODEL_KEY, model) : null;
+
 export async function processWithGemini(body: any, endpoint: string = 'process', customKey?: string) {
   console.log(`[GeminiService] Attempting to call backend API for endpoint: ${endpoint}`);
   const apiPath = `/api/gemini/${endpoint}`;
+  
+  // Attach current model to body if not present
+  if (!body.model) {
+    body.model = getLocalModel();
+  }
   
   // Try server first
   try {
@@ -83,10 +92,13 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     }
   }
 
-  const modelsToTry = ["gemini-3-flash-preview", "gemini-flash-latest", "gemini-2.5-flash-image"];
+  const modelsToTry = [body.model || getLocalModel(), "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest"];
   let lastError = "";
+  
+  // Filter out duplicates and invalid models
+  const uniqueModels = Array.from(new Set(modelsToTry.filter(m => m && typeof m === 'string')));
 
-  for (const model of modelsToTry) {
+  for (const model of uniqueModels) {
     try {
       console.log(`[GeminiService] Trying local model: ${model}`);
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {

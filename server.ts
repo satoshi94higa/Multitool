@@ -74,7 +74,7 @@ app.post("/api/gemini/process", async (req, res) => {
 
     const client = getAI();
     const result = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: req.body.model || "gemini-2.0-flash",
       contents: fullContent
     });
 
@@ -111,7 +111,7 @@ app.post("/api/gemini/social", async (req, res) => {
 
     const client = getAI();
     const result = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: req.body.model || "gemini-2.0-flash",
       contents: `${prompt}\n\nTexto: "${input}"`
     });
 
