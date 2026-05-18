@@ -127,7 +127,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
+      const response = await generateContentWithRetry("gemini-3-flash-preview", [{ role: 'user', parts: [{ text: fullContent }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {
@@ -172,7 +172,7 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
+      const response = await generateContentWithRetry("gemini-3-flash-preview", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {

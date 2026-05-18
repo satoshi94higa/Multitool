@@ -27,9 +27,9 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
   // If we have a local key, use it directly (useful for GitHub Pages or when server is restricted)
   if (localKey.length > 5) {
     console.log("[GeminiService] Executing CLIENT-SIDE call...");
+    const modelName = "gemini-2.0-flash";
     try {
       const genAI = new GoogleGenerativeAI(localKey);
-      const modelName = "gemini-1.5-flash";
       console.log(`[GeminiServiceClient] Using model: ${modelName}`);
       const model = genAI.getGenerativeModel({ model: modelName });
 
@@ -96,7 +96,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
       
       // Attempt to identify if it's a model-not-found error
       if (errorMsg.includes("404") || errorMsg.includes("not found")) {
-        throw new Error(`Modelo no encontrado (404). Tu clave API podría no tener acceso a gemini-1.5-flash o necesitas actualizar el navegador.`);
+        throw new Error(`Modelo no encontrado (404). Tu clave API podría no tener acceso a ${modelName} o necesitas habilitar el modelo en Google AI Studio.`);
       }
 
       // If quota exceeded, logging it and trying server fallback instead of failing immediately
