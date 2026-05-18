@@ -18,7 +18,7 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
-  const [tempModel, setTempModel] = useState('gemini-2.0-flash');
+  const [tempModel, setTempModel] = useState('gemini-3-flash-preview');
   const [testingKey, setTestingKey] = useState(false);
 
   useEffect(() => {
@@ -357,10 +357,10 @@ export default function App() {
                    </label>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {[
-                        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', desc: 'Rápido, estable y moderno' },
-                        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', desc: 'Máxima velocidad y cuota' },
-                        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', desc: 'Máxima inteligencia (lento)' },
-                        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Preview', desc: 'Experimental (Alta RPD)' }
+                        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Preview', desc: 'Sugerido para creación (Alta Precisión)', color: 'border-zinc-100' },
+                        { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Lite', desc: 'Máxima Velocidad y Cuota RPD', color: 'border-zinc-100' },
+                        { id: 'gemini-flash-latest', name: 'Gemini Flash Stable', desc: 'Equilibrio perfecto (Recomendado)', color: 'border-zinc-100' },
+                        { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', desc: 'Máximo Razonamiento (Más Lento)', color: 'border-zinc-100' }
                       ].map(model => (
                         <button
                           key={model.id}
@@ -372,8 +372,8 @@ export default function App() {
                         </button>
                       ))}
                    </div>
-                   <p className="text-[10px] text-zinc-500 leading-relaxed">
-                     <strong className="text-black">Tip:</strong> Si tienes errores de "Quota Exceeded" (RPD), intenta cambiar a <strong className="text-black">Gemini 1.5 Flash</strong>, que suele tener límites más amplios.
+                   <p className="text-[10px] text-zinc-500 leading-relaxed font-bold italic">
+                     <span className="text-black not-italic underline decoration-red-500 decoration-2">IMPORTANTE:</span> Si recibes errores de "Quota Exceeded" (RPD) frecuentemente, te recomendamos cambiar a <strong className="text-black">Gemini 3.1 Lite</strong>.
                    </p>
                 </div>
 

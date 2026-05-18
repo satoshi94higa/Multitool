@@ -73,8 +73,11 @@ app.post("/api/gemini/process", async (req, res) => {
     }
 
     const client = getAI();
+    const modelName = req.body.model || "gemini-3-flash-preview";
+    console.log(`[Gemini] Calling model: ${modelName}`);
+    
     const result = await client.models.generateContent({
-      model: req.body.model || "gemini-2.0-flash",
+      model: modelName,
       contents: fullContent
     });
 
@@ -110,8 +113,11 @@ app.post("/api/gemini/social", async (req, res) => {
     }
 
     const client = getAI();
+    const modelName = req.body.model || "gemini-3-flash-preview";
+    console.log(`[Gemini Social] Calling model: ${modelName}`);
+
     const result = await client.models.generateContent({
-      model: req.body.model || "gemini-2.0-flash",
+      model: modelName,
       contents: `${prompt}\n\nTexto: "${input}"`
     });
 

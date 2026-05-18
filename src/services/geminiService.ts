@@ -6,16 +6,17 @@ const MODEL_KEY = 'gemini_model_v1';
 export const getLocalApiKey = () => typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) || '' : '';
 export const setLocalApiKey = (key: string) => typeof window !== 'undefined' ? localStorage.setItem(STORAGE_KEY, key) : null;
 
-export const getLocalModel = () => typeof window !== 'undefined' ? localStorage.getItem(MODEL_KEY) || 'gemini-2.0-flash' : 'gemini-2.0-flash';
+export const getLocalModel = () => typeof window !== 'undefined' ? localStorage.getItem(MODEL_KEY) || 'gemini-3-flash-preview' : 'gemini-3-flash-preview';
 export const setLocalModel = (model: string) => typeof window !== 'undefined' ? localStorage.setItem(MODEL_KEY, model) : null;
 
 export async function processWithGemini(body: any, endpoint: string = 'process', customKey?: string) {
-  console.log(`[GeminiService] Attempting to call backend API for endpoint: ${endpoint}`);
+  const currentModel = getLocalModel();
+  console.log(`[GeminiService] Calling ${endpoint} with model: ${body.model || currentModel}`);
   const apiPath = `/api/gemini/${endpoint}`;
   
   // Attach current model to body if not present
   if (!body.model) {
-    body.model = getLocalModel();
+    body.model = currentModel;
   }
   
   // Try server first
@@ -92,7 +93,8 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     }
   }
 
-  const modelsToTry = [body.model || getLocalModel(), "gemini-2.0-flash", "gemini-1.5-flash", "gemini-flash-latest"];
+  const preferredModel = body.model || getLocalModel();
+  const modelsToTry = [preferredModel, "gemini-3-flash-preview", "gemini-3.1-flash-lite", "gemini-flash-latest"];
   let lastError = "";
   
   // Filter out duplicates and invalid models
