@@ -1,22 +1,29 @@
 import express from "express";
 import path from "path";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import cors from "cors";
 
 dotenv.config();
 
-let genAI: GoogleGenerativeAI | null = null;
+let ai: GoogleGenAI | null = null;
 
 function getAI() {
-  if (!genAI) {
+  if (!ai) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY no configurada. Por favor, añádela en la configuración de Vercel/Ambiente.");
+      throw new Error("GEMINI_API_KEY no configurada. Por favor, añádela en la configuración de Secrets.");
     }
-    genAI = new GoogleGenerativeAI(apiKey);
+    ai = new GoogleGenAI({ 
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-  return genAI;
+  return ai;
 }
 
 const app = express();
@@ -24,64 +31,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logger
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  if (req.method === 'POST') {
-    console.log(`[${timestamp}] ${req.method} ${req.url} - Body sent`);
-  } else {
-    console.log(`[${timestamp}] ${req.method} ${req.url}`);
-  }
-  next();
-});
-
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ 
     status: "ok", 
     time: new Date().toISOString(),
-    env: process.env.NODE_ENV,
     aiConfigured: !!process.env.GEMINI_API_KEY
   });
 });
-
-async function generateContentWithRetry(modelName: string, contents: any) {
-  const client = getAI();
-  const model = client.getGenerativeModel({ model: modelName });
-  
-  const maxRetries = 3;
-  let lastError: any;
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      console.log(`[GeminiServer] Calling ${modelName}...`);
-      
-      // Adapt contents for @google/generative-ai
-      // contents usually looks like [{ role: 'user', parts: [{ text: "..." }] }]
-      const result = await model.generateContent({
-        contents: contents
-      });
-      const response = await result.response;
-      return { text: response.text() };
-    } catch (error: any) {
-      lastError = error;
-      const errorStr = String(error.message || error);
-      const status = error.status || (errorStr.includes('429') ? 429 : 500);
-      
-      if (status === 429) {
-        if (i < maxRetries - 1) {
-          const delay = Math.pow(2, i) * 2000 + Math.random() * 1000;
-          console.log(`[GeminiServer] Quota reached (429). Retrying in ${Math.round(delay)}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-        throw new Error("La cuota gratuita de la IA se ha agotado por hoy. Por favor, intenta de nuevo más tarde.");
-      }
-      throw error;
-    }
-  }
-  throw lastError;
-}
 
 // Gemini API Proxy
 app.post("/api/gemini/process", async (req, res) => {
@@ -115,23 +72,18 @@ app.post("/api/gemini/process", async (req, res) => {
       return res.status(400).json({ error: "No hay contenido para procesar." });
     }
 
-    // Use 2.0-flash
-    const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
-    res.json({ text: response.text });
+    const client = getAI();
+    const result = await client.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: fullContent
+    });
+
+    res.json({ text: result.text });
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    
-    // Check if error is from Vercel's AI Gateway
-    const errorStr = String(error.message || error).toLowerCase();
-    if (errorStr.includes("ai gateway") || errorStr.includes("credit card")) {
-      return res.status(502).json({ 
-        error: "Vercel está bloqueando la conexión de IA. Por favor, ve a tu panel de Vercel y desactiva 'AI Gateway' en la configuración del proyecto o añade una tarjeta para verificar tu cuenta." 
-      });
-    }
-
-    const status = error.status || (errorStr.includes('429') ? 429 : 500);
-    res.status(status === 429 ? 429 : 500).json({ 
-      error: status === 429 ? "Cuota de Gemini agotada. Reintenta en un minuto." : (error.message || "Error en el servicio de IA.")
+    const status = error.status || 500;
+    res.status(status).json({ 
+      error: error.message || "Error en el servicio de IA."
     });
   }
 });
@@ -148,40 +100,40 @@ app.post("/api/gemini/social", async (req, res) => {
       ${noMarkdown ? 'IMPORTANTE: No uses negritas o cursivas.' : ''}
       Solo devuelve el texto final formateado.`;
     } else if (mode === 'grammar') {
-      prompt = `Corrige la gramática y ortografía. Devuelve JSON: {"corrected": "...", "changes": [], "tips": []}`;
+      prompt = `Actúa como corrector gramatical experto. Corrige el texto y devuelve estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}`;
     } else if (mode === 'emojis') {
       prompt = `Agrega emojis relevantes al siguiente texto sin cambiar las palabras originales.`;
     } else if (mode === 'cta') {
-      prompt = `Genera 3 Call to Action cortos basados en: ${input}`;
+      prompt = `Genera 3 Call to Action cortos basados en: ${input}. Tono: ${toneLabel}.`;
     } else if (mode === 'hooks') {
-      prompt = `Genera 3 Hooks impactantes basados en: ${input}`;
+      prompt = `Genera 3 Hooks impactantes basados en: ${input}. Tono: ${toneLabel}.`;
     }
 
-    const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
-    res.json({ text: response.text });
+    const client = getAI();
+    const result = await client.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `${prompt}\n\nTexto: "${input}"`
+    });
+
+    res.json({ text: result.text });
   } catch (error: any) {
     console.error("Gemini Social Error:", error);
-    const errorStr = String(error.message || error).toLowerCase();
-    const status = error.status || (errorStr.includes('429') ? 429 : 500);
-    res.status(status === 429 ? 429 : 500).json({ 
-      error: status === 429 ? "Saturación de IA momentánea. Reintenta pronto." : (error.message || "Error al procesar.")
+    const status = error.status || 500;
+    res.status(status).json({ 
+      error: error.message || "Error al procesar con IA."
     });
   }
 });
 
 // Static files / Vite
-async function setupApp() {
+async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    try {
-      const { createServer: createViteServer } = await import("vite");
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa",
-      });
-      app.use(vite.middlewares);
-    } catch (err) {
-      console.error("Vite Middleware Error:", err);
-    }
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
@@ -193,17 +145,11 @@ async function setupApp() {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
+
+  const PORT = 3000;
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 }
 
-export default app;
-
-const PORT = Number(process.env.PORT) || 3000;
-const isVercel = !!process.env.VERCEL;
-
-setupApp().then(() => {
-  if (!isVercel) {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  }
-});
+startServer();

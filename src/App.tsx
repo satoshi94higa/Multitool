@@ -9,48 +9,13 @@ import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
-import { processWithGemini, getLocalApiKey, setLocalApiKey } from './services/geminiService';
+import { processWithGemini } from './services/geminiService';
 
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState('');
-  const [testingKey, setTestingKey] = useState(false);
-
-  useEffect(() => {
-    setTempApiKey(getLocalApiKey());
-  }, []);
-
-  const handleTestKey = async () => {
-    if (!tempApiKey.trim()) {
-      showNotification('Ingresa una clave para probar');
-      return;
-    }
-    setTestingKey(true);
-    try {
-      // Usamos una operación simple para probar
-      const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process', tempApiKey);
-      if (result.text.includes('OK')) {
-        showNotification('¡Clave válida!');
-      } else {
-        showNotification('Respuesta inesperada');
-      }
-    } catch (err: any) {
-      showNotification(`Error: ${err.message}`);
-    } finally {
-      setTestingKey(false);
-    }
-  };
-
-  const handleSaveSettings = () => {
-    const trimmedKey = tempApiKey.trim();
-    setLocalApiKey(trimmedKey);
-    setTempApiKey(trimmedKey);
-    setShowSettings(false);
-    showNotification('Configuración guardada correctamente');
-  };
 
   const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
 
@@ -320,50 +285,23 @@ export default function App() {
                 </div>
                 <div>
                    <h2 className="text-2xl font-black uppercase tracking-tighter italic">Configuración</h2>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Preferencias del Sistema (GitHub Pages)</p>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Preferencias del Sistema</p>
                 </div>
              </div>
 
              <div className="space-y-8">
                 <div className="space-y-4">
-                   <div className="flex items-center justify-between">
-                      <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                        <Key size={14} />
-                        Gemini API Key
-                      </label>
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-zinc-400 hover:text-black underline">Obtener clave</a>
-                   </div>
-                   <input 
-                      type="password"
-                      value={tempApiKey || ''}
-                      onChange={(e) => setTempApiKey(e.target.value)}
-                      placeholder="Pega tu clave aquí..."
-                      className="w-full h-14 bg-zinc-50 border-2 border-zinc-100 px-6 font-mono text-sm focus:border-black focus:bg-white outline-none transition-all placeholder:text-zinc-300"
-                   />
-                   <p className="text-[10px] text-zinc-500 leading-relaxed">
-                     <strong className="text-black">Nota:</strong> Al usar GitHub Pages, no hay servidor para proteger tu clave. Esta clave se guarda <strong>solo en tu navegador</strong> (localStorage) para permitir las funciones de IA.
+                   <p className="text-sm text-zinc-500 leading-relaxed">
+                     Esta suite está configurada para usar el servidor central de IA. No es necesario realizar configuraciones adicionales de API Key.
                    </p>
-                   <button 
-                     onClick={handleTestKey}
-                     disabled={testingKey || !tempApiKey.trim()}
-                     className="w-full h-10 border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors disabled:opacity-50"
-                   >
-                     {testingKey ? 'Probando...' : 'Probar Clave'}
-                   </button>
                 </div>
 
                 <div className="pt-4 flex gap-4">
                   <button 
-                    onClick={handleSaveSettings}
+                    onClick={() => setShowSettings(false)}
                     className="flex-1 h-14 bg-black text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-colors shadow-xl"
                   >
-                    Guardar Cambios
-                  </button>
-                  <button 
-                    onClick={() => setShowSettings(false)}
-                    className="px-8 h-14 border-2 border-black font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-50 transition-colors"
-                  >
-                    Cerrar
+                    Cerrar Configuración
                   </button>
                 </div>
              </div>
