@@ -173,8 +173,8 @@ export default function TextProcessor() {
       </div>
 
       {/* Editor Area */}
-      <div className="flex-1 min-h-[400px] md:min-h-[500px] flex flex-col relative group">
-        <div className="flex-1 flex flex-col bg-zinc-50 border-2 border-black/10 focus-within:border-black transition-all relative overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-[400px] md:min-h-[500px]">
+        <div className="flex-1 flex flex-col bg-zinc-50 border-2 border-black/10 focus-within:border-black transition-all relative overflow-hidden group">
           <EditorContent editor={editor} className="flex-1 overflow-auto bg-transparent prose-zinc" />
           
           {loading && (
@@ -189,24 +189,6 @@ export default function TextProcessor() {
           {notification && (
             <div className="absolute top-4 right-4 md:right-8 bg-black text-white px-5 py-3 text-[10px] font-black uppercase tracking-widest z-50 animate-in fade-in slide-in-from-top-4 shadow-2xl">
               {notification}
-            </div>
-          )}
-
-          {corrections && corrections.length > 0 && !loading && (
-            <div className="absolute top-8 right-4 md:right-8 w-64 bg-white border-2 border-black p-5 shadow-[10px_10px_0px_black] z-50 animate-in slide-in-from-right-4">
-              <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-2">
-                <span className="text-[10px] font-black uppercase tracking-tighter">Cambios Sugeridos</span>
-                <button onClick={() => setCorrections(null)} className="text-zinc-400 hover:text-black">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <ul className="space-y-3">
-                {corrections.map((c, i) => (
-                  <li key={i} className="text-[10px] leading-tight text-zinc-600 border-l-2 border-zinc-200 pl-3">
-                    {c}
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
 
@@ -229,6 +211,29 @@ export default function TextProcessor() {
             </div>
           </div>
         </div>
+
+        {/* AI Corrections Panel */}
+        {corrections && corrections.length > 0 && !loading && (
+          <div className="w-full lg:w-72 bg-white border-2 border-black p-5 shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[10px_10px_0px_black] animate-in slide-in-from-right-4 h-fit sticky top-24">
+            <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-2">
+              <span className="text-[10px] font-black uppercase tracking-tighter">Sugerencias Recientes</span>
+              <button onClick={() => setCorrections(null)} className="text-zinc-400 hover:text-black hover:bg-zinc-50 p-1">
+                <Trash2 size={14} />
+              </button>
+            </div>
+            <ul className="space-y-4">
+              {corrections.map((c, i) => (
+                <li key={i} className="text-[10px] leading-relaxed text-zinc-600 border-l-2 border-black pl-4">
+                  <span className="font-mono text-zinc-300 block mb-1">#{String(i + 1).padStart(2, '0')}</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 pt-4 border-t border-zinc-100 italic text-[8px] text-zinc-300 uppercase tracking-widest">
+              Las correcciones se aplican automáticamente al texto
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer Info */}
