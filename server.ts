@@ -1,12 +1,23 @@
 import express from "express";
 import path from "path";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 import cors from "cors";
 
 dotenv.config();
 
-let ai: any = null;
+let genAI: GoogleGenerativeAI | null = null;
+
+function getAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY no configurada. Por favor, añádela en la configuración de Vercel/Ambiente.");
+    }
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
 
 const app = express();
 app.use(cors());
@@ -30,14 +41,13 @@ app.get("/api/health", (req, res) => {
     status: "ok", 
     time: new Date().toISOString(),
     env: process.env.NODE_ENV,
-    aiInitialized: !!ai
+    aiConfigured: !!process.env.GEMINI_API_KEY
   });
 });
 
 async function generateContentWithRetry(modelName: string, contents: any) {
-  if (!ai) {
-    throw new Error("Servicio de IA no disponible en este momento.");
-  }
+  const client = getAI();
+  const model = client.getGenerativeModel({ model: modelName });
   
   const maxRetries = 3;
   let lastError: any;
@@ -45,14 +55,18 @@ async function generateContentWithRetry(modelName: string, contents: any) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       console.log(`[GeminiServer] Calling ${modelName}...`);
-      const result = await ai.models.generateContent({
-        model: modelName,
+      
+      // Adapt contents for @google/generative-ai
+      // contents usually looks like [{ role: 'user', parts: [{ text: "..." }] }]
+      const result = await model.generateContent({
         contents: contents
       });
-      return { text: result.text };
+      const response = await result.response;
+      return { text: response.text() };
     } catch (error: any) {
       lastError = error;
-      const status = error.status || (error.message?.includes('429') ? 429 : 500);
+      const errorStr = String(error.message || error);
+      const status = error.status || (errorStr.includes('429') ? 429 : 500);
       
       if (status === 429) {
         if (i < maxRetries - 1) {
@@ -146,19 +160,6 @@ app.post("/api/gemini/social", async (req, res) => {
 
 // Static files / Vite
 async function setupApp() {
-  // Initialize AI
-  try {
-    if (process.env.GEMINI_API_KEY) {
-      ai = new GoogleGenAI({
-        apiKey: process.env.GEMINI_API_KEY,
-        httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
-      });
-      console.log("Gemini API initialized");
-    }
-  } catch (err) {
-    console.error("AI Init Error:", err);
-  }
-
   if (process.env.NODE_ENV !== "production") {
     try {
       const { createServer: createViteServer } = await import("vite");
