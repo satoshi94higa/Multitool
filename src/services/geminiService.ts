@@ -29,7 +29,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
     console.log("[GeminiService] Executing CLIENT-SIDE call...");
     try {
       const genAI = new GoogleGenerativeAI(localKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
       let prompt = "";
       if (endpoint === 'social') {

@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -41,8 +41,15 @@ async function startServer() {
   let ai: any = null;
   try {
     if (process.env.GEMINI_API_KEY) {
-      ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      console.log("Gemini API initialized successfully");
+      ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+      console.log("Gemini API initialized successfully with @google/genai");
     } else {
       console.warn("GEMINI_API_KEY not found in environment. Server-side AI will be disabled.");
     }
@@ -50,19 +57,22 @@ async function startServer() {
     console.error("Error initializing Gemini API:", err);
   }
 
-  async function generateContentWithRetry(modelName: string, contents: any, config?: any) {
+  async function generateContentWithRetry(modelName: string, contents: any) {
     if (!ai) {
       throw new Error("El servidor no tiene configurada la clave de API de Gemini. Por favor, configúrala en los Ajustes del proyecto o usa tu propia clave localmente.");
     }
-    const model = ai.getGenerativeModel({ model: modelName });
+    
     const maxRetries = 5;
     let lastError: any;
 
     for (let i = 0; i < maxRetries; i++) {
       try {
         console.log(`[GeminiServer] Calling ${modelName}...`);
-        const result = await model.generateContent(contents);
-        return { text: result.response.text() };
+        const result = await ai.models.generateContent({
+          model: modelName,
+          contents: contents
+        });
+        return { text: result.text };
       } catch (error: any) {
         lastError = error;
         console.error(`[GeminiServer] Error on attempt ${i + 1}:`, error.message || error);
@@ -86,7 +96,7 @@ async function startServer() {
   // Gemini API Proxy
   app.post("/api/gemini/process", async (req, res) => {
     try {
-      const { type, text, tone, mode, customPrompt } = req.body;
+      const { type, text, customPrompt } = req.body;
       
       let prompt = "";
       let fullContent = "";
@@ -117,7 +127,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", fullContent);
+      const response = await generateContentWithRetry("gemini-1.5-flash-latest", fullContent);
 
       res.json({ text: response.text });
     } catch (error: any) {
@@ -162,7 +172,7 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-1.5-flash", `${prompt}\n\nTexto: "${input}"`);
+      const response = await generateContentWithRetry("gemini-1.5-flash-latest", `${prompt}\n\nTexto: "${input}"`);
 
       res.json({ text: response.text });
     } catch (error: any) {
