@@ -127,14 +127,14 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
+      const response = await generateContentWithRetry("gemini-1.5-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini Error:", error);
-      const isQuotaError = error.message?.includes('429') || error.status === 429;
+      const isQuotaError = error.message?.includes('429') || error.status === 429 || error.message?.toLowerCase().includes('quota');
       res.status(isQuotaError ? 429 : 500).json({ 
-        error: isQuotaError ? "La cuota gratuita del servidor se ha agotado por hoy. Por favor, intenta nuevamente más tarde." : (error.message || "Error interno del servidor")
+        error: isQuotaError ? "La cuota gratuita del servidor se ha agotado por ahora. Por favor, intenta nuevamente en unos minutos." : (error.message || "Error interno del servidor")
       });
     }
   });
@@ -172,14 +172,14 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
+      const response = await generateContentWithRetry("gemini-1.5-flash", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini Error /api/gemini/social:", error);
-      const isQuotaError = error.message?.includes('429') || error.status === 429;
+      const isQuotaError = error.message?.includes('429') || error.status === 429 || error.message?.toLowerCase().includes('quota');
       res.status(isQuotaError ? 429 : 500).json({ 
-        error: isQuotaError ? "Límite de cuota excedido por hoy. Intenta más tarde." : (error.message || "Error interno del servidor")
+        error: isQuotaError ? "El sistema de IA está saturado por ahora. Reintenta en unos instantes." : (error.message || "Error interno del servidor")
       });
     }
   });
