@@ -9,48 +9,12 @@ import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
-import { getLocalApiKey, setLocalApiKey, processWithGemini } from './services/geminiService';
+import { processWithGemini } from './services/geminiService';
 
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState('');
-  const [testingKey, setTestingKey] = useState(false);
-
-  useEffect(() => {
-    setTempApiKey(getLocalApiKey());
-  }, []);
-
-  const handleTestKey = async () => {
-    if (!tempApiKey.trim()) {
-      showNotification('Ingresa una clave para probar');
-      return;
-    }
-    setTestingKey(true);
-    try {
-      // Usamos una operación simple para probar
-      const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process', tempApiKey);
-      if (result.text.includes('OK')) {
-        showNotification('¡Clave válida!');
-      } else {
-        showNotification('Respuesta inesperada');
-      }
-    } catch (err: any) {
-      showNotification(`Error: ${err.message}`);
-    } finally {
-      setTestingKey(false);
-    }
-  };
-
-  const handleSaveSettings = () => {
-    const trimmedKey = tempApiKey.trim();
-    setLocalApiKey(trimmedKey);
-    setTempApiKey(trimmedKey);
-    setShowSettings(false);
-    showNotification('Configuración guardada correctly');
-  };
 
   const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
 
@@ -182,14 +146,6 @@ export default function App() {
             {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Teleprompter</span>}
             {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Apuntador</span>}
           </button>
-          <button 
-            onClick={() => setShowSettings(true)}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
-          >
-            <Settings size={20} className="flex-none" />
-            {!sidebarCollapsed && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Configuración</span>}
-            {sidebarCollapsed && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl">Ajustes</span>}
-          </button>
         </nav>
 
         <div className="mt-auto w-full px-4 mb-4">
@@ -302,72 +258,6 @@ export default function App() {
 
       {showTeleprompter && (
         <Teleprompter onClose={() => setShowTeleprompter(false)} />
-      )}
-
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
-          <div className="relative bg-white border-4 border-black p-8 md:p-12 w-full max-w-xl shadow-[24px_24px_0px_rgba(0,0,0,0.1)] animate-in zoom-in-95 duration-200">
-             <button onClick={() => setShowSettings(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-black transition-colors">
-               <X size={24} />
-             </button>
-
-             <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-black flex items-center justify-center text-white">
-                  <Settings size={24} />
-                </div>
-                <div>
-                   <h2 className="text-2xl font-black uppercase tracking-tighter italic">Configuración</h2>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Preferencias del Sistema</p>
-                </div>
-             </div>
-
-             <div className="space-y-8">
-                <div className="space-y-4">
-                   <div className="flex items-center justify-between">
-                      <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                        <Key size={14} />
-                        Gemini API Key
-                      </label>
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-zinc-400 hover:text-black underline">Obtener clave</a>
-                   </div>
-                   <input 
-                      type="password"
-                      value={tempApiKey || ''}
-                      onChange={(e) => setTempApiKey(e.target.value)}
-                      placeholder="Pega tu clave aquí..."
-                      className="w-full h-14 bg-zinc-50 border-2 border-zinc-100 px-6 font-mono text-sm focus:border-black focus:bg-white outline-none transition-all placeholder:text-zinc-300"
-                   />
-                   <p className="text-[10px] text-zinc-500 leading-relaxed">
-                     <strong className="text-black">Nota:</strong> Esta clave se guarda localmente en tu navegador. Úsala si estás en entornos estáticos como GitHub Pages donde el backend no está disponible.
-                   </p>
-                   <button 
-                     onClick={handleTestKey}
-                     disabled={testingKey || !tempApiKey.trim()}
-                     className="w-full h-10 border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors disabled:opacity-50"
-                   >
-                     {testingKey ? 'Probando...' : 'Probar Clave'}
-                   </button>
-                </div>
-
-                <div className="pt-4 flex gap-4">
-                  <button 
-                    onClick={handleSaveSettings}
-                    className="flex-1 h-14 bg-black text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-colors shadow-xl"
-                  >
-                    Guardar Cambios
-                  </button>
-                  <button 
-                    onClick={() => setShowSettings(false)}
-                    className="px-8 h-14 border-2 border-black font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-50 transition-colors"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-             </div>
-          </div>
-        </div>
       )}
 
       {/* Notification Toast */}

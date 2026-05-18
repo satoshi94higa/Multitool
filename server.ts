@@ -59,10 +59,10 @@ async function startServer() {
 
   async function generateContentWithRetry(modelName: string, contents: any) {
     if (!ai) {
-      throw new Error("El servidor no tiene configurada la clave de API de Gemini. Por favor, configúrala en los Ajustes del proyecto o usa tu propia clave localmente.");
+      throw new Error("Servicio de IA no disponible en este momento.");
     }
     
-    const maxRetries = 5;
+    const maxRetries = 3;
     let lastError: any;
 
     for (let i = 0; i < maxRetries; i++) {
@@ -80,12 +80,12 @@ async function startServer() {
         // Check for 429 Too Many Requests
         if (error.message?.includes('429') || error.status === 429) {
           if (i < maxRetries - 1) {
-            const delay = Math.pow(2, i) * 3000 + Math.random() * 1000;
+            const delay = Math.pow(2, i) * 2000 + Math.random() * 1000;
             console.log(`[GeminiServer] Quota reached (429). Retrying in ${Math.round(delay)}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue;
           }
-          throw new Error("Límite de cuota excedido (429). Por favor, intenta de nuevo en un minuto o configura tu propia API Key en Ajustes para uso ilimitado.");
+          throw new Error("La cuota gratuita de la IA se ha agotado por hoy. Por favor, intenta de nuevo más tarde.");
         }
         throw error;
       }
@@ -127,14 +127,14 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid request: no content to process" });
       }
 
-      const response = await generateContentWithRetry("gemini-3-flash-preview", [{ role: 'user', parts: [{ text: fullContent }] }]);
+      const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini Error:", error);
       const isQuotaError = error.message?.includes('429') || error.status === 429;
       res.status(isQuotaError ? 429 : 500).json({ 
-        error: isQuotaError ? "La cuota gratuita del servidor se ha agotado por hoy. Para seguir usando la app sin límites, por favor inserta tu propia API Key en Ajustes (ícono de engranaje abajo a la derecha)." : (error.message || "Error interno del servidor")
+        error: isQuotaError ? "La cuota gratuita del servidor se ha agotado por hoy. Por favor, intenta nuevamente más tarde." : (error.message || "Error interno del servidor")
       });
     }
   });
@@ -172,14 +172,14 @@ async function startServer() {
         Devuelve solo las 3 opciones separadas por líneas.`;
       }
 
-      const response = await generateContentWithRetry("gemini-3-flash-preview", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
+      const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: `${prompt}\n\nTexto: "${input}"` }] }]);
 
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini Error /api/gemini/social:", error);
       const isQuotaError = error.message?.includes('429') || error.status === 429;
       res.status(isQuotaError ? 429 : 500).json({ 
-        error: isQuotaError ? "Límite de cuota excedido. Por favor, espera un momento." : (error.message || "Error interno del servidor")
+        error: isQuotaError ? "Límite de cuota excedido por hoy. Intenta más tarde." : (error.message || "Error interno del servidor")
       });
     }
   });
