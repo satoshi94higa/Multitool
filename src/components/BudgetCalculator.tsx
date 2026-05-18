@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Plus, Trash2, Download, Copy, Check, DollarSign, Clock, Briefcase, Camera, Film, ListPlus, ReceiptText, Zap, User, Mail, Phone, Calendar, FileText, Info } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface Task {
   id: string;
   name: string;
   hours: number;
-  type: 'shooting' | 'editing';
+  amount?: number;
+  type: 'shooting' | 'editing' | 'fixed';
 }
 
 interface Expense {
@@ -19,19 +20,38 @@ interface Expense {
 export default function BudgetCalculator() {
   const [clientName, setClientName] = useState('');
   const [projectName, setProjectName] = useState('');
-  const [myCompany, setMyCompany] = useState('');
-  const [myEmail, setMyEmail] = useState('');
-  const [myPhone, setMyPhone] = useState('');
+  
+  // Persistent data states
+  const [myCompany, setMyCompany] = useState(() => localStorage.getItem('budget_myCompany') || '');
+  const [myEmail, setMyEmail] = useState(() => localStorage.getItem('budget_myEmail') || '');
+  const [myPhone, setMyPhone] = useState(() => localStorage.getItem('budget_myPhone') || '');
+  const [myCuil, setMyCuil] = useState(() => localStorage.getItem('budget_myCuil') || '');
+  const [pdfSubtitle, setPdfSubtitle] = useState(() => localStorage.getItem('budget_pdfSubtitle') || 'ESTIMACIÓN TÉCNICA Y COMERCIAL');
+  const [shootingRate, setShootingRate] = useState(() => Number(localStorage.getItem('budget_shootingRate')) || 45000);
+  const [editingRate, setEditingRate] = useState(() => Number(localStorage.getItem('budget_editingRate')) || 30000);
+
   const [clientEmail, setClientEmail] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [validity, setValidity] = useState('15 días');
   const [notes, setNotes] = useState('');
-  const [shootingRate, setShootingRate] = useState(45000);
-  const [editingRate, setEditingRate] = useState(30000);
+  const [showDetailsInPDF, setShowDetailsInPDF] = useState(true);
+
+  // Persistence Effect
+  useEffect(() => {
+    localStorage.setItem('budget_myCompany', myCompany);
+    localStorage.setItem('budget_myEmail', myEmail);
+    localStorage.setItem('budget_myPhone', myPhone);
+    localStorage.setItem('budget_myCuil', myCuil);
+    localStorage.setItem('budget_pdfSubtitle', pdfSubtitle);
+    localStorage.setItem('budget_shootingRate', shootingRate.toString());
+    localStorage.setItem('budget_editingRate', editingRate.toString());
+  }, [myCompany, myEmail, myPhone, myCuil, pdfSubtitle, shootingRate, editingRate]);
+
   const [tasks, setTasks] = useState<Task[]>([
     { id: '1', name: 'Pre-producción / Planificación', hours: 2, type: 'editing' },
     { id: '2', name: 'Producción / Rodaje', hours: 4, type: 'shooting' },
     { id: '3', name: 'Post-producción / Edición', hours: 4, type: 'editing' },
+    { id: '4', name: 'Equipos adicionales', hours: 0, amount: 15000, type: 'fixed' },
   ]);
   const [extras, setExtras] = useState<Expense[]>([]);
   const [copied, setCopied] = useState(false);
@@ -65,6 +85,7 @@ export default function BudgetCalculator() {
   const totalHours = tasks.reduce((acc, t) => acc + (t.hours || 0), 0);
   
   const hoursSubtotal = tasks.reduce((acc, t) => {
+    if (t.type === 'fixed') return acc + (t.amount || 0);
     const rate = t.type === 'shooting' ? shootingRate : editingRate;
     return acc + ((t.hours || 0) * rate);
   }, 0);
@@ -79,8 +100,12 @@ export default function BudgetCalculator() {
     summary += `DESGLOSE DE TRABAJO:\n`;
     tasks.forEach(t => {
       if (t.name) {
-        const rate = t.type === 'shooting' ? shootingRate : editingRate;
-        summary += `- ${t.name}: ${t.hours}h x $${rate}/h = $${(t.hours * rate).toLocaleString()}\n`;
+        if (t.type === 'fixed') {
+          summary += `- ${t.name}: $${(t.amount || 0).toLocaleString()}\n`;
+        } else {
+          const rate = t.type === 'shooting' ? shootingRate : editingRate;
+          summary += `- ${t.name}: ${t.hours}h x $${rate}/h = $${(t.hours * rate).toLocaleString()}\n`;
+        }
       }
     });
     summary += `-----------------------------------\n`;
@@ -109,127 +134,226 @@ export default function BudgetCalculator() {
 
   const exportToPDF = () => {
     const doc = new jsPDF() as any;
-    const primaryColor = [0, 0, 0];
-    
-    // Header
-    doc.setFillColor(0, 0, 0);
-    doc.rect(0, 0, 210, 40, 'F');
+    const accentColor = [0, 0, 0];
+    const secondaryGray = [100, 100, 100];
+    const lightGray = [245, 245, 245];
+
+    // --- Header Branding ---
+    doc.setFillColor(...accentColor);
+    doc.rect(0, 0, 210, 35, 'F');
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('PRESUPUESTO', 15, 25);
+    doc.text('PRESUPUESTO', 15, 22);
     
-    doc.setFontSize(10);
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
-    doc.text(projectName || 'Sin Título', 15, 33);
+    doc.text(pdfSubtitle.toUpperCase(), 16, 29);
     
-    // Company Info (Right aligned in header)
-    doc.setFontSize(10);
-    doc.text(myCompany || 'Emisor', 195, 15, { align: 'right' });
-    if (myEmail) doc.text(myEmail, 195, 20, { align: 'right' });
-    if (myPhone) doc.text(myPhone, 195, 25, { align: 'right' });
+    // --- Emisor Info (Right Aligned Header) ---
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text(myCompany?.toUpperCase() || 'EMISOR', 195, 14, { align: 'right' });
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    let headerInfoY = 19;
+    if (myCuil) { doc.text(`CUIL: ${myCuil}`, 195, headerInfoY, { align: 'right' }); headerInfoY += 4; }
+    if (myEmail) { doc.text(myEmail, 195, headerInfoY, { align: 'right' }); headerInfoY += 4; }
+    if (myPhone) { doc.text(myPhone, 195, headerInfoY, { align: 'right' }); headerInfoY += 4; }
+
+    // --- Billing Info Grid ---
+    const gridY = 48;
     
-    // Client & Project Info
+    // "PARA" (To) Section
+    doc.setTextColor(...secondaryGray);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PARA:', 15, gridY);
+    
     doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('CLIENTE:', 15, 55);
+    doc.text(clientName?.toUpperCase() || 'CLIENTE GENERAL', 15, gridY + 6);
+    
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(clientName || 'General', 15, 60);
-    if (clientEmail) doc.text(clientEmail, 15, 65);
+    let clientInfoY = gridY + 11;
+    if (clientEmail) { doc.text(clientEmail, 15, clientInfoY); clientInfoY += 4; }
     
     doc.setFont('helvetica', 'bold');
-    doc.text('FECHA:', 140, 55);
+    doc.text('PROYECTO:', 15, clientInfoY + 4);
     doc.setFont('helvetica', 'normal');
-    doc.text(date, 160, 55);
+    doc.text(projectName || 'Sin Título', 15, clientInfoY + 9);
+    
+    // Invoice Meta (Date, Validity)
+    const metaX = 140;
+    doc.setTextColor(...secondaryGray);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETALLES DEL DOCUMENTO', metaX, gridY);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FECHA:', metaX, gridY + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.text(date, metaX + 25, gridY + 6);
     
     doc.setFont('helvetica', 'bold');
-    doc.text('VALIDEZ:', 140, 60);
+    doc.text('VALIDEZ:', metaX, gridY + 11);
     doc.setFont('helvetica', 'normal');
-    doc.text(validity, 160, 60);
-    
-    // Tasks Table
+    doc.text(validity, metaX + 25, gridY + 11);
+
+    const tableStartY = 85;
+
+    // --- Work Items Table ---
     const taskRows = tasks.filter(t => t.name).map((t, index) => {
+      if (t.type === 'fixed') {
+        return [
+          (index + 1).toString().padStart(2, '0'),
+          t.name.toUpperCase(),
+          showDetailsInPDF ? 'TARIFA FIJA' : '',
+          showDetailsInPDF ? '-' : '',
+          showDetailsInPDF ? '-' : '',
+          `$${(t.amount || 0).toLocaleString()}`
+        ].filter(v => v !== '');
+      }
       const rate = t.type === 'shooting' ? shootingRate : editingRate;
       return [
-        index + 1,
-        t.name,
-        t.type === 'shooting' ? 'Rodaje' : 'Edición',
-        `${t.hours}h`,
-        `$${rate.toLocaleString()}`,
+        (index + 1).toString().padStart(2, '0'),
+        t.name.toUpperCase(),
+        showDetailsInPDF ? (t.type === 'shooting' ? 'RODAJE' : 'EDICIÓN') : '',
+        showDetailsInPDF ? `${t.hours}H` : '',
+        showDetailsInPDF ? `$${rate.toLocaleString()}` : '',
         `$${(t.hours * rate).toLocaleString()}`
-      ];
+      ].filter(v => v !== '');
     });
     
-    (doc as any).autoTable({
-      startY: 75,
-      head: [['#', 'Descripción', 'Tipo', 'Cant.', 'Tarifa', 'Subtotal']],
+    const tableHead = showDetailsInPDF 
+      ? [['ID', 'DESCRIPCIÓN DEL SERVICIO', 'TIPO', 'HS', 'TARIFA', 'TOTAL']]
+      : [['ID', 'DESCRIPCIÓN DEL SERVICIO', 'TOTAL']];
+
+    autoTable(doc, {
+      startY: tableStartY,
+      head: tableHead,
       body: taskRows,
-      headStyles: { fillStyle: 'black', fillColor: [0, 0, 0], textColor: [255, 255, 255] },
-      alternateRowStyles: { fillColor: [250, 250, 250] },
+      theme: 'plain',
+      headStyles: { 
+        fillColor: [20, 20, 20], 
+        textColor: [255, 255, 255],
+        fontSize: 7,
+        fontStyle: 'bold',
+        cellPadding: 4
+      },
+      bodyStyles: { 
+        fontSize: 8,
+        textColor: [40, 40, 40],
+        cellPadding: 3,
+        lineColor: [240, 240, 240],
+        lineWidth: 0.1
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center', textColor: [150, 150, 150] },
+        [tableHead[0].length - 1]: { halign: 'right', fontStyle: 'bold', textColor: [0, 0, 0] }
+      },
       margin: { left: 15, right: 15 }
     });
     
-    let finalY = (doc as any).lastAutoTable.finalY + 10;
+    let currentY = (doc as any).lastAutoTable.finalY + 8;
     
-    // Extras Table
+    // --- Additional Expenses Table ---
     if (extras.length > 0) {
+      if (currentY > 250) { doc.addPage(); currentY = 20; }
+      
+      doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
-      doc.text('GASTOS Y EXTRAS', 15, finalY);
+      doc.setTextColor(...secondaryGray);
+      doc.text('GASTOS ADICIONALES', 15, currentY);
       
       const extraRows = extras.filter(e => e.description).map((e, index) => [
-        index + 1,
-        e.description,
-        '-',
-        '-',
-        '-',
+        (index + 1).toString().padStart(2, '0'),
+        e.description.toUpperCase(),
         `$${e.amount.toLocaleString()}`
       ]);
       
-      (doc as any).autoTable({
-        startY: finalY + 5,
-        head: [['#', 'Descripción', '', '', '', 'Subtotal']],
+      autoTable(doc, {
+        startY: currentY + 3,
+        head: [['ID', 'DESCRIPCIÓN', 'MONTO']],
         body: extraRows,
-        headStyles: { fillStyle: 'black', fillColor: [60, 60, 60], textColor: [255, 255, 255] },
+        theme: 'plain',
+        headStyles: { fillColor: [245, 245, 245], textColor: [0, 0, 0], fontSize: 6, cellPadding: 2 },
+        bodyStyles: { fontSize: 7, cellPadding: 2 },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center' },
+          2: { halign: 'right', fontStyle: 'bold' }
+        },
         margin: { left: 15, right: 15 }
       });
       
-      finalY = (doc as any).lastAutoTable.finalY + 10;
+      currentY = (doc as any).lastAutoTable.finalY + 10;
     }
     
-    // Totals
-    doc.setFillColor(245, 245, 245);
-    doc.rect(130, finalY, 65, 30, 'F');
+    // --- Summary & Totals ---
+    if (currentY > 250) { doc.addPage(); currentY = 20; }
+
+    const summaryX = 135;
+    const summaryWidth = 60;
+    
+    doc.setFillColor(...lightGray);
+    doc.rect(summaryX, currentY, summaryWidth, 32, 'F');
+    
+    doc.setTextColor(...secondaryGray);
+    doc.setFontSize(6);
+    doc.text('RESUMEN DE COSTOS', summaryX + 4, currentY + 5);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Subtotal Servicios', summaryX + 4, currentY + 12);
+    doc.text(`$${hoursSubtotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 12, { align: 'right' });
+    
+    doc.text('Gastos Adicionales', summaryX + 4, currentY + 19);
+    doc.text(`$${extrasTotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 19, { align: 'right' });
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(summaryX + 4, currentY + 23, summaryX + summaryWidth - 4, currentY + 23);
     
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Subtotal Horas:', 135, finalY + 10);
-    doc.text(`$${hoursSubtotal.toLocaleString()}`, 190, finalY + 10, { align: 'right' });
-    
-    doc.text('Total Extras:', 135, finalY + 17);
-    doc.text(`$${extrasTotal.toLocaleString()}`, 190, finalY + 17, { align: 'right' });
-    
-    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', 135, finalY + 25);
-    doc.text(`$${grandTotal.toLocaleString()}`, 190, finalY + 25, { align: 'right' });
+    doc.text('TOTAL', summaryX + 4, currentY + 29);
+    doc.text(`$${grandTotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 29, { align: 'right' });
     
-    // Notes
+    // --- Notes and Terms ---
     if (notes) {
-      finalY += 40;
-      if (finalY > 250) {
-         doc.addPage();
-         finalY = 20;
-      }
-      doc.setFontSize(10);
+      currentY += 40;
+      if (currentY > 270) { doc.addPage(); currentY = 20; }
+      
+      doc.setTextColor(...secondaryGray);
+      doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
-      doc.text('NOTAS Y CONDICIONES:', 15, finalY);
+      doc.text('CONDICIONES COMERCIALES Y NOTAS:', 15, currentY);
+      
       doc.setFont('helvetica', 'normal');
-      const splitNotes = doc.splitTextToSize(notes, 180);
-      doc.text(splitNotes, 15, finalY + 7);
+      doc.setFontSize(7);
+      const splitNotes = doc.splitTextToSize(notes, 100);
+      doc.text(splitNotes, 15, currentY + 5);
+    }
+
+    // --- Footer Decoration ---
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(1.5);
+      doc.line(15, 280, 40, 280);
+      
+      doc.setFontSize(7);
+      doc.setTextColor(180, 180, 180);
+      doc.text(`DOCUMENTO DE CARÁCTER INFORMATIVO | PÁGINA ${i} DE ${pageCount}`, 105, 285, { align: 'center' });
     }
     
-    doc.save(`Presupuesto_${projectName.replace(/\s+/g, '_') || 'Freelance'}.pdf`);
+    doc.save(`Presupuesto_${projectName.replace(/\s+/g, '_') || 'Freelance'}_${clientName.replace(/\s+/g, '_')}.pdf`);
   };
 
   return (
@@ -254,19 +378,39 @@ export default function BudgetCalculator() {
               <h3 className="text-xs font-black uppercase tracking-widest">Datos del Emisor & Cliente</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-1 space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Mi Empresa / Nombre</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Emisor</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-300" size={14} />
                   <input
                     type="text"
                     value={myCompany}
                     onChange={(e) => setMyCompany(e.target.value)}
-                    placeholder="Tu nombre o estudio"
+                    placeholder="Tu nombre"
                     className="w-full h-10 bg-white border border-zinc-200 pl-10 pr-4 font-bold text-xs focus:border-black outline-none transition-all placeholder:text-zinc-200"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Subtítulo PDF</label>
+                <input
+                  type="text"
+                  value={pdfSubtitle}
+                  onChange={(e) => setPdfSubtitle(e.target.value)}
+                  placeholder="Ej: Estimación Técnica..."
+                  className="w-full h-10 bg-white border border-zinc-200 px-4 font-bold text-xs focus:border-black outline-none transition-all placeholder:text-zinc-200"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">CUIL / CUIT</label>
+                <input
+                  type="text"
+                  value={myCuil}
+                  onChange={(e) => setMyCuil(e.target.value)}
+                  placeholder="20-12345678-9"
+                  className="w-full h-10 bg-white border border-zinc-200 px-4 font-bold text-xs focus:border-black outline-none transition-all placeholder:text-zinc-200"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Mi Correo</label>
@@ -397,18 +541,36 @@ export default function BudgetCalculator() {
                       >
                         Edición
                       </button>
+                      <button
+                        onClick={() => updateTask(task.id, { type: 'fixed' })}
+                        className={`px-2 py-1 text-[8px] font-black uppercase transition-colors ${task.type === 'fixed' ? 'bg-black text-white' : 'text-zinc-400 hover:text-black'}`}
+                      >
+                        Fijo
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3 py-1">
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        value={task.hours}
-                        onChange={(e) => updateTask(task.id, { hours: parseFloat(e.target.value) || 0 })}
-                        className="w-12 border-none p-0 text-center font-mono text-sm focus:ring-0 outline-none bg-transparent"
-                      />
-                      <span className="text-[10px] font-black text-zinc-400 uppercase">Horas</span>
-                    </div>
+                    {task.type === 'fixed' ? (
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3 py-1">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase">$</span>
+                        <input
+                          type="number"
+                          value={task.amount || 0}
+                          onChange={(e) => updateTask(task.id, { amount: parseFloat(e.target.value) || 0 })}
+                          className="w-20 border-none p-0 text-center font-mono text-sm focus:ring-0 outline-none bg-transparent"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3 py-1">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={task.hours}
+                          onChange={(e) => updateTask(task.id, { hours: parseFloat(e.target.value) || 0 })}
+                          className="w-12 border-none p-0 text-center font-mono text-sm focus:ring-0 outline-none bg-transparent"
+                        />
+                        <span className="text-[10px] font-black text-zinc-400 uppercase">Horas</span>
+                      </div>
+                    )}
                     <button
                       onClick={() => removeTask(task.id)}
                       className="text-zinc-200 hover:text-red-500 transition-colors pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100"
@@ -549,20 +711,33 @@ export default function BudgetCalculator() {
               </div>
             </div>
 
-            <div className="pt-4 space-y-3">
-              <button
-                onClick={copyToClipboard}
-                className="w-full h-14 bg-white text-black font-black uppercase tracking-widest text-[10px] hover:bg-zinc-200 transition-colors flex items-center justify-center gap-3 active:scale-[0.98]"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copiado' : 'Copiar Resumen'}
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="w-full h-14 border border-white/20 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-3 active:scale-[0.98]"
-              >
-                <Download size={16} /> Descargar PDF
-              </button>
+            <div className="pt-4 space-y-4">
+              {/* PDF Settings */}
+              <div className="flex items-center justify-between p-3 border border-white/10 rounded">
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Mostrar detalles en PDF</span>
+                <button 
+                  onClick={() => setShowDetailsInPDF(!showDetailsInPDF)}
+                  className={`w-10 h-5 rounded-full transition-colors relative border border-white/20 ${showDetailsInPDF ? 'bg-green-500' : 'bg-zinc-800'}`}
+                >
+                  <div className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full transition-transform ${showDetailsInPDF ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={copyToClipboard}
+                  className="w-full h-14 bg-white text-black font-black uppercase tracking-widest text-[10px] hover:bg-zinc-200 transition-colors flex items-center justify-center gap-3 active:scale-[0.98]"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? 'Copiado' : 'Copiar Resumen'}
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="w-full h-14 border border-white/20 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-3 active:scale-[0.98]"
+                >
+                  <Download size={16} /> Descargar PDF
+                </button>
+              </div>
             </div>
           </div>
 
