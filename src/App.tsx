@@ -14,6 +14,7 @@ import { processWithGemini, getLocalApiKey, setLocalApiKey } from './services/ge
 export default function App() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
@@ -82,7 +83,7 @@ export default function App() {
         fixed inset-y-0 left-0 z-[100] bg-white transition-transform duration-300 ease-in-out border-r border-zinc-200
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         md:relative md:translate-x-0 md:flex md:flex-col md:items-center md:py-8
-        md:w-64
+        ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'}
       `}>
         {/* Mobile Close Button */}
         <button 
@@ -96,16 +97,17 @@ export default function App() {
            <div className={`w-12 h-12 bg-black rounded-none shadow-2xl flex items-center justify-center group cursor-pointer transition-transform hover:scale-105 active:scale-95 flex-none`} onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }}>
               <span className="font-black text-white text-2xl tracking-tighter italic">U</span>
            </div>
-            <span className="font-black text-xs uppercase tracking-[0.3em] ml-4 animate-in fade-in duration-500">Utility.Hub</span>
+           {(!sidebarCollapsed || mobileMenuOpen) && <span className="font-black text-xs uppercase tracking-[0.3em] ml-4 animate-in fade-in duration-500">Utility.Hub</span>}
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto w-full flex flex-col items-center scrollbar-hide px-3">
           <button 
             onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
           >
             <LayoutDashboard size={20} className="flex-none" />
-            <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel Control</span>
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel Control</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Panel</span>}
           </button>
 
           <div className="w-8 h-[1px] bg-zinc-100 my-4" />
@@ -121,10 +123,11 @@ export default function App() {
             <button 
               key={item.id}
               onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
-              className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+              className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
             >
               <item.icon size={20} className="flex-none" />
-              <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">{item.label}</span>
+              {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">{item.label}</span>}
+              {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">{item.short}</span>}
             </button>
           ))}
 
@@ -132,40 +135,51 @@ export default function App() {
 
           <button 
             onClick={() => { scrollToSection('percentage-calc'); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
             <Calculator size={20} className="flex-none" />
-            <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Porcentajes</span>
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Porcentajes</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Porcentajes</span>}
           </button>
 
           <button 
             onClick={() => { scrollToSection('fuel-calc'); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
             <Zap size={20} className="flex-none" />
-            <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Combustible</span>
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Combustible</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Combustible</span>}
           </button>
 
           <div className="w-8 h-[1px] bg-zinc-100 my-4" />
 
           <button 
             onClick={() => { toggleTeleprompter(); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
             <Monitor size={20} className="flex-none" />
-            <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Teleprompter</span>
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Teleprompter</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Apuntador</span>}
           </button>
 
           <button 
             onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center justify-start px-4 transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
             <Settings size={20} className="flex-none" />
-            <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Configuración</span>
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Configuración</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Ajustes</span>}
           </button>
         </nav>
 
-
+        <div className="mt-auto w-full px-4 mb-4 hidden md:block">
+          <button 
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="w-full h-10 border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors"
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        </div>
       </aside>
 
       {/* Mobile Overlay */}
