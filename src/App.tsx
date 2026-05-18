@@ -31,7 +31,7 @@ export default function App() {
     setTestingKey(true);
     try {
       // Usamos una operación simple para probar
-      const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process');
+      const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process', tempApiKey);
       if (result.text.includes('OK')) {
         showNotification('¡Clave válida!');
       } else {

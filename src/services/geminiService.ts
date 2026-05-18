@@ -5,7 +5,7 @@ const STORAGE_KEY = 'gemini_api_key_v1';
 export const getLocalApiKey = () => typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) || '' : '';
 export const setLocalApiKey = (key: string) => typeof window !== 'undefined' ? localStorage.setItem(STORAGE_KEY, key) : null;
 
-export async function processWithGemini(body: any, endpoint: string = 'process') {
+export async function processWithGemini(body: any, endpoint: string = 'process', customKey?: string) {
   console.log(`[GeminiService] Attempting to call backend API for endpoint: ${endpoint}`);
   const apiPath = `/api/gemini/${endpoint}`;
   
@@ -22,7 +22,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
     }
     
     // If we have a local key and server gave 404/500/etc, we try client-side
-    const localKey = getLocalApiKey();
+    const localKey = customKey || getLocalApiKey();
     if (localKey) {
       console.warn(`[GeminiService] Server returned ${response.status}. Attempting client-side fallback with provided key.`);
       return await executeClientSide(body, endpoint, localKey);
@@ -33,7 +33,7 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
   } catch (error: any) {
     console.warn(`[GeminiService] Server call failed: ${error.message}. Checking fallback.`);
     
-    const localKey = getLocalApiKey();
+    const localKey = customKey || getLocalApiKey();
     if (localKey) {
       return await executeClientSide(body, endpoint, localKey);
     }
@@ -43,12 +43,8 @@ export async function processWithGemini(body: any, endpoint: string = 'process')
 }
 
 async function executeClientSide(body: any, endpoint: string, apiKey: string) {
-  console.log(`[GeminiService] Executing Gemini call on CLIENT SIDE for: ${endpoint}`);
-  const client = new GoogleGenAI({ 
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
-  });
-
+  console.log(`[GeminiService] Executing Gemini call via direct FETCH (Client Side) for: ${endpoint}`);
+  
   let prompt = "";
   if (endpoint === 'process') {
     const { type, text, customPrompt } = body;
@@ -57,12 +53,7 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     } else {
       const prompts: Record<string, string> = {
         summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave:",
-        spelling: `Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. 
-        Devuelve estrictamente un objeto JSON con esta estructura:
-        {
-          "text": "el texto completo corregido",
-          "changes": ["lista de cambios importantes realizados"]
-        }`,
+        spelling: "Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. Devuelve estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido\", \"changes\": [\"lista de cambios\"]}",
         translate: "Traduce el siguiente texto al inglés de forma natural:",
         bullets: "Transforma el siguiente texto en una lista de bullet points clara y organizada:",
         brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto:",
@@ -93,13 +84,20 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
   }
 
   try {
-    const result = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
     });
-    return { text: result.text };
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || "Error en API de Google");
+    
+    return { text: data.candidates?.[0]?.content?.parts?.[0]?.text || "" };
   } catch (error: any) {
-    console.error("[GeminiService] Client Error:", error);
+    console.error("[GeminiService] Client Direct Error:", error);
     throw new Error("Error en la IA local: " + (error.message || "Verifica tu API Key"));
   }
 }
