@@ -112,16 +112,26 @@ app.post("/api/gemini/process", async (req, res) => {
     }
 
     if (!fullContent.trim()) {
-      return res.status(400).json({ error: "Invalid request: no content to process" });
+      return res.status(400).json({ error: "No hay contenido para procesar." });
     }
 
+    // Use 2.0-flash
     const response = await generateContentWithRetry("gemini-2.0-flash", [{ role: 'user', parts: [{ text: fullContent }] }]);
     res.json({ text: response.text });
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    const status = error.status || (error.message?.includes('429') ? 429 : 500);
+    
+    // Check if error is from Vercel's AI Gateway
+    const errorStr = String(error.message || error).toLowerCase();
+    if (errorStr.includes("ai gateway") || errorStr.includes("credit card")) {
+      return res.status(502).json({ 
+        error: "Vercel está bloqueando la conexión de IA. Por favor, ve a tu panel de Vercel y desactiva 'AI Gateway' en la configuración del proyecto o añade una tarjeta para verificar tu cuenta." 
+      });
+    }
+
+    const status = error.status || (errorStr.includes('429') ? 429 : 500);
     res.status(status === 429 ? 429 : 500).json({ 
-      error: status === 429 ? "Límite de cuota excedido (429). Intenta más tarde." : (error.message || "Error interno del servidor")
+      error: status === 429 ? "Cuota de Gemini agotada. Reintenta en un minuto." : (error.message || "Error en el servicio de IA.")
     });
   }
 });
@@ -151,9 +161,10 @@ app.post("/api/gemini/social", async (req, res) => {
     res.json({ text: response.text });
   } catch (error: any) {
     console.error("Gemini Social Error:", error);
-    const status = error.status || (error.message?.includes('429') ? 429 : 500);
+    const errorStr = String(error.message || error).toLowerCase();
+    const status = error.status || (errorStr.includes('429') ? 429 : 500);
     res.status(status === 429 ? 429 : 500).json({ 
-      error: status === 429 ? "Saturación de IA (429). Intenta de nuevo en un minuto." : (error.message || "Error interno del servidor")
+      error: status === 429 ? "Saturación de IA momentánea. Reintenta pronto." : (error.message || "Error al procesar.")
     });
   }
 });
