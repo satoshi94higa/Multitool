@@ -40,6 +40,40 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+async function callAIWithFallback(contents: any) {
+  const client = getAI();
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"];
+  let lastError: any;
+
+  for (const modelName of models) {
+    try {
+      console.log(`[GeminiServer] Trying model ${modelName}...`);
+      const result = await client.models.generateContent({
+        model: modelName,
+        contents
+      });
+      return result;
+    } catch (error: any) {
+      lastError = error;
+      const status = error.status;
+      const errorMsg = String(error.message || "").toLowerCase();
+      
+      // If it's a quota error (429) or Not Found (404), try next model
+      if (status === 429 || status === 404 || errorMsg.includes("quota") || errorMsg.includes("429") || errorMsg.includes("not found")) {
+        console.warn(`[GeminiServer] Model ${modelName} failed (Status: ${status}). Trying next model...`);
+        continue;
+      }
+      // If it's another type of error, stop and throw
+      throw error;
+    }
+  }
+
+  // If we're here, all models failed (likely all 429)
+  const finalError = new Error("Has agotado la cuota de uso gratuito de la IA. Por favor, espera un minuto o configura tu propia API Key en los ajustes.");
+  (finalError as any).status = 429;
+  throw finalError;
+}
+
 // Gemini API Proxy
 app.post("/api/gemini/process", async (req, res) => {
   try {
@@ -72,12 +106,7 @@ app.post("/api/gemini/process", async (req, res) => {
       return res.status(400).json({ error: "No hay contenido para procesar." });
     }
 
-    const client = getAI();
-    const result = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: fullContent
-    });
-
+    const result = await callAIWithFallback(fullContent);
     res.json({ text: result.text });
   } catch (error: any) {
     console.error("Gemini Error:", error);
@@ -109,11 +138,7 @@ app.post("/api/gemini/social", async (req, res) => {
       prompt = `Genera 3 Hooks impactantes basados en: ${input}. Tono: ${toneLabel}.`;
     }
 
-    const client = getAI();
-    const result = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `${prompt}\n\nTexto: "${input}"`
-    });
+    const result = await callAIWithFallback(`${prompt}\n\nTexto: "${input}"`);
 
     res.json({ text: result.text });
   } catch (error: any) {
