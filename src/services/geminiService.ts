@@ -29,7 +29,9 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
     console.log("[GeminiService] Executing CLIENT-SIDE call...");
     try {
       const genAI = new GoogleGenerativeAI(localKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+      const modelName = "gemini-1.5-flash";
+      console.log(`[GeminiServiceClient] Using model: ${modelName}`);
+      const model = genAI.getGenerativeModel({ model: modelName });
 
       let prompt = "";
       if (endpoint === 'social') {
@@ -92,11 +94,16 @@ export async function processWithGemini(body: any, endpoint: string = 'process',
       console.error("[GeminiServiceClient] Error:", error);
       const errorMsg = error.message || "Error desconocido";
       
+      // Attempt to identify if it's a model-not-found error
+      if (errorMsg.includes("404") || errorMsg.includes("not found")) {
+        throw new Error(`Modelo no encontrado (404). Tu clave API podría no tener acceso a gemini-1.5-flash o necesitas actualizar el navegador.`);
+      }
+
       // If quota exceeded, logging it and trying server fallback instead of failing immediately
       if (errorMsg.includes("429") || errorMsg.includes("quota")) {
         console.warn("[GeminiServiceClient] Local quota exceeded, attempting server fallback...");
       } else {
-        throw new Error(`Error de IA (Navegador): ${errorMsg}`);
+        throw new Error(`Error de IA (Clave Personal V2): ${errorMsg}. Revisa que tu clave sea válida en Google AI Studio.`);
       }
     }
   }
