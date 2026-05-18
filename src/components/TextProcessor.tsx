@@ -32,7 +32,7 @@ export default function TextProcessor() {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none min-h-[500px] p-10 font-sans leading-relaxed text-zinc-900',
+        class: 'prose prose-sm md:prose-lg max-w-none focus:outline-none min-h-[400px] md:min-h-[500px] p-4 md:p-10 font-sans leading-relaxed text-zinc-900',
       },
     },
   });
@@ -173,7 +173,7 @@ export default function TextProcessor() {
       </div>
 
       {/* Editor Area */}
-      <div className="flex-1 min-h-[500px] flex flex-col relative group">
+      <div className="flex-1 min-h-[400px] md:min-h-[500px] flex flex-col relative group">
         <div className="flex-1 flex flex-col bg-zinc-50 border-2 border-black/10 focus-within:border-black transition-all relative overflow-hidden">
           <EditorContent editor={editor} className="flex-1 overflow-auto bg-transparent prose-zinc" />
           
@@ -181,19 +181,19 @@ export default function TextProcessor() {
             <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-40">
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="animate-spin text-black" size={40} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Procesando con IA...</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Procesando...</span>
               </div>
             </div>
           )}
 
           {notification && (
-            <div className="absolute top-4 right-8 bg-black text-white px-5 py-3 text-[10px] font-black uppercase tracking-widest z-50 animate-in fade-in slide-in-from-top-4 shadow-2xl">
+            <div className="absolute top-4 right-4 md:right-8 bg-black text-white px-5 py-3 text-[10px] font-black uppercase tracking-widest z-50 animate-in fade-in slide-in-from-top-4 shadow-2xl">
               {notification}
             </div>
           )}
 
           {corrections && corrections.length > 0 && !loading && (
-            <div className="absolute top-8 right-8 w-64 bg-white border-2 border-black p-5 shadow-[10px_10px_0px_black] z-50 animate-in slide-in-from-right-4">
+            <div className="absolute top-8 right-4 md:right-8 w-64 bg-white border-2 border-black p-5 shadow-[10px_10px_0px_black] z-50 animate-in slide-in-from-right-4">
               <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-2">
                 <span className="text-[10px] font-black uppercase tracking-tighter">Cambios Sugeridos</span>
                 <button onClick={() => setCorrections(null)} className="text-zinc-400 hover:text-black">
@@ -211,13 +211,19 @@ export default function TextProcessor() {
           )}
 
           {/* AI Floating Actions */}
-          <div className="absolute bottom-8 left-10 flex gap-4 items-center">
+          <div className="p-4 md:absolute md:bottom-8 md:left-10 flex flex-col md:flex-row gap-2 md:gap-4 md:items-center bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border-t border-black md:border-none">
             <span className="text-[9px] font-black uppercase text-zinc-400 tracking-widest">Magic IA</span>
             <div className="flex gap-2">
-              <button onClick={() => runAiOp('summarize')} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white text-[9px] font-black uppercase transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_#ccc]">
+              <button 
+                onClick={() => runAiOp('summarize')} 
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 h-10 md:h-8 bg-black text-white text-[9px] font-black uppercase transition-all hover:bg-zinc-800"
+              >
                 <Sparkles size={12} /> Resumen
               </button>
-              <button onClick={() => runAiOp('spelling')} className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0px_black]">
+              <button 
+                onClick={() => runAiOp('spelling')} 
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 h-10 md:h-8 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
+              >
                 Ortografía
               </button>
             </div>

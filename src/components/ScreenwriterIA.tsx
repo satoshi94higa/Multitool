@@ -457,25 +457,26 @@ export default function ScreenwriterIA() {
               )}
             </div>
             
-            <div className="border-t-2 border-black pt-4">
-              <table className="w-full border-collapse md:table-auto">
+            <div className="border-t-2 border-black pt-4 overflow-x-auto">
+              {/* Desktop Table View */}
+              <table className="w-full border-collapse hidden lg:table">
                 <thead>
                   <tr className="bg-zinc-50 border-b-2 border-black">
-                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-12 md:w-16">#</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-16">#</th>
                     <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[200px]">Matriz_Visual / Audio</th>
-                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-20 md:w-24">Tiempo</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-24">Tiempo</th>
                     <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[250px]">Especificaciones_Técnicas</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200">
                   {rundown.map((item, idx) => (
                     <tr key={idx} className="group hover:bg-zinc-50 transition-colors">
-                      <td className="p-2 md:p-4 align-top">
+                      <td className="p-4 align-top">
                         <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
                           {String(idx + 1).padStart(2, '0')}
                         </div>
                       </td>
-                      <td className="p-2 md:p-4 align-top space-y-4">
+                      <td className="p-4 align-top space-y-4">
                         <div className="flex flex-col gap-1">
                           <input 
                             value={item.scene}
@@ -493,11 +494,11 @@ export default function ScreenwriterIA() {
                               newRundown[idx].visual = e.target.value;
                               setRundown(newRundown);
                             }}
-                            className="text-[10px] md:text-[11px] text-zinc-500 italic uppercase leading-tight bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                            className="text-[11px] text-zinc-500 italic uppercase leading-tight bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                             rows={2}
                           />
                         </div>
-                        <div className="p-3 md:p-4 bg-white border-l-4 border-black group-hover:border-zinc-400 transition-colors shadow-sm">
+                        <div className="p-4 bg-white border-l-4 border-black group-hover:border-zinc-400 transition-colors shadow-sm">
                           <AutoResizeTextarea 
                             value={item.audio}
                             onChange={(e) => {
@@ -508,12 +509,12 @@ export default function ScreenwriterIA() {
                               const fullScript = newRundown.map(r => r.audio).join('\n\n');
                               setScript(fullScript);
                             }}
-                            className="w-full text-[12px] md:text-[13px] leading-relaxed text-black font-sans bg-transparent border-none focus:ring-0 p-0 h-auto min-h-[50px] outline-none"
+                            className="w-full text-[13px] leading-relaxed text-black font-sans bg-transparent border-none focus:ring-0 p-0 h-auto min-h-[50px] outline-none"
                           />
                         </div>
                       </td>
-                      <td className="p-2 md:p-4 align-top">
-                        <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-mono font-black text-black">
+                      <td className="p-4 align-top">
+                        <div className="flex items-center gap-2 text-[11px] font-mono font-black text-black">
                           <Clock size={12} className="opacity-30" />
                           <input 
                             value={item.duration}
@@ -526,10 +527,10 @@ export default function ScreenwriterIA() {
                           />
                         </div>
                       </td>
-                      <td className="p-2 md:p-4 align-top">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                      <td className="p-4 align-top">
+                        <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Plano</span>
+                            <span className="block text-[8px] font-black text-black uppercase tracking-widest">Plano</span>
                             <input 
                               value={item.technical?.shot || ''}
                               onChange={(e) => {
@@ -539,11 +540,11 @@ export default function ScreenwriterIA() {
                                   setRundown(newRundown);
                                 }
                               }}
-                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                              className="text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Óptica</span>
+                            <span className="block text-[8px] font-black text-black uppercase tracking-widest">Óptica</span>
                             <input 
                               value={item.technical?.lens || ''}
                               onChange={(e) => {
@@ -553,11 +554,11 @@ export default function ScreenwriterIA() {
                                   setRundown(newRundown);
                                 }
                               }}
-                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                              className="text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Movimiento</span>
+                            <span className="block text-[8px] font-black text-black uppercase tracking-widest">Movimiento</span>
                             <input 
                               value={item.technical?.motion || ''}
                               onChange={(e) => {
@@ -567,11 +568,11 @@ export default function ScreenwriterIA() {
                                   setRundown(newRundown);
                                 }
                               }}
-                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                              className="text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                             />
                           </div>
                           <div className="space-y-1">
-                            <span className="block text-[7px] md:text-[8px] font-black text-black uppercase tracking-widest">Luz</span>
+                            <span className="block text-[8px] font-black text-black uppercase tracking-widest">Luz</span>
                             <input 
                               value={item.technical?.lighting || ''}
                               onChange={(e) => {
@@ -581,12 +582,12 @@ export default function ScreenwriterIA() {
                                   setRundown(newRundown);
                                 }
                               }}
-                              className="text-[9px] md:text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                              className="text-[10px] font-mono text-zinc-400 font-bold bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                             />
                           </div>
                           {item.sfx && (
-                            <div className="col-span-1 sm:col-span-2 pt-2 mt-2 border-t border-zinc-100">
-                              <span className="block text-[7px] md:text-[8px] font-black text-red-500 uppercase tracking-widest italic">SFX_REQ</span>
+                            <div className="col-span-2 pt-2 mt-2 border-t border-zinc-100">
+                              <span className="block text-[8px] font-black text-red-500 uppercase tracking-widest italic">SFX_REQ</span>
                               <input 
                                 value={item.sfx}
                                 onChange={(e) => {
@@ -594,7 +595,7 @@ export default function ScreenwriterIA() {
                                   newRundown[idx].sfx = e.target.value;
                                   setRundown(newRundown);
                                 }}
-                                className="text-[9px] md:text-[10px] font-mono text-black font-bold uppercase bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                                className="text-[10px] font-mono text-black font-bold uppercase bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
                               />
                             </div>
                           )}
@@ -604,6 +605,79 @@ export default function ScreenwriterIA() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-6 pt-4">
+                {rundown.map((item, idx) => (
+                  <div key={idx} className="bg-zinc-50 border-2 border-black/5 p-4 space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                       <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
+                        {String(idx + 1).padStart(2, '0')}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] font-mono font-black text-black">
+                        <Clock size={12} className="opacity-30" />
+                        <input 
+                          value={item.duration}
+                          onChange={(e) => {
+                            const newRundown = [...rundown];
+                            newRundown[idx].duration = e.target.value;
+                            setRundown(newRundown);
+                          }}
+                          className="bg-transparent border-none focus:ring-0 p-0 w-20 text-right outline-none"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <input 
+                        value={item.scene}
+                        onChange={(e) => {
+                          const newRundown = [...rundown];
+                          newRundown[idx].scene = e.target.value;
+                          setRundown(newRundown);
+                        }}
+                        className="text-[10px] font-black uppercase text-black tracking-widest bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                      />
+                      <AutoResizeTextarea 
+                        value={item.visual}
+                        onChange={(e) => {
+                          const newRundown = [...rundown];
+                          newRundown[idx].visual = e.target.value;
+                          setRundown(newRundown);
+                        }}
+                        className="text-[11px] text-zinc-500 italic uppercase leading-tight bg-transparent border-none focus:ring-0 p-0 w-full outline-none"
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="p-4 bg-white border-l-4 border-black shadow-sm">
+                      <AutoResizeTextarea 
+                        value={item.audio}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          const newRundown = [...rundown];
+                          newRundown[idx].audio = newValue;
+                          setRundown(newRundown);
+                          const fullScript = newRundown.map(r => r.audio).join('\n\n');
+                          setScript(fullScript);
+                        }}
+                        className="w-full text-[13px] leading-relaxed text-black font-sans bg-transparent border-none focus:ring-0 p-0 h-auto min-h-[50px] outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-[9px]">
+                      <div className="space-y-1">
+                        <span className="block font-black text-black uppercase tracking-widest opacity-40">Plano</span>
+                        <input value={item.technical?.shot || ''} className="bg-transparent border-none focus:ring-0 p-0 w-full outline-none font-bold" readOnly />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="block font-black text-black uppercase tracking-widest opacity-40">Óptica</span>
+                        <input value={item.technical?.lens || ''} className="bg-transparent border-none focus:ring-0 p-0 w-full outline-none font-bold" readOnly />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
   const [text, setText] = useState(initialText || 'Escribe o pega aquí tu guion...');
   const [isPlaying, setIsPlaying] = useState(false);
   const [targetDuration, setTargetDuration] = useState(3); // In minutes
-  const [fontSize, setFontSize] = useState(64); // px
+  const [fontSize, setFontSize] = useState(window.innerWidth < 768 ? 32 : 64); // px
   const [lineHeight, setLineHeight] = useState(1.4);
   const [isMirrored, setIsMirrored] = useState(false);
   const [theme, setTheme] = useState<Theme>('classic');
@@ -242,7 +242,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
           {/* Countdown Overlay */}
           {countdown !== null && (
             <div className={`absolute inset-0 z-[100] ${theme === 'light' ? 'bg-white/95' : 'bg-black/80'} backdrop-blur-md flex items-center justify-center`}>
-              <div className={`text-[160px] font-black animate-bounce ${theme === 'light' ? 'text-black' : 'text-white'}`}>
+              <div className={`text-[80px] md:text-[160px] font-black animate-bounce ${theme === 'light' ? 'text-black' : 'text-white'}`}>
                 {countdown > 0 ? countdown : '¡YA!'}
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
 
           <div 
             ref={scrollRef}
-            className={`flex-1 overflow-y-auto px-[12%] sm:px-[18%] pt-[45vh] pb-[55vh] transition-all duration-500 scroll-smooth ${isMirrored ? '-scale-x-100' : ''} ${showConfig ? 'sm:mr-80 mr-0' : 'mr-0'} scrollbar-hide`}
+            className={`flex-1 overflow-y-auto px-[8%] sm:px-[18%] pt-[45vh] pb-[55vh] transition-all duration-500 scroll-smooth ${isMirrored ? '-scale-x-100' : ''} ${showConfig && window.innerWidth >= 640 ? 'sm:mr-80 mr-0' : 'mr-0'} scrollbar-hide`}
             id="teleprompter-content"
           >
             <div 
@@ -286,25 +286,25 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
           </div>
 
           {/* Floating Controls Overlay */}
-          <div className={`absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 backdrop-blur-2xl border-2 p-3 rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] z-50 transition-all duration-500 ${theme === 'light' ? 'bg-white/95 border-black' : 'bg-black/80 border-white/10'} ${isPlaying && !showConfig ? 'opacity-20 hover:opacity-100 scale-95 hover:scale-100' : 'opacity-100 scale-100'}`}>
+          <div className={`absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 md:gap-6 backdrop-blur-2xl border-2 p-2 md:p-3 rounded-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] z-50 transition-all duration-500 ${theme === 'light' ? 'bg-white/95 border-black' : 'bg-black/80 border-white/10'} ${isPlaying && !showConfig ? 'opacity-20 hover:opacity-100 scale-95 hover:scale-100' : 'opacity-100 scale-100'}`}>
             <button 
               onClick={resetScroll}
-              className={`p-4 transition-all hover:scale-110 active:scale-95 ${theme === 'light' ? 'text-zinc-400 hover:text-black' : 'text-zinc-500 hover:text-white'}`}
+              className={`p-3 md:p-4 transition-all hover:scale-110 active:scale-95 ${theme === 'light' ? 'text-zinc-400 hover:text-black' : 'text-zinc-500 hover:text-white'}`}
             >
-              <RotateCcw size={20} />
+              <RotateCcw className="w-5 h-5 md:w-5 md:h-5" />
             </button>
             
             <button 
               onClick={handlePlayToggle}
-              className={`w-16 h-16 rounded-none flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-2xl ${theme === 'light' ? 'bg-black text-white' : 'bg-white text-black'}`}
+              className={`w-12 h-12 md:w-16 md:h-16 rounded-none flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-2xl ${theme === 'light' ? 'bg-black text-white' : 'bg-white text-black'}`}
             >
-              {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} className="ml-1" fill="currentColor" />}
+              {isPlaying ? <Pause className="w-5 h-5 md:w-7 md:h-7" fill="currentColor" /> : <Play className="w-5 h-5 md:w-7 md:h-7 ml-0.5 md:ml-1" fill="currentColor" />}
             </button>
 
-            <div className={`flex flex-col items-center px-8 border-l-2 min-w-[140px] ${theme === 'light' ? 'border-zinc-100' : 'border-white/5'}`}>
-               <div className="flex items-center gap-3 mb-1">
-                  <div className={`w-2 h-2 rounded-none animate-pulse ${stats.status === 'bad' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : stats.status === 'warn' ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-black shadow-[0_0_10px_rgba(0,0,0,0.2)]'}`} />
-                  <span className={`text-[11px] font-black font-mono uppercase tracking-[0.2em] ${theme === 'light' ? 'text-black' : 'text-zinc-400'}`}>
+            <div className={`flex flex-col items-center px-4 md:px-8 border-l-2 min-w-[100px] md:min-w-[140px] ${theme === 'light' ? 'border-zinc-100' : 'border-white/5'}`}>
+               <div className="flex items-center gap-2 md:gap-3 mb-0.5 md:mb-1">
+                  <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-none animate-pulse ${stats.status === 'bad' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : stats.status === 'warn' ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-black shadow-[0_0_10px_rgba(0,0,0,0.2)]'}`} />
+                  <span className={`text-[9px] md:text-[11px] font-black font-mono uppercase tracking-[0.2em] ${theme === 'light' ? 'text-black' : 'text-zinc-400'}`}>
                     {stats.wpm} WPM
                   </span>
                </div>

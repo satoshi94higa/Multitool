@@ -159,7 +159,7 @@ export default function SocialFormatter() {
               <p className="whitespace-pre-wrap">{output}</p>
               <button 
                 onClick={copyToClipboard}
-                className="absolute top-4 right-4 p-3 bg-black text-white border border-black rounded-none shadow-xl opacity-0 group-hover:opacity-100 transition-opacity active:scale-90"
+                className="absolute top-4 right-4 p-3 bg-black text-white border border-black rounded-none shadow-xl md:opacity-0 md:group-hover:opacity-100 transition-opacity active:scale-90"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>

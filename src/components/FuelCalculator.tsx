@@ -107,21 +107,21 @@ export default function FuelCalculator() {
             <span>INFORME_DE_EJECUCIÓN</span>
           </div>
           
-          <div className="grid grid-cols-2 gap-12 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
             <div className="space-y-3">
               <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">LITROS.TOTAL</p>
-              <p className="text-4xl font-black text-white leading-none font-mono tracking-tighter">{results.liters}<span className="text-xs text-zinc-700 ml-2">L</span></p>
+              <p className="text-3xl md:text-4xl font-black text-white leading-none font-mono tracking-tighter">{results.liters}<span className="text-xs text-zinc-700 ml-2">L</span></p>
             </div>
             <div className="space-y-3">
               <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">COSTE.AGREGADO</p>
-              <p className="text-4xl font-black text-white leading-none font-mono tracking-tighter"><span className="text-sm text-zinc-700 mr-1">$</span>{results.totalCost}</p>
+              <p className="text-3xl md:text-4xl font-black text-white leading-none font-mono tracking-tighter"><span className="text-sm text-zinc-700 mr-1">$</span>{results.totalCost}</p>
             </div>
             {people > 1 && (
-              <div className="col-span-2 pt-10 border-t border-zinc-800 mt-4">
+              <div className="md:col-span-2 pt-10 border-t border-zinc-800 mt-4">
                 <p className="text-[10px] font-black text-white uppercase tracking-[0.3em] mb-6 border-l-4 border-white pl-4 italic">Asignación de Coste Individual ({people} Personas)</p>
-                <div className="flex items-baseline gap-2">
-                   <span className="text-2xl text-zinc-600 font-black tracking-tighter">$</span>
-                   <p className="text-7xl font-black text-white leading-none font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{results.costPerPerson}</p>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                   <span className="text-xl md:text-2xl text-zinc-600 font-black tracking-tighter">$</span>
+                   <p className="text-5xl md:text-7xl font-black text-white leading-none font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{results.costPerPerson}</p>
                 </div>
               </div>
             )}

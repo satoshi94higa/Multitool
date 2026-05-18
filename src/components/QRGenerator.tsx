@@ -180,7 +180,7 @@ export default function QRGenerator() {
               <div ref={qrRef} className="flex p-4 bg-transparent rounded-none max-w-full overflow-hidden justify-center overflow-x-auto">
                 <QRCodeCanvas
                   value={url || ' '}
-                  size={240}
+                  size={window.innerWidth < 640 ? 200 : 240}
                   fgColor={fgColor}
                   bgColor={effectiveBgColor}
                   level={level}
