@@ -254,7 +254,7 @@ export default function BudgetCalculator() {
         lineWidth: 0.1
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center', textColor: [150, 150, 150] },
+        0: { cellWidth: 15, halign: 'center', textColor: [150, 150, 150] },
         [tableHead[0].length - 1]: { halign: 'right', fontStyle: 'bold', textColor: [0, 0, 0] }
       },
       margin: { left: 15, right: 15 }
@@ -285,7 +285,7 @@ export default function BudgetCalculator() {
         headStyles: { fillColor: [245, 245, 245], textColor: [0, 0, 0], fontSize: 6, cellPadding: 2 },
         bodyStyles: { fontSize: 7, cellPadding: 2 },
         columnStyles: {
-          0: { cellWidth: 10, halign: 'center' },
+          0: { cellWidth: 15, halign: 'center' },
           2: { halign: 'right', fontStyle: 'bold' }
         },
         margin: { left: 15, right: 15 }
