@@ -37,6 +37,24 @@ export default function TextProcessor() {
     },
   });
 
+  useEffect(() => {
+    const handleSetText = (e: any) => {
+      if (editor && e.detail) {
+        if (e.detail.append) {
+          const currentContent = editor.getText();
+          editor.commands.setContent(currentContent + '\n\n' + e.detail.text);
+        } else {
+          editor.commands.setContent(e.detail.text);
+        }
+        setNotification("Texto recibido del editor.");
+        setTimeout(() => setNotification(null), 3000);
+      }
+    };
+
+    window.addEventListener('app-set-text', handleSetText);
+    return () => window.removeEventListener('app-set-text', handleSetText);
+  }, [editor]);
+
   const runAiOp = async (type: string) => {
     if (!editor || !editor.getText().trim() || loading) return;
     setLoading(true);

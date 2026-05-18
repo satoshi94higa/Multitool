@@ -83,6 +83,7 @@ export default function RedactorIA() {
       3. Sugiere 3 tipos de titulares.
       4. Propón ángulos periodísticos adicionales.
       5. Genera un "Social Media Briefing" con ganchos para plataformas, resumen ejecutivo y hashtags relevantes.
+      6. IMPORTANTE: No utilices formato Markdown (como asteriscos para negritas, cursivas o almohadillas para títulos) en el contenido de la respuesta.
       
       Material: "${input}"
       
@@ -117,9 +118,9 @@ export default function RedactorIA() {
   const sendToProcessor = () => {
     if (!data) return;
     
-    const briefingText = data.social_briefing ? `\n\n## SOCIAL MEDIA BRIEFING\n- **Resumen:** ${data.social_briefing.summary}\n- **Hooks:** ${data.social_briefing.platform_hooks.join(' | ')}\n- **Hashtags:** ${data.social_briefing.hashtags.join(' ')}` : '';
+    const briefingText = data.social_briefing ? `\n\nSOCIAL MEDIA BRIEFING\n- Resumen: ${data.social_briefing.summary}\n- Hooks: ${data.social_briefing.platform_hooks.join(' | ')}\n- Hashtags: ${data.social_briefing.hashtags.join(' ')}` : '';
     
-    const fullText = `# ${data.headlines.direct}\n\n## Titulares Alternativos\n- **SEO:** ${data.headlines.seo}\n- **Narrativo:** ${data.headlines.narrative}\n\n---\n\n${data.news_story}${briefingText}\n\n## Citas Destacadas\n${data.key_quotes.map(q => `> "${q}"`).join('\n\n')}\n\n## Posibles Enfoques\n${data.angles.map(a => `- ${a}`).join('\n')}\n\n---\n*Generado con Redactor IA*`;
+    const fullText = `${data.headlines.direct.toUpperCase()}\n\nTitulares Alternativos:\n- SEO: ${data.headlines.seo}\n- Narrativo: ${data.headlines.narrative}\n\n------------------\n\n${data.news_story}${briefingText}\n\nCitas Destacadas:\n${data.key_quotes.map(q => `"${q}"`).join('\n\n')}\n\nPosibles Enfoques:\n${data.angles.map(a => `- ${a}`).join('\n')}\n\n------------------\nGenerado con Redactor IA`;
     
     window.dispatchEvent(new CustomEvent('app-set-text', { 
       detail: { text: fullText, append: true } 

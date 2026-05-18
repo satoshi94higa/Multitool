@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key } from 'lucide-react';
+import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key, Captions, CircleDollarSign } from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
@@ -9,6 +9,8 @@ import RedactorIA from './components/RedactorIA';
 import ContentBrainstormer from './components/ContentBrainstormer';
 import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
+import SubtitleAssistant from './components/SubtitleAssistant';
+import BudgetCalculator from './components/BudgetCalculator';
 import { processWithGemini, getLocalApiKey, setLocalApiKey, getLocalModel, setLocalModel } from './services/geminiService';
 
 export default function App() {
@@ -121,6 +123,7 @@ export default function App() {
             { id: 'redactor-ia', icon: Newspaper, label: 'Redactor IA', short: 'Redactor IA' },
             { id: 'content-brainstormer', icon: Brain, label: 'Lluvia Ideas', short: 'Lluvia de Ideas' },
             { id: 'social-formatter', icon: Share2, label: 'Boost Social', short: 'Formateador Social' },
+            { id: 'subtitle-assistant', icon: Captions, label: 'Subtítulos', short: 'Subtítulos Style' },
             { id: 'qr-generator', icon: QrCode, label: 'Generador QR', short: 'Generador QR' }
           ].map((item) => (
             <button 
@@ -135,6 +138,15 @@ export default function App() {
           ))}
 
           <div className="w-8 h-[1px] bg-zinc-100 my-4" />
+
+          <button 
+            onClick={() => { scrollToSection('budget-calculator'); setMobileMenuOpen(false); }}
+            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+          >
+            <CircleDollarSign size={20} className="flex-none" />
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Presupuestos</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Presupuestos</span>}
+          </button>
 
           <button 
             onClick={() => { scrollToSection('percentage-calc'); setMobileMenuOpen(false); }}
@@ -267,10 +279,24 @@ export default function App() {
               </div>
             </section>
 
+            {/* Subtitle Assistant - Full Width */}
+            <section id="subtitle-assistant" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-4 md:p-10 flex-1 scroll-smooth">
+                <SubtitleAssistant />
+              </div>
+            </section>
+
             {/* QR Generator - Full Width */}
             <section id="qr-generator" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
               <div className="p-4 md:p-10 flex-1 scroll-smooth">
                 <QRGenerator />
+              </div>
+            </section>
+
+            {/* Budget Calculator - Full Width */}
+            <section id="budget-calculator" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-4 md:p-10 flex-1 scroll-smooth">
+                <BudgetCalculator />
               </div>
             </section>
 

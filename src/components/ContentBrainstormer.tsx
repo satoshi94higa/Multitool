@@ -63,18 +63,18 @@ export default function ContentBrainstormer() {
   const sendToProcessor = () => {
     if (!ideas) return;
     
-    let fullText = `# Brainstorming: ${input}\nEquipo: ${peopleCount} personas\n\n`;
+    let fullText = `BRAINSTORMING: ${input.toUpperCase()}\nEquipo: ${peopleCount} personas\n\n`;
     
     const categories = [
-      { name: 'Estrategia General', key: 'general' },
-      { name: 'Cobertura Fotográfica', key: 'photographic' },
-      { name: 'Cobertura Audiovisual', key: 'audiovisual' },
-      { name: 'Periodismo / Gráfica', key: 'journalistic' },
-      { name: 'Wild Card (Disruptivo)', key: 'wildcard' }
+      { name: 'ESTRATEGIA GENERAL', key: 'general' },
+      { name: 'COBERTURA FOTOGRÁFICA', key: 'photographic' },
+      { name: 'COBERTURA AUDIOVISUAL', key: 'audiovisual' },
+      { name: 'PERIODISMO / GRÁFICA', key: 'journalistic' },
+      { name: 'WILD CARD (DISRUPTIVO)', key: 'wildcard' }
     ];
 
     categories.forEach(cat => {
-      fullText += `## ${cat.name}\n`;
+      fullText += `${cat.name}\n`;
       (ideas as any)[cat.key].forEach((idea: string) => {
         fullText += `- ${idea}\n`;
       });

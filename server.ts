@@ -50,19 +50,20 @@ app.post("/api/gemini/process", async (req, res) => {
       fullContent = `${customPrompt}\n\n"${text || ''}"`;
     } else {
       const prompts = {
-        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave:",
+        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave. No utilices formato Markdown (como asteriscos para negritas o almohadillas para títulos):",
         spelling: `Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. 
+        No utilices formato Markdown en el campo 'text' (no uses asteriscos, guiones de lista, etc.).
         Devuelve estrictamente un objeto JSON con esta estructura:
         {
-          "text": "el texto completo corregido",
+          "text": "el texto completo corregido sin formato markdown",
           "changes": ["lista de cambios importantes realizados"]
         }`,
-        translate: "Traduce el siguiente texto al inglés de forma natural:",
-        bullets: "Transforma el siguiente texto en una lista de bullet points clara y organizada:",
-        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto:",
-        screenplay: "Genera un esquema de guion basado en la siguiente premisa:",
-        journalist: "Escribe un artículo periodístico breve basado en la siguiente información:",
-        director: "Genera una descripción visual y técnica para una escena basada en este texto:"
+        translate: "Traduce el siguiente texto al inglés de forma natural. No uses formato Markdown:",
+        bullets: "Transforma el siguiente texto en una lista de puntos clara y organizada sin usar formato Markdown (usa guiones simples '-' o números):",
+        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto. No uses formato Markdown:",
+        screenplay: "Genera un esquema de guion basado en la siguiente premisa. No uses formato Markdown:",
+        journalist: "Escribe un artículo periodístico breve basado en la siguiente información. No uses formato Markdown:",
+        director: "Genera una descripción visual y técnica para una escena basada en este texto. No uses formato Markdown:"
       };
       const prompt = prompts[type as keyof typeof prompts] || "";
       fullContent = prompt + (text ? `\n\n"${text}"` : "");

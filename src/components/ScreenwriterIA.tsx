@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw } from 'lucide-react';
+import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw, FileText, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import { processWithGemini } from '../services/geminiService';
 
 type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
+type NarratorProfile = 'expert' | 'creator' | 'storyteller' | 'minimalist' | 'hype';
 
 interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string;
@@ -59,6 +62,7 @@ export default function ScreenwriterIA() {
   const [input, setInput] = useState('');
   const [platform, setPlatform] = useState<Platform>('instagram');
   const [tone, setTone] = useState<Tone>('energetic');
+  const [narrator, setNarrator] = useState<NarratorProfile>('creator');
   const [extraPrompt, setExtraPrompt] = useState('');
   const [powerHook, setPowerHook] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -70,7 +74,39 @@ export default function ScreenwriterIA() {
   const [copiedTable, setCopiedTable] = useState(false);
   const [sent, setSent] = useState(false);
   const [synced, setSynced] = useState(false);
+  const [refiningIdx, setRefiningIdx] = useState<number | null>(null);
+  const [productionEstimate, setProductionEstimate] = useState<{ budget: string; difficulty: string; equipment: string[]; total_duration?: string } | null>(null);
+  const [history, setHistory] = useState<{id: string, title: string, date: string, data: any}[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('screenwriter_history');
+    if (savedHistory) {
+      setHistory(JSON.parse(savedHistory));
+    }
+  }, []);
+
+  const saveToHistory = (data: any) => {
+    const newEntry = {
+      id: Date.now().toString(),
+      title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
+      date: new Date().toLocaleString(),
+      data
+    };
+    const newHistory = [newEntry, ...history].slice(0, 10); // Keep last 10
+    setHistory(newHistory);
+    localStorage.setItem('screenwriter_history', JSON.stringify(newHistory));
+  };
+
+  const loadFromHistory = (entry: any) => {
+    const { data } = entry;
+    setScript(data.full_script);
+    setRundown(data.rundown || []);
+    setThumbnail(data.thumbnail || null);
+    setKeywords(data.keywords || []);
+    setProductionEstimate(data.production_estimate || null);
+    setInput(entry.title.replace('...', '')); // approximation
+  };
 
   const generateScript = async () => {
     if (!input.trim()) return;
@@ -84,12 +120,22 @@ export default function ScreenwriterIA() {
         humorous: 'divertido y con toques de humor'
       }[tone];
 
+      const narratorDescriptor = {
+        expert: 'un experto con autoridad y datos técnicos',
+        creator: 'un creador de contenido dinámico y cercano',
+        storyteller: 'un narrador épico que busca la emoción',
+        minimalist: 'directo al grano, sin rodeos, conciso',
+        hype: 'extremadamente emocionante, estilo MrBeast'
+      }[narrator];
+
       const prompt = platform === 'instagram' 
         ? `Actúa como un guionista experto en contenido vertical para Instagram Reels y TikTok. 
+           El narrador debe sonar como ${narratorDescriptor}.
            Transforma el siguiente texto en un guion dinámico.
            ${powerHook ? 'IMPORTANTE: Crea un "Hook Potenciado" extremadamente impactante para los primeros 3 segundos.' : 'Incluye un hook claro en los primeros 3 segundos.'}
            El guion debe durar máximo 1:30 minutos.
            Manten un tono ${toneDescriptor}.
+           No utilices formato Markdown (como asteriscos o almohadillas) en el contenido del guion.
            ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
            
            Texto base: "${input}"
@@ -113,11 +159,19 @@ export default function ScreenwriterIA() {
                }
              ],
              "thumbnail": { "idea": "idea visual para la portada", "text_overlay": "texto corto para la portada" },
-             "keywords": ["tag1", "tag2", ...]
+             "keywords": ["tag1", "tag2", ...],
+             "production_estimate": {
+               "budget": "Bajo/Medio/Alto",
+               "difficulty": "Simple/Media/Pro",
+               "equipment": ["item1", "item2"],
+               "total_duration": "45-60 segundos"
+             }
            }`
         : `Actúa como un guionista profesional de YouTube para contenido horizontal. 
+           El narrador debe sonar como ${narratorDescriptor}.
            Transforma el siguiente texto en un guion estructurado con: Intro, Desarrollo, Valor y CTA.
            El tono debe ser ${toneDescriptor}.
+           No utilices formato Markdown (como asteriscos o almohadillas) en el contenido del guion.
            ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
            
            Texto base: "${input}"
@@ -141,15 +195,25 @@ export default function ScreenwriterIA() {
                }
              ],
              "thumbnail": { "idea": "composición de la miniatura", "text_overlay": "título clickbait para la miniatura" },
-             "keywords": ["tag1", "tag2", ...]
+             "keywords": ["tag1", "tag2", ...],
+             "production_estimate": {
+               "budget": "Bajo/Medio/Alto",
+               "difficulty": "Simple/Media/Pro",
+               "equipment": ["tripode", "foco led", "microfono lavalier"],
+               "total_duration": "8-12 minutos"
+             }
            }`;
 
       const dataResponse = await processWithGemini({ customPrompt: prompt }, 'process');
-      const data: ScriptData = JSON.parse(dataResponse.text.replace(/```json|```/g, '').trim());
+      const data = JSON.parse(dataResponse.text.replace(/```json|```/g, '').trim());
       setScript(data.full_script);
       setRundown(data.rundown || []);
       setThumbnail(data.thumbnail || null);
       setKeywords(data.keywords || []);
+      if (data.production_estimate) {
+        setProductionEstimate(data.production_estimate);
+      }
+      saveToHistory(data);
     } catch (error: any) {
       console.error('Error generating script:', error);
       setError(error.message || "Error al generar guion");
@@ -165,15 +229,14 @@ export default function ScreenwriterIA() {
   };
 
   const sendToProcessor = () => {
-    const mdHeader = "| Escena | Duración | Visual | Audio | Datos Técnicos |\n|---|---|---|---|---|";
     const mdRows = rundown.map(item => {
-      const techStr = item.technical ? `[${item.technical.shot}] [${item.technical.lens}] [${item.technical.motion}] [${item.technical.lighting}]` : '-';
-      return `| ${item.scene} | ${item.duration} | ${item.visual} | ${item.audio} | ${techStr} |`;
+      const techStr = item.technical ? `${item.technical.shot} | ${item.technical.lens} | ${item.technical.motion} | ${item.technical.lighting}` : '-';
+      return `${item.scene} | ${item.duration} | ${item.visual} | ${item.audio} | ${techStr}`;
     }).join('\n');
-    const tableMD = `${mdHeader}\n${mdRows}`;
+    const tablePlain = `Escaleta [Escena | Duración | Visual | Audio | Datos Técnicos]:\n${mdRows}`;
     
     const extraInfo = `IDEAS DE MINIATURA:\n- Idea: ${thumbnail?.idea}\n- Texto: ${thumbnail?.text_overlay}\n\nKEYWORDS: ${keywords.join(', ')}`;
-    const fullText = `# GUION ${platform.toUpperCase()} (${tone.toUpperCase()})\n${powerHook ? '> *Optimizado con Hook Potenciado*\n' : ''}\n## Guion\n${script}\n\n## Escaleta Técnica\n${tableMD}\n\n---\n${extraInfo}`;
+    const fullText = `GUION ${platform.toUpperCase()} (${tone.toUpperCase()})\n${powerHook ? '(Optimizado con Hook Potenciado)\n' : ''}\nGUION:\n${script}\n\nESCALETA TÉCNICA:\n${tablePlain}\n\n------------------\n${extraInfo}`;
     
     const event = new CustomEvent('app-set-text', { 
       detail: { text: fullText, append: true } 
@@ -264,6 +327,96 @@ export default function ScreenwriterIA() {
     }
   };
 
+  const refineScene = async (idx: number) => {
+    setRefiningIdx(idx);
+    try {
+      const scene = rundown[idx];
+      const prompt = `Actúa como un director de cine extracto y guionista senior. 
+      Tu objetivo es mejorar TODA LA FILA de esta secuencia de guion, optimizando tanto el audio como los detalles visuales y técnicos.
+      
+      Escena actual: "${scene.scene}"
+      Audio actual: "${scene.audio}"
+      Visual actual: "${scene.visual}"
+      Dura actual: "${scene.duration}"
+      
+      Mejora la narrativa, haz el visual más cinematográfico y ajusta los parámetros técnicos (plano, lente, movimiento, luz) para que coincidan con la nueva intensidad.
+      
+      Devuelve estrictamente un JSON con campos: scene, visual, audio, duration, technical (shot, lens, motion, lighting). No uses Markdown.`;
+
+      const response = await processWithGemini({ customPrompt: prompt }, 'process');
+      const data = JSON.parse(response.text.replace(/```json|```/g, '').trim());
+      
+      const newRundown = [...rundown];
+      newRundown[idx] = { ...newRundown[idx], ...data };
+      setRundown(newRundown);
+      
+      // Actualizar script general
+      const fullScript = newRundown.map(r => r.audio).join('\n\n');
+      setScript(fullScript);
+    } catch (err) {
+      console.error(err);
+      alert("Error al refinar la secuencia");
+    } finally {
+      setRefiningIdx(null);
+    }
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const title = `Guion ${platform.toUpperCase()} - ${input.slice(0, 40)}`;
+    
+    // Configuración inicial
+    doc.setFontSize(18);
+    doc.text("GUION ESTRATÉGICO IA", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Plataforma: ${platform} | Tono: ${tone} | Narrador: ${narrator}`, 14, 30);
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 35);
+    
+    // Script completo
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("GUION COMPLETO", 14, 45);
+    
+    doc.setFontSize(11);
+    const splitScript = doc.splitTextToSize(script, 180);
+    doc.text(splitScript, 14, 55);
+    
+    // Nueva página para la escaleta
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.text("ESCALETA TÉCNICA", 14, 22);
+
+    const tableData = rundown.map((item, i) => [
+      i + 1,
+      item.scene,
+      item.duration,
+      item.visual,
+      item.audio,
+      `${item.technical?.shot || ''}\n${item.technical?.lens || ''}\n${item.technical?.motion || ''}`
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [['#', 'Escena', 'Dura.', 'Visual', 'Audio', 'Técnico']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], fontSize: 9 },
+      bodyStyles: { fontSize: 8 },
+      columnStyles: {
+        0: { cellWidth: 8 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 15 },
+        3: { cellWidth: 40 },
+        4: { cellWidth: 60 },
+        5: { cellWidth: 35 }
+      }
+    });
+
+    doc.save(`guion_${platform}_${Date.now()}.pdf`);
+  };
+
   const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
   const estReadingTime = Math.ceil(wordCount / 160) || 0;
 
@@ -272,6 +425,20 @@ export default function ScreenwriterIA() {
       <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
         Guionista IA
       </h1>
+
+      {history.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar border-b border-zinc-100">
+           {history.map(entry => (
+             <button 
+               key={entry.id}
+               onClick={() => loadFromHistory(entry)}
+               className="flex-shrink-0 px-4 py-2 border border-zinc-200 text-[9px] font-black uppercase tracking-widest hover:border-black transition-colors"
+             >
+               {entry.title}
+             </button>
+           ))}
+        </div>
+      )}
 
       <div className="space-y-6 mt-4">
         {/* Fila 1: Plataformas */}
@@ -292,19 +459,40 @@ export default function ScreenwriterIA() {
           </button>
         </div>
 
-        {/* Fila 2: Tonos */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTone(t)}
-              className={`py-4 px-2 border-2 text-[9px] font-black uppercase tracking-widest transition-all ${
-                tone === t ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
-              }`}
-            >
-              {t === 'energetic' ? 'Energético' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}
-            </button>
-          ))}
+        {/* Fila 2: Tonos y Narrador */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest pl-1">Vibe / Tono</span>
+            <div className="grid grid-cols-2 gap-2">
+              {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTone(t)}
+                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all ${
+                    tone === t ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                  }`}
+                >
+                  {t === 'energetic' ? 'Energético' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest pl-1">Perfil del Narrador</span>
+            <div className="grid grid-cols-3 gap-2">
+              {(['expert', 'creator', 'storyteller', 'minimalist', 'hype'] as const).map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setNarrator(n)}
+                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all ${
+                    narrator === n ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                  }`}
+                >
+                  {n === 'expert' ? 'Experto' : n === 'creator' ? 'Creador' : n === 'storyteller' ? 'Relator' : n === 'minimalist' ? 'Minimal' : 'Hype'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Fila 3: Hook */}
@@ -412,8 +600,8 @@ export default function ScreenwriterIA() {
             />
           </div>
 
-          {(thumbnail || keywords.length > 0) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-4">
+          {(thumbnail || keywords.length > 0 || productionEstimate) && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-4">
               {thumbnail && (
                 <div className="bg-zinc-50 rounded-none p-10 border-2 border-zinc-100 hover:border-black transition-all group">
                   <div className="flex items-center gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-8">
@@ -422,6 +610,38 @@ export default function ScreenwriterIA() {
                   </div>
                   <p className="text-xl font-black text-black tracking-tight leading-tight mb-4 uppercase">{thumbnail.text_overlay}</p>
                   <p className="text-[12px] text-zinc-500 italic leading-relaxed uppercase tracking-tighter">{thumbnail.idea}</p>
+                </div>
+              )}
+              {productionEstimate && (
+                <div className="bg-zinc-900 rounded-none p-10 border-2 border-black hover:border-yellow-400 transition-all text-white">
+                  <div className="flex items-center gap-4 text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-8">
+                    <Zap size={16} className="text-yellow-400" />
+                    <span>LOGÍSTICA_PROD</span>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Presupuesto</span>
+                       <span className="text-[11px] font-black text-yellow-400 uppercase">{productionEstimate.budget}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                       <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Dificultad</span>
+                       <span className="text-[11px] font-black text-white uppercase">{productionEstimate.difficulty}</span>
+                    </div>
+                    {productionEstimate.total_duration && (
+                      <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                         <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Duración Final</span>
+                         <span className="text-[11px] font-black text-white uppercase">{productionEstimate.total_duration}</span>
+                      </div>
+                    )}
+                    <div className="pt-2">
+                       <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500 block mb-2">Equipamiento_Sugerido</span>
+                       <div className="flex flex-wrap gap-2">
+                          {productionEstimate.equipment.map((item, i) => (
+                            <span key={i} className="text-[8px] font-mono border border-zinc-700 px-2 py-1 text-zinc-400">{item}</span>
+                          ))}
+                       </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {keywords.length > 0 && (
@@ -447,13 +667,22 @@ export default function ScreenwriterIA() {
                 <span>ESCALETA_TÉCNICA ({platform === 'instagram' ? '9:16' : '16:9'})</span>
               </div>
               {rundown.length > 0 && (
-                <button 
-                  onClick={copyTableToClipboard}
-                  className="flex items-center gap-3 px-6 py-3 bg-black hover:bg-zinc-800 rounded-none text-[10px] font-black text-white transition-all shadow-xl active:scale-95 uppercase tracking-widest"
-                >
-                  {copiedTable ? <Check size={16} /> : <Copy size={16} />}
-                  <span>Copiar Tabla</span>
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={exportToPDF}
+                    className="flex items-center gap-3 px-6 py-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-none text-[10px] font-black text-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
+                  >
+                    <Download size={16} />
+                    <span>PDF</span>
+                  </button>
+                  <button 
+                    onClick={copyTableToClipboard}
+                    className="flex items-center gap-3 px-6 py-3 bg-black hover:bg-zinc-800 rounded-none text-[10px] font-black text-white transition-all shadow-xl active:scale-95 uppercase tracking-widest"
+                  >
+                    {copiedTable ? <Check size={16} /> : <Copy size={16} />}
+                    <span>Copiar Tabla</span>
+                  </button>
+                </div>
               )}
             </div>
             
@@ -462,7 +691,7 @@ export default function ScreenwriterIA() {
               <table className="w-full border-collapse hidden lg:table">
                 <thead>
                   <tr className="bg-zinc-50 border-b-2 border-black">
-                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-16">#</th>
+                    <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-24">#</th>
                     <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[200px]">Matriz_Visual / Audio</th>
                     <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 w-24">Tiempo</th>
                     <th className="p-4 text-left text-[9px] font-black uppercase tracking-widest text-zinc-500 min-w-[250px]">Especificaciones_Técnicas</th>
@@ -472,8 +701,17 @@ export default function ScreenwriterIA() {
                   {rundown.map((item, idx) => (
                     <tr key={idx} className="group hover:bg-zinc-50 transition-colors">
                       <td className="p-4 align-top">
-                        <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
-                          {String(idx + 1).padStart(2, '0')}
+                        <div className="flex flex-col gap-2 items-center">
+                          <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
+                            {String(idx + 1).padStart(2, '0')}
+                          </div>
+                          <button 
+                            onClick={() => refineScene(idx)}
+                            className="p-2 bg-white border border-zinc-200 hover:border-black transition-colors text-zinc-300 hover:text-black shadow-sm"
+                            title="Refinar Secuencia Completa con IA"
+                          >
+                            {refiningIdx === idx ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                          </button>
                         </div>
                       </td>
                       <td className="p-4 align-top space-y-4">
@@ -498,7 +736,7 @@ export default function ScreenwriterIA() {
                             rows={2}
                           />
                         </div>
-                        <div className="p-4 bg-white border-l-4 border-black group-hover:border-zinc-400 transition-colors shadow-sm">
+                        <div className="p-4 bg-white border-l-4 border-black group-hover:border-zinc-400 transition-colors shadow-sm relative">
                           <AutoResizeTextarea 
                             value={item.audio}
                             onChange={(e) => {
@@ -611,8 +849,16 @@ export default function ScreenwriterIA() {
                 {rundown.map((item, idx) => (
                   <div key={idx} className="bg-zinc-50 border-2 border-black/5 p-4 space-y-4">
                     <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                       <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
-                        {String(idx + 1).padStart(2, '0')}
+                       <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-black text-white rounded-none flex items-center justify-center text-[10px] font-black">
+                          {String(idx + 1).padStart(2, '0')}
+                        </div>
+                        <button 
+                          onClick={() => refineScene(idx)}
+                          className="p-2 bg-white border border-zinc-200 hover:border-black transition-colors text-zinc-300 hover:text-black shadow-sm"
+                        >
+                          {refiningIdx === idx ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                        </button>
                       </div>
                       <div className="flex items-center gap-2 text-[10px] font-mono font-black text-black">
                         <Clock size={12} className="opacity-30" />

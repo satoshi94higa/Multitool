@@ -62,14 +62,14 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
       prompt = `${customPrompt}\n\n"${text || ''}"`;
     } else {
       const prompts: Record<string, string> = {
-        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave:",
-        spelling: "Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. Devuelve estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido\", \"changes\": [\"lista de cambios\"]}",
-        translate: "Traduce el siguiente texto al inglés de forma natural:",
-        bullets: "Transforma el siguiente texto en una lista de bullet points clara y organizada:",
-        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto:",
-        screenplay: "Genera un esquema de guion basado en la siguiente premisa:",
-        journalist: "Escribe un artículo periodístico breve basado en la siguiente información:",
-        director: "Genera una descripción visual y técnica para una escena basada en este texto:"
+        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave. No utilices formato Markdown (como asteriscos o almohadillas):",
+        spelling: "Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. No uses formato Markdown. Devuelve estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido sin markdown\", \"changes\": [\"lista de cambios\"]}",
+        translate: "Traduce el siguiente texto al inglés de forma natural. Sin formato Markdown:",
+        bullets: "Transforma el siguiente texto en una lista de puntos clara y organizada. No uses Markdown, usa guiones '-' o números:",
+        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto. No uses formato Markdown:",
+        screenplay: "Genera un esquema de guion basado en la siguiente premisa. No uses formato Markdown:",
+        journalist: "Escribe un artículo periodístico breve basado en la siguiente información. No uses formato Markdown:",
+        director: "Genera una descripción visual y técnica para una escena basada en este texto. No uses formato Markdown:"
       };
       prompt = (prompts[type as keyof typeof prompts] || "") + (text ? `\n\n"${text}"` : "");
     }
