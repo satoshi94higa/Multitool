@@ -83,7 +83,7 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     }
   }
 
-  const modelsToTry = ["gemini-3-flash-preview", "gemini-flash-latest", "gemini-2.5-flash-image"];
+  const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
   let lastError = "";
 
   for (const model of modelsToTry) {
