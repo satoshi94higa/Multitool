@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key, Captions, CircleDollarSign } from 'lucide-react';
+import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key, Captions, CircleDollarSign, TrendingUp } from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
@@ -11,6 +11,7 @@ import QRGenerator from './components/QRGenerator';
 import Teleprompter from './components/Teleprompter';
 import SubtitleAssistant from './components/SubtitleAssistant';
 import BudgetCalculator from './components/BudgetCalculator';
+import InflationCalculator from './components/InflationCalculator';
 import { processWithGemini, getLocalApiKey, setLocalApiKey, getLocalModel, setLocalModel } from './services/geminiService';
 
 export default function App() {
@@ -124,7 +125,8 @@ export default function App() {
             { id: 'content-brainstormer', icon: Brain, label: 'Lluvia Ideas', short: 'Lluvia de Ideas' },
             { id: 'social-formatter', icon: Share2, label: 'Boost Social', short: 'Formateador Social' },
             { id: 'subtitle-assistant', icon: Captions, label: 'Subtítulos', short: 'Subtítulos Style' },
-            { id: 'qr-generator', icon: QrCode, label: 'Generador QR', short: 'Generador QR' }
+            { id: 'qr-generator', icon: QrCode, label: 'Generador QR', short: 'Generador QR' },
+            { id: 'inflation-calc', icon: TrendingUp, label: 'Inflación', short: 'Calculadora Inflación' }
           ].map((item) => (
             <button 
               key={item.id}
@@ -290,6 +292,13 @@ export default function App() {
             <section id="qr-generator" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
               <div className="p-4 md:p-10 flex-1 scroll-smooth">
                 <QRGenerator />
+              </div>
+            </section>
+
+            {/* Inflation Calculator - Full Width */}
+            <section id="inflation-calc" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+              <div className="p-4 md:p-10 flex-1 scroll-smooth">
+                <InflationCalculator />
               </div>
             </section>
 
