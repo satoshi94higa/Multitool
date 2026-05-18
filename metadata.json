@@ -1,6 +1,6 @@
 {
   "name": "STUDIO_MODULAR v4",
   "description": "Suite minimalista de alto contraste para creadores de contenido: Teleprompter, IA Generativa, Procesamiento de Texto y Utilidades de precisión.",
-  "requestFramePermissions": ["camera"],
+  "requestFramePermissions": ["camera", "screen-wake-lock"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

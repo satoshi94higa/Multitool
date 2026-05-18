@@ -47,7 +47,11 @@ export default function Teleprompter({ initialText = '', onClose }: Teleprompter
         wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
         console.log('Wake Lock is active');
       } catch (err: any) {
-        console.error(`${err.name}, ${err.message}`);
+        if (err.name === 'NotAllowedError') {
+          console.warn('Wake Lock request was denied by the permissions policy. Screen might dim.');
+        } else {
+          console.error(`${err.name}: ${err.message}`);
+        }
       }
     }
   };

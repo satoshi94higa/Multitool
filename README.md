@@ -1,50 +1,47 @@
-# MultiUtility Hub 🚀
+# STUDIO_MODULAR v4 🚀
 
-Una suite de herramientas diarias diseñada para la productividad, con inteligencia artificial integrada.
+Suite minimalista de alto contraste diseñada para creadores de contenido, impulsada por inteligencia artificial.
 
-## ✨ Características
+## ✨ Herramientas Incluidas
 
-- **Procesador de Texto**: Herramientas rápidas para cambiar mayúsculas, limpiar espacios extra, estadísticas de lectura y descarga en `.txt`. Con autoguardado local.
-- **Calculadora de Porcentajes**: Resuelve incógnitas rápidamente (¿Cuánto es el X% de Y? o ¿Z es qué porcentaje de Y?).
-- **Social Booster IA**: Optimiza tus mensajes para redes sociales usando Google Gemini. 
-  - Modos: Optimizar (con opción de quitar formato Markdown), Corregir Gramática (con reporte detallado) y Agregar Emojis.
-  - Tonos ajustables: Casual, Profesional y Enérgico.
+- **🎬 Teleprompter**: Control de velocidad, tamaño de fuente y modo espejo para grabaciones perfectas. Con soporte para *Screen Wake Lock*.
+- **🧠 IA Generativa**: 
+  - **Redactor IA**: Refina, expande o resume textos con precisión quirúrgica.
+  - **Screenwriter IA**: Generador de guiones estructurados para YouTube, Reels y TikTok.
+  - **Content Brainstormer**: Generador de ideas y ganchos (hooks) para vencer el bloqueo creativo.
+- **📱 Utilidades Sociales**:
+  - **Social Formatter**: Optimización de texto y emojis para distintas plataformas.
+  - **QR Generator**: Creación instantánea de códigos QR.
+- **🛠️ Micro-Utilidades**:
+  - **Text Processor**: Limpieza, estadísticas y manipulación de texto plano.
+  - **Calculadora de Porcentajes**: Cálculos rápidos de variaciones y porcentajes.
+  - **Calculadora de Combustible**: Estima consumos y costos de viaje.
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19 + Vite
-- **Estilos**: Tailwind CSS
-- **Iconografía**: Lucide React
-- **IA**: Google Generative AI (Gemini 2.0 Flash)
+- **Estilos**: Tailwind CSS (Minimalist High-Contrast Design)
+- **IA**: Google Gemini API (Gemini 2.0 Flash)
 - **Animaciones**: Motion
+- **Iconografía**: Lucide React
 
-## 🚀 Empezando
+## 🚀 Instalación y Uso
 
-### Requisitos previos
-
-- Node.js (v18 o superior)
-- Una clave de API de [Google AI Studio](https://aistudio.google.com/)
-
-### Instalación
-
-1. Clona el repositorio:
+1. **Clonar**:
    ```bash
    git clone <tu-repositorio-url>
-   cd multiutility-hub
+   cd studio-modular
    ```
 
-2. Instala las dependencias:
+2. **Instalar dependencias**:
    ```bash
    npm install
    ```
 
-3. Configura las variables de entorno:
-   Crea un archivo `.env` basado en `.env.example` y agrega tu clave de Gemini:
-   ```env
-   GEMINI_API_KEY=tu_clave_aqui
-   ```
+3. **Variables de entorno**:
+   Define `GEMINI_API_KEY` en tu entorno o archivo `.env`.
 
-4. Inicia el servidor de desarrollo:
+4. **Desarrollo**:
    ```bash
    npm run dev
    ```
