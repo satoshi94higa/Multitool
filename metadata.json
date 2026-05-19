@@ -1,6 +1,6 @@
 {
-  "name": "STUDIO_MODULAR v4",
-  "description": "Suite minimalista para creadores y utilidades de precisión: Calculadora de Inflación (Valor Real), Teleprompter, IA Generativa y Procesamiento de Texto.",
+  "name": "Multitool PWA",
+  "description": "Suite minimalista PWA para creadores y utilidades de precisión: Calculadora de Inflación, Teleprompter, IA Generativa y Procesamiento de Texto. Instalable y optimizada para Android/iOS.",
   "requestFramePermissions": ["camera", "screen-wake-lock"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
