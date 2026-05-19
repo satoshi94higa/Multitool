@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Type, Sparkles, Copy, Check, RotateCcw, Layout, MessageSquareQuote, Clapperboard, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Type, Sparkles, Copy, Check, RotateCcw, Layout, MessageSquareQuote, Clapperboard, Download, History, Trash2, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { processWithGemini } from '../services/geminiService';
+import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../lib/persistence';
 
 const SUBTITLE_STYLES = [
   { id: 'bold', name: 'Impacto (Bold)', desc: 'Líneas cortas y directas. Sin formato forzado.' },
@@ -18,6 +20,12 @@ export default function SubtitleAssistant() {
   const [result, setResult] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    setHistory(getHistory('subtitles'));
+  }, []);
 
   const handleProcess = async () => {
     if (!input.trim()) return;
@@ -52,6 +60,9 @@ export default function SubtitleAssistant() {
 
       const data = await processWithGemini({ customPrompt: prompt, text: input }, 'process');
       setResult(data.text);
+      
+      const newHistory = saveToHistory('subtitles', input, data.text, input.slice(0, 30));
+      setHistory(newHistory);
     } catch (error) {
       console.error(error);
       setResult('Error al procesar subtítulos. Inténtalo de nuevo.');
@@ -80,17 +91,88 @@ export default function SubtitleAssistant() {
     setResult('');
   };
 
+  const loadFromHistory = (item: HistoryItem) => {
+    setResult(item.output);
+    setInput(item.input);
+    setShowHistory(false);
+  };
+
+  const removeHistoryItem = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newHistory = deleteFromHistory('subtitles', id);
+    setHistory(newHistory);
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-black flex items-center justify-center text-white shrink-0">
-          <Type size={24} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-4 mb-8 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-black flex items-center justify-center text-white shrink-0">
+            <Type size={24} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black uppercase tracking-tighter italic">Asistente de Subtítulos "Style"</h2>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Post-Producción & Contenido Vertical</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-black uppercase tracking-tighter italic">Asistente de Subtítulos "Style"</h2>
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Post-Producción & Contenido Vertical</p>
-        </div>
+        <button 
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
+        >
+          <History size={14} />
+          {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
+        </button>
       </div>
+
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mb-8"
+          >
+            <div className="bg-zinc-50 border-2 border-black p-6">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Últimas 10 Ediciones</span>
+                <span className="text-[9px] font-bold text-zinc-300">Autoguardado Local</span>
+              </div>
+              {history.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed border-zinc-200">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No hay registros guardados</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {history.map((item) => (
+                    <div 
+                      key={item.id}
+                      onClick={() => loadFromHistory(item)}
+                      className="group p-4 bg-white border border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-tight text-black truncate">{item.title}</p>
+                          <p className="text-[9px] font-bold text-zinc-400 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
+                        </div>
+                        <button 
+                          onClick={(e) => removeHistoryItem(e, item.id)}
+                          className="text-zinc-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 text-zinc-300 group-hover:text-black transition-colors">
+                        <span className="text-[8px] font-black uppercase tracking-widest">Recuperar</span>
+                        <ChevronRight size={10} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1">
         <div className="space-y-6">

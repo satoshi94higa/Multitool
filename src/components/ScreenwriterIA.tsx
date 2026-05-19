@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw, FileText, Download, Info } from 'lucide-react';
+import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw, FileText, Download, Info, History, Trash2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { processWithGemini } from '../services/geminiService';
+import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../lib/persistence';
 
 const InfoTooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
@@ -117,56 +118,30 @@ export default function ScreenwriterIA() {
   const [synced, setSynced] = useState(false);
   const [refiningIdx, setRefiningIdx] = useState<number | null>(null);
   const [productionEstimate, setProductionEstimate] = useState<{ budget: string; difficulty: string; equipment: string[]; total_duration?: string } | null>(null);
-  const [history, setHistory] = useState<{id: string, title: string, date: string, data: any}[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const platformInfo = {
-    instagram: 'Formato vertical (9:16) y ritmo rápido. Ideal para Reels, TikToks y Shorts.',
-    youtube: 'Formato horizontal (16:9) con estructura clásica. Ideal para videos largos.'
-  };
-
-  const toneInfo = {
-    energetic: 'Tono con mucha fuerza, ritmo rápido y palabras de acción.',
-    casual: 'Tono relajado y natural, como una charla cercana.',
-    professional: 'Tono serio, confiable y con autoridad corporativa.',
-    humorous: 'Tono divertido con toques ligeros para entretener.'
-  };
-
-  const narratorInfo = {
-    expert: 'Demuestra conocimiento técnico y autoridad.',
-    creator: 'Dinámico, cercano y auténtico (vlogger).',
-    storyteller: 'Enfocado en la narrativa emocional y épica.',
-    minimalist: 'Directo al grano, conciso y sin distracciones.',
-    hype: 'Máxima emoción e intensidad (estilo MrBeast).'
-  };
-
   useEffect(() => {
-    const savedHistory = localStorage.getItem('screenwriter_history');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
+    setHistory(getHistory('screenwriter'));
   }, []);
 
-  const saveToHistory = (data: any) => {
-    const newEntry = {
-      id: Date.now().toString(),
-      title: input.slice(0, 30) + (input.length > 30 ? '...' : ''),
-      date: new Date().toLocaleString(),
-      data
-    };
-    const newHistory = [newEntry, ...history].slice(0, 10); // Keep last 10
-    setHistory(newHistory);
-    localStorage.setItem('screenwriter_history', JSON.stringify(newHistory));
+  const loadFromHistory = (item: HistoryItem) => {
+    const { output } = item;
+    setScript(output.full_script);
+    setRundown(output.rundown || []);
+    setThumbnail(output.thumbnail || null);
+    setKeywords(output.keywords || []);
+    setProductionEstimate(output.production_estimate || null);
+    setInput(item.input);
+    setShowHistory(false);
+    window.scrollTo({ top: 400, behavior: 'smooth' });
   };
 
-  const loadFromHistory = (entry: any) => {
-    const { data } = entry;
-    setScript(data.full_script);
-    setRundown(data.rundown || []);
-    setThumbnail(data.thumbnail || null);
-    setKeywords(data.keywords || []);
-    setProductionEstimate(data.production_estimate || null);
-    setInput(entry.title.replace('...', '')); // approximation
+  const removeHistoryItem = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newHistory = deleteFromHistory('screenwriter', id);
+    setHistory(newHistory);
   };
 
   const generateScript = async () => {
@@ -276,7 +251,9 @@ export default function ScreenwriterIA() {
       if (data.production_estimate) {
         setProductionEstimate(data.production_estimate);
       }
-      saveToHistory(data);
+      
+      const newHistory = saveToHistory('screenwriter', input, data, input.slice(0, 30));
+      setHistory(newHistory);
     } catch (error: any) {
       console.error('Error generating script:', error);
       setError(error.message || "Error al generar guion");
@@ -485,23 +462,68 @@ export default function ScreenwriterIA() {
 
   return (
     <div className="space-y-12 bg-transparent pb-4 w-full max-w-none px-4 md:px-8" id="screenwriter-ia">
-      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
-        Guionista IA
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4">
+        <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
+          Guionista IA
+        </h1>
+        <button 
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
+        >
+          <History size={14} />
+          {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
+        </button>
+      </div>
 
-      {history.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar border-b border-zinc-100">
-           {history.map(entry => (
-             <button 
-               key={entry.id}
-               onClick={() => loadFromHistory(entry)}
-               className="flex-shrink-0 px-4 py-2 border border-zinc-200 text-[9px] font-black uppercase tracking-widest hover:border-black transition-colors"
-             >
-               {entry.title}
-             </button>
-           ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-zinc-50 border-2 border-black p-6 mb-8 mt-4">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Últimas 10 Guiones</span>
+                <span className="text-[9px] font-bold text-zinc-300">Autoguardado Local</span>
+              </div>
+              {history.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed border-zinc-200">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No hay guiones guardados</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {history.map((item) => (
+                    <div 
+                      key={item.id}
+                      onClick={() => loadFromHistory(item)}
+                      className="group p-4 bg-white border border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-tight text-black truncate">{item.title}</p>
+                          <p className="text-[9px] font-bold text-zinc-400 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
+                        </div>
+                        <button 
+                          onClick={(e) => removeHistoryItem(e, item.id)}
+                          className="text-zinc-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 text-zinc-300 group-hover:text-black transition-colors">
+                        <span className="text-[8px] font-black uppercase tracking-widest">Recuperar</span>
+                        <ChevronRight size={10} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="space-y-6 mt-4">
         {/* Fila 1: Plataformas */}
