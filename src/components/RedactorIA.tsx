@@ -28,7 +28,13 @@ const AutoResizeTextarea = ({ value, onChange, ...props }: AutoResizeTextareaPro
   );
 };
 
-type NarrativeStructure = 'piramide_invertida' | 'cronica' | 'hilo_x' | 'gacetilla' | 'storytelling' | 'reportaje' | 'opinion';
+type NarrativeStructure = 'piramide_invertida' | 'cronica' | 'hilo_x' | 'gacetilla' | 'storytelling' | 'reportaje' | 'carrusel';
+
+interface CarouselSlide {
+  slide_number: number;
+  text: string;
+  photo_suggestion: string;
+}
 
 interface JournalismOutput {
   news_story: string;
@@ -44,12 +50,14 @@ interface JournalismOutput {
     summary: string;
     hashtags: string[];
   };
+  carousel_slides?: CarouselSlide[];
 }
 
 export default function RedactorIA() {
   const [input, setInput] = useState('');
   const [extraInstructions, setExtraInstructions] = useState('');
   const [structure, setStructure] = useState<NarrativeStructure>('piramide_invertida');
+  const [slideCount, setSlideCount] = useState(10);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<JournalismOutput | null>(null);
   const [copied, setCopied] = useState(false);
@@ -68,11 +76,23 @@ export default function RedactorIA() {
         gacetilla: 'Gacetilla de Prensa (estilo corporativo listo para enviar a medios)',
         storytelling: 'Storytelling (enfocado en el arco narrativo y emocional)',
         reportaje: 'Reportaje (profundidad, datos y múltiples voces)',
-        opinion: 'Nota de Opinión (subjetivo, argumentativo y con voz clara)'
+        carrusel: `Carrusel de Instagram (secuencia de hasta ${slideCount} diapositivas con textos breves y sugerencias visuales)`
       }[structure];
 
-      const prompt = `Actúa como un redactor jefe experto. 
-      Toma el siguiente material y conviértelo en una pieza profesional.
+      let carruselRules = '';
+      if (structure === 'carrusel') {
+        carruselRules = `
+          7. Para el Carrusel de Instagram: 
+             - Genera exactamente entre 1 y ${slideCount} diapositivas.
+             - Los textos deben ser MUY breves (máximo 15-20 palabras por slide).
+             - Destaca cifras impactantes o citas clave.
+             - No todas las imágenes deben tener texto (pueden ser solo visuales sugeridas).
+             - Incluye una sugerencia detallada de qué mostrar en la foto de cada imagen.
+        `;
+      }
+
+      const prompt = `Actúa como un redactor jefe experto y estratega de contenido visual. 
+      Toma el siguiente material y conviértelo en una pieza profesional de alto impacto.
       
       ESTRUCTURA SOLICITADA: ${structureLabel}.
       ${extraInstructions ? `INSTRUCCIONES ADICIONALES DEL USUARIO: ${extraInstructions}` : ''}
@@ -84,12 +104,13 @@ export default function RedactorIA() {
       4. Propón ángulos periodísticos adicionales.
       5. Genera un "Social Media Briefing" con ganchos para plataformas, resumen ejecutivo y hashtags relevantes.
       6. IMPORTANTE: No utilices formato Markdown (como asteriscos para negritas, cursivas o almohadillas para títulos) en el contenido de la respuesta.
+      ${carruselRules}
       
       Material: "${input}"
       
       Devuelve la respuesta estrictamente en este formato JSON:
       {
-        "news_story": "El cuerpo central del texto estructurado según la forma solicitada",
+        "news_story": "El cuerpo central del texto estructurado (si es carrusel, haz una breve introducción o resumen aquí)",
         "headlines": {
           "seo": "Titular optimizado para buscadores",
           "narrative": "Titular con estilo narrativo/gancho",
@@ -101,7 +122,10 @@ export default function RedactorIA() {
           "platform_hooks": ["Gancho para LinkedIn", "Gancho para IG/X"],
           "summary": "Resumen rápido",
           "hashtags": ["#ht1", "#ht2"]
-        }
+        },
+        "carousel_slides": [
+          { "slide_number": 1, "text": "Texto breve para el slide", "photo_suggestion": "Descripción de la imagen" }
+        ]
       }`;
 
       const data = await processWithGemini({ customPrompt: prompt }, 'process');
@@ -120,7 +144,9 @@ export default function RedactorIA() {
     
     const briefingText = data.social_briefing ? `\n\nSOCIAL MEDIA BRIEFING\n- Resumen: ${data.social_briefing.summary}\n- Hooks: ${data.social_briefing.platform_hooks.join(' | ')}\n- Hashtags: ${data.social_briefing.hashtags.join(' ')}` : '';
     
-    const fullText = `${data.headlines.direct.toUpperCase()}\n\nTitulares Alternativos:\n- SEO: ${data.headlines.seo}\n- Narrativo: ${data.headlines.narrative}\n\n------------------\n\n${data.news_story}${briefingText}\n\nCitas Destacadas:\n${data.key_quotes.map(q => `"${q}"`).join('\n\n')}\n\nPosibles Enfoques:\n${data.angles.map(a => `- ${a}`).join('\n')}\n\n------------------\nGenerado con Redactor IA`;
+    const carouselText = data.carousel_slides ? `\n\nESTRUCTURA DE CARRUSEL DE INSTAGRAM:\n${data.carousel_slides.map(s => `Slide ${s.slide_number}:\n[TEXTO]: ${s.text}\n[IMAGEN]: ${s.photo_suggestion}`).join('\n\n')}` : '';
+
+    const fullText = `${data.headlines.direct.toUpperCase()}\n\nTitulares Alternativos:\n- SEO: ${data.headlines.seo}\n- Narrativo: ${data.headlines.narrative}\n\n------------------\n\n${data.news_story}${carouselText}${briefingText}\n\nCitas Destacadas:\n${data.key_quotes.map(q => `"${q}"`).join('\n\n')}\n\nPosibles Enfoques:\n${data.angles.map(a => `- ${a}`).join('\n')}\n\n------------------\nGenerado con Redactor IA`;
     
     window.dispatchEvent(new CustomEvent('app-set-text', { 
       detail: { text: fullText, append: true } 
@@ -138,18 +164,44 @@ export default function RedactorIA() {
       
       <div className="flex flex-col gap-8">
         {/* Selector de Estructura */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {(['piramide_invertida', 'cronica', 'hilo_x', 'gacetilla', 'storytelling', 'reportaje', 'opinion'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStructure(s)}
-              className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 ${
-                structure === s ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
-              }`}
-            >
-              {s.replace('_', ' ')}
-            </button>
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {(['piramide_invertida', 'cronica', 'hilo_x', 'gacetilla', 'storytelling', 'reportaje', 'carrusel'] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStructure(s)}
+                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 ${
+                  structure === s ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                }`}
+              >
+                {s.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          {structure === 'carrusel' && (
+            <div className="bg-zinc-100 p-6 space-y-4 animate-in fade-in slide-in-from-left-4">
+              <div className="flex justify-between items-center text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                <div className="flex items-center gap-3">
+                  <Share2 size={14} />
+                  <span>Configuración del Carrusel</span>
+                </div>
+                <span>{slideCount} Imágenes Máx.</span>
+              </div>
+              <input 
+                type="range" 
+                min="1" 
+                max="20" 
+                value={slideCount} 
+                onChange={(e) => setSlideCount(parseInt(e.target.value))}
+                className="w-full accent-black h-1.5 bg-zinc-200 rounded-none cursor-pointer appearance-none"
+              />
+              <div className="flex justify-between text-[9px] text-zinc-400 font-bold px-1">
+                <span>1 SLIDE</span>
+                <span>20 SLIDES</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -223,6 +275,40 @@ export default function RedactorIA() {
                 </div>
               </div>
             </div>
+
+            {/* Carrusel de Instagram */}
+            {data.carousel_slides && data.carousel_slides.length > 0 && (
+              <div className="bg-white border-2 border-black p-10 shadow-2xl">
+                <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-50 pb-8">
+                  <Share2 size={18} />
+                  <span>Plan de Carrusel de Instagram</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {data.carousel_slides.map((slide, i) => (
+                    <div key={i} className="group border border-zinc-100 bg-zinc-50 flex flex-col h-full hover:border-black transition-colors">
+                      <div className="p-4 bg-black text-white flex justify-between items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest">DIAPOSITIVA_{slide.slide_number}</span>
+                        <div className="w-2 h-2 bg-white rounded-full" />
+                      </div>
+                      <div className="p-6 flex-1 flex flex-col space-y-6">
+                        <div className="space-y-2">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Texto_en_Imagen</span>
+                          <p className="text-sm font-medium leading-relaxed italic text-black bg-white p-4 border border-zinc-100">
+                            {slide.text || '(Solo imagen/visual)'}
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block italic">Sugerencia_Visual</span>
+                          <p className="text-[11px] leading-relaxed text-zinc-600 font-mono">
+                            {slide.photo_suggestion}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Redacción y Briefing */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
