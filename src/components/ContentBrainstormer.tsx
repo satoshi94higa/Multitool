@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus, History, Trash2, ChevronRight } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus, History, Trash2, ChevronRight, FileDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import { processWithGemini } from '../services/geminiService';
@@ -101,6 +102,68 @@ export default function ContentBrainstormer() {
     setTimeout(() => setSent(false), 2000);
   };
 
+  const exportToPDF = () => {
+    if (!ideas) return;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORME DE BRAINSTORMING", 105, 20, { align: "center" });
+    
+    doc.setDrawColor(0);
+    doc.setLineWidth(1);
+    doc.line(20, 25, 190, 25);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`TEMA: ${input.toUpperCase()}`, 20, 40);
+    doc.text(`EQUIPO: ${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`, 20, 48);
+    doc.text(`FECHA: ${new Date().toLocaleString()}`, 20, 56);
+    
+    let y = 75;
+    const categories = [
+      { name: 'ESTRATEGIA GENERAL', key: 'general' },
+      { name: 'COBERTURA FOTOGRÁFICA', key: 'photographic' },
+      { name: 'COBERTURA AUDIOVISUAL', key: 'audiovisual' },
+      { name: 'PERIODISMO / GRÁFICA', key: 'journalistic' },
+      { name: 'WILD CARD (DISRUPTIVO)', key: 'wildcard' }
+    ];
+
+    categories.forEach(cat => {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setFillColor(245, 245, 245);
+      doc.rect(20, y - 5, 170, 8, 'F');
+      doc.text(cat.name, 22, y + 1);
+      y += 12;
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      (ideas as any)[cat.key].forEach((idea: string) => {
+        const lines = doc.splitTextToSize(`• ${idea}`, 160);
+        
+        // Check if we need a new page
+        if (y + (lines.length * 5) > 275) {
+          doc.addPage();
+          y = 20;
+        }
+        
+        doc.text(lines, 25, y);
+        y += (lines.length * 6);
+      });
+      y += 10;
+      
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    const fileName = `brainstorming-${input.slice(0, 20).toLowerCase().replace(/[^a-z0-9]/g, '-')}.pdf`;
+    doc.save(fileName);
+  };
+
   const loadFromHistory = (item: HistoryItem) => {
     setIdeas(item.output);
     setInput(item.input);
@@ -179,19 +242,19 @@ export default function ContentBrainstormer() {
         )}
       </AnimatePresence>
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mt-4">
-        <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-none border border-zinc-200">
-          <div className="flex items-center gap-3 px-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 p-2 border border-zinc-200">
+          <div className="flex items-center gap-3 px-3 py-2 sm:py-0">
             <Users size={16} className="text-zinc-400" />
             <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Equipo</span>
           </div>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             {[1, 2, 3, 4, 5, 6].map((num) => (
               <button
                 key={num}
                 onClick={() => setPeopleCount(num)}
-                className={`w-10 h-10 rounded-none flex items-center justify-center text-[12px] font-mono transition-all border-2 ${
-                  peopleCount === num ? 'bg-black text-white border-black shadow-xl scale-110 z-10' : 'text-zinc-400 border-transparent hover:text-black hover:border-zinc-200'
+                className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[12px] font-mono transition-all border-2 ${
+                  peopleCount === num ? 'bg-black text-white border-black shadow-lg scale-105 z-10' : 'text-zinc-400 border-transparent hover:text-black hover:border-zinc-200'
                 }`}
               >
                 {num}
@@ -249,18 +312,27 @@ export default function ContentBrainstormer() {
 
       {ideas && (
         <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          <div className="flex items-center justify-between border-b-2 border-black pb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-black pb-8 gap-6">
             <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.6em]">
               <Zap size={18} className="text-black animate-pulse" />
-              <span>Síntesis.Resultado / {peopleCount} {peopleCount === 1 ? 'Persona' : 'Personas'}</span>
+              <span className="truncate">Síntesis.Resultado / {peopleCount} {peopleCount === 1 ? 'Persona' : 'Personas'}</span>
             </div>
-            <button 
-              onClick={sendToProcessor}
-              className="flex items-center gap-3 px-8 py-4 bg-black hover:bg-zinc-800 rounded-none text-[11px] font-black text-white transition-all shadow-2xl active:scale-95 uppercase tracking-widest border-2 border-black"
-            >
-              {sent ? <Check size={18} /> : <Send size={18} />}
-              <span>{sent ? 'Enviado_al_Buffer' : 'Enviar al Editor'}</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <button 
+                onClick={exportToPDF}
+                className="flex items-center justify-center gap-3 px-6 py-4 bg-zinc-100 hover:bg-zinc-200 text-black rounded-none text-[10px] font-black transition-all uppercase tracking-widest border border-zinc-200"
+              >
+                <FileDown size={14} />
+                <span>Exportar PDF</span>
+              </button>
+              <button 
+                onClick={sendToProcessor}
+                className="flex items-center justify-center gap-3 px-8 py-4 bg-black hover:bg-zinc-800 rounded-none text-[10px] font-black text-white transition-all shadow-xl active:scale-95 uppercase tracking-widest border-2 border-black"
+              >
+                {sent ? <Check size={14} /> : <Send size={14} />}
+                <span>{sent ? 'Enviado_al_Buffer' : 'Enviar al Editor'}</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-10">
