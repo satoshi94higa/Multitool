@@ -12,7 +12,7 @@ export const setLocalModel = (model: string) => typeof window !== 'undefined' ? 
 export async function processWithGemini(body: any, endpoint: string = 'process', customKey?: string) {
   const currentModel = getLocalModel();
   console.log(`[GeminiService] Calling ${endpoint} with model: ${body.model || currentModel}`);
-  const apiPath = `/api/gemini/${endpoint}`;
+  const apiPath = 'api/gemini/' + endpoint;
   
   // Attach current model to body if not present
   if (!body.model) {
