@@ -106,88 +106,84 @@ export default function App() {
            {(!sidebarCollapsed || mobileMenuOpen) && <span className="font-black text-xs uppercase tracking-[0.3em] ml-4 animate-in fade-in duration-500">Utility.Hub</span>}
         </div>
 
-        <nav className="flex-1 space-y-2 overflow-y-auto w-full flex flex-col items-center scrollbar-hide px-3">
+        <nav className="flex-1 overflow-y-auto w-full flex flex-col items-center px-3 py-2 overscroll-contain">
           <button 
             onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
+            className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
           >
-            <LayoutDashboard size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel Control</span>}
+            <LayoutDashboard size={18} className="flex-none" />
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel</span>}
             {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Panel</span>}
           </button>
 
-          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
-          
-          {[
-            { id: 'text-processor', icon: SquarePen, label: 'Procesador', short: 'Procesador' },
-            { id: 'screenwriter-ia', icon: Video, label: 'Guionista IA', short: 'Guionista IA' },
-            { id: 'redactor-ia', icon: Newspaper, label: 'Redactor IA', short: 'Redactor IA' },
-            { id: 'content-brainstormer', icon: Brain, label: 'Lluvia Ideas', short: 'Lluvia de Ideas' },
-            { id: 'social-formatter', icon: Share2, label: 'Boost Social', short: 'Formateador Social' },
-            { id: 'subtitle-assistant', icon: Captions, label: 'Subtítulos', short: 'Subtítulos Style' },
-            { id: 'qr-generator', icon: QrCode, label: 'Generador QR', short: 'Generador QR' },
-            { id: 'inflation-calc', icon: TrendingUp, label: 'Inflación', short: 'Calculadora Inflación' }
-          ].map((item) => (
-            <button 
-              key={item.id}
-              onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
-              className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
-            >
-              <item.icon size={20} className="flex-none" />
-              {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">{item.label}</span>}
-              {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">{item.short}</span>}
-            </button>
-          ))}
+          <div className="w-full mt-4 mb-2">
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="px-3 text-[8px] font-black text-zinc-300 uppercase tracking-[0.2em]">Creatividad</span>}
+            <div className={`mt-2 ${(!sidebarCollapsed || mobileMenuOpen) ? 'grid grid-cols-2 gap-1' : 'space-y-1'}`}>
+              {[
+                { id: 'text-processor', icon: SquarePen, label: 'Text', short: 'Procesador' },
+                { id: 'screenwriter-ia', icon: Video, label: 'Guión', short: 'Guionista IA' },
+                { id: 'redactor-ia', icon: Newspaper, label: 'Escritor', short: 'Redactor IA' },
+                { id: 'content-brainstormer', icon: Brain, label: 'Ideas', short: 'Lluvia de Ideas' },
+                { id: 'social-formatter', icon: Share2, label: 'Social', short: 'Formateador Social' },
+                { id: 'subtitle-assistant', icon: Captions, label: 'Subs', short: 'Subtítulos Style' },
+              ].map((item) => (
+                <button 
+                  key={item.id}
+                  onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
+                  className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50 border border-transparent hover:border-zinc-100`}
+                >
+                  <item.icon size={18} className="flex-none" />
+                  {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
+                  {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">{item.short}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
+          <div className="w-full mt-4 mb-2">
+             {(!sidebarCollapsed || mobileMenuOpen) && <span className="px-3 text-[8px] font-black text-zinc-300 uppercase tracking-[0.2em]">Utilidades</span>}
+             <div className={`mt-2 ${(!sidebarCollapsed || mobileMenuOpen) ? 'grid grid-cols-2 gap-1' : 'space-y-1'}`}>
+                {[
+                  { id: 'qr-generator', icon: QrCode, label: 'QR', short: 'Generador QR' },
+                  { id: 'inflation-calc', icon: TrendingUp, label: 'Infla', short: 'Calculadora Inflación' },
+                  { id: 'budget-calculator', icon: CircleDollarSign, label: 'Presu', short: 'Presupuestos' },
+                  { id: 'percentage-calc', icon: Calculator, label: 'Perc', short: 'Porcentajes' },
+                  { id: 'fuel-calc', icon: Zap, label: 'Fuel', short: 'Combustible' },
+                ].map((item) => (
+                  <button 
+                    key={item.id}
+                    onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
+                    className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50 border border-transparent hover:border-zinc-100`}
+                  >
+                    <item.icon size={18} className="flex-none" />
+                    {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
+                    {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">{item.short}</span>}
+                  </button>
+                ))}
+             </div>
+          </div>
 
-          <button 
-            onClick={() => { scrollToSection('budget-calculator'); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
-          >
-            <CircleDollarSign size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Presupuestos</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Presupuestos</span>}
-          </button>
-
-          <button 
-            onClick={() => { scrollToSection('percentage-calc'); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
-          >
-            <Calculator size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Porcentajes</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Porcentajes</span>}
-          </button>
-
-          <button 
-            onClick={() => { scrollToSection('fuel-calc'); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
-          >
-            <Zap size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Combustible</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Combustible</span>}
-          </button>
-
-          <div className="w-8 h-[1px] bg-zinc-100 my-4" />
+          <div className="w-8 h-[1px] bg-zinc-100 my-4 flex-none" />
 
           <button 
             onClick={() => { toggleTeleprompter(); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
-            <Monitor size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Teleprompter</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Apuntador</span>}
+            <Monitor size={18} className="flex-none" />
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Monitor</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Teleprompter</span>}
           </button>
 
           <button 
             onClick={() => { setShowSettings(true); setMobileMenuOpen(false); }}
-            className={`w-full h-12 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-4'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
+            className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50`}
           >
-            <Settings size={20} className="flex-none" />
-            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-4 text-[10px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Configuración</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Ajustes</span>}
+            <Settings size={18} className="flex-none" />
+            {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Ajustes</span>}
+            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Configuración</span>}
           </button>
         </nav>
+
 
         <div className="mt-auto w-full px-4 mb-4 hidden md:block">
           <button 
