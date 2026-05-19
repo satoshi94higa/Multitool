@@ -735,30 +735,30 @@ export default function ScreenwriterIA() {
           )}
 
           <div className="space-y-8">
-            <div className="flex items-center justify-between border-b-2 border-black pb-6">
-              <div className="flex items-center gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-[0.5em]">
-                <MonitorSmartphone size={20} />
-                <span>ESCALETA_TÉCNICA ({platform === 'instagram' ? '9:16' : '16:9'})</span>
-              </div>
-              {rundown.length > 0 && (
-                <div className="flex gap-2">
-                  <button 
-                    onClick={exportToPDF}
-                    className="flex items-center gap-3 px-6 py-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-none text-[10px] font-black text-black transition-all shadow-sm active:scale-95 uppercase tracking-widest"
-                  >
-                    <Download size={16} />
-                    <span>PDF</span>
-                  </button>
-                  <button 
-                    onClick={copyTableToClipboard}
-                    className="flex items-center gap-3 px-6 py-3 bg-black hover:bg-zinc-800 rounded-none text-[10px] font-black text-white transition-all shadow-xl active:scale-95 uppercase tracking-widest"
-                  >
-                    {copiedTable ? <Check size={16} /> : <Copy size={16} />}
-                    <span>Copiar Tabla</span>
-                  </button>
-                </div>
-              )}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-black pb-6 gap-4">
+            <div className="flex items-center gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-[0.5em]">
+              <MonitorSmartphone size={20} className="shrink-0" />
+              <span>ESCALETA_TÉCNICA ({platform === 'instagram' ? '9:16' : '16:9'})</span>
             </div>
+            {rundown.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <button 
+                  onClick={exportToPDF}
+                  className="flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-none text-[10px] font-black text-black transition-all shadow-sm active:scale-95 uppercase tracking-widest w-full sm:w-auto"
+                >
+                  <Download size={16} />
+                  <span>Exportar PDF</span>
+                </button>
+                <button 
+                  onClick={copyTableToClipboard}
+                  className="flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-black hover:bg-zinc-800 rounded-none text-[10px] font-black text-white transition-all shadow-xl active:scale-95 uppercase tracking-widest w-full sm:w-auto"
+                >
+                  {copiedTable ? <Check size={16} /> : <Copy size={16} />}
+                  <span>Copiar Tabla</span>
+                </button>
+              </div>
+            )}
+          </div>
             
             <div className="border-t-2 border-black pt-4 overflow-x-auto">
               {/* Desktop Table View */}

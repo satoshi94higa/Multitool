@@ -216,66 +216,74 @@ export default function App() {
 
         <main className="flex-1 p-4 md:p-12 pb-24 overflow-x-hidden">
           <div className="max-w-[1600px] mx-auto">
-            <Routes>
-              <Route path="/" element={
-                <div className="space-y-8 md:space-y-10">
-                  {TOOLS.map((item) => (
-                    <section key={item.id} id={item.id} className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b-2 border-black bg-zinc-50 gap-4">
-                        <div className="flex items-center gap-3">
-                          <item.icon size={20} className="shrink-0" />
-                          <h2 className="text-sm font-black uppercase tracking-tighter">{item.short}</h2>
-                        </div>
-                        <button 
-                          onClick={() => navigate(item.path)}
-                          className="w-full sm:w-auto text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-2.5 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Share2 size={12} />
-                          Abrir Individualmente
-                        </button>
-                      </div>
-                      <div className="p-4 md:p-10 flex-1">
-                        <item.component />
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              } />
+            <div className={`flex flex-col ${location.pathname === '/' ? 'space-y-8 md:space-y-10' : ''}`}>
+              {TOOLS.map((item) => {
+                const isSelected = location.pathname === item.path;
+                const isHome = location.pathname === '/';
+                const shouldHide = !isSelected && !isHome;
 
-              {TOOLS.map((item) => (
-                <Route 
-                  key={item.id} 
-                  path={item.path} 
-                  element={
-                    <div className="animate-in fade-in zoom-in-95 duration-500">
-                       <div className="mb-8 flex items-center justify-between">
+                return (
+                  <div key={item.id} className={`${shouldHide ? 'hidden' : 'block'} ${isSelected ? 'animate-in fade-in zoom-in-95 duration-500' : ''}`}>
+                    {isSelected && (
+                       <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                           <div className="flex items-center gap-4">
-                             <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+                             <div className="w-12 h-12 bg-black text-white flex items-center justify-center flex-shrink-0">
                                 <item.icon size={24} />
                              </div>
                              <div>
-                                <h2 className="text-2xl font-black uppercase tracking-tighter italic">{item.short}</h2>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Módulo Individual / Compartible</p>
+                                <h2 className="text-2xl font-black uppercase tracking-tighter italic leading-none">{item.short}</h2>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">Módulo Individual / Compartible</p>
                              </div>
                           </div>
                           <button 
                             onClick={() => navigate('/')}
-                            className="bg-zinc-100 px-6 h-12 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-2"
+                            className="w-full sm:w-auto bg-zinc-100 px-6 h-12 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2"
                           >
                              <LayoutDashboard size={16} />
                              Volver al Panel
                           </button>
                        </div>
-                       <section className="bg-white border-4 border-black shadow-[24px_24px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
-                          <div className="p-6 md:p-12">
-                             <item.component />
+                    )}
+                    
+                    <section 
+                      id={item.id} 
+                      className={`
+                        bg-white overflow-hidden flex flex-col transition-all duration-300
+                        ${isSelected 
+                          ? 'border-4 border-black shadow-[24px_24px_0px_rgba(0,0,0,0.05)]' 
+                          : 'border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] group'
+                        }
+                      `}
+                    >
+                      {isHome && (
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b-2 border-black bg-zinc-50 gap-4">
+                          <div className="flex items-center gap-3">
+                            <item.icon size={20} className="shrink-0" />
+                            <h2 className="text-sm font-black uppercase tracking-tighter">{item.short}</h2>
                           </div>
-                       </section>
-                    </div>
-                  } 
-                />
-              ))}
+                          <button 
+                            onClick={() => navigate(item.path)}
+                            className="w-full sm:w-auto text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-2.5 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Share2 size={12} />
+                            Abrir Individualmente
+                          </button>
+                        </div>
+                      )}
+                      <div className={`flex-1 ${isSelected ? 'p-6 md:p-12' : 'p-4 md:p-10'}`}>
+                        <item.component />
+                      </div>
+                    </section>
+                  </div>
+                );
+              })}
+            </div>
 
+            <Routes>
+              <Route path="/" element={null} />
+              {TOOLS.map((item) => (
+                <Route key={item.id} path={item.path} element={null} />
+              ))}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
