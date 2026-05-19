@@ -89,7 +89,7 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-[100] bg-white transition-transform duration-300 ease-in-out border-r border-zinc-200
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full'}
         md:sticky md:top-0 md:h-screen md:translate-x-0 md:flex md:flex-col md:items-center md:py-8
         ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'}
       `}>
@@ -221,14 +221,14 @@ export default function App() {
                 <div className="space-y-8 md:space-y-10">
                   {TOOLS.map((item) => (
                     <section key={item.id} id={item.id} className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-                      <div className="flex items-center justify-between px-6 py-4 border-b-2 border-black bg-zinc-50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b-2 border-black bg-zinc-50 gap-4">
                         <div className="flex items-center gap-3">
-                          <item.icon size={20} />
+                          <item.icon size={20} className="shrink-0" />
                           <h2 className="text-sm font-black uppercase tracking-tighter">{item.short}</h2>
                         </div>
                         <button 
                           onClick={() => navigate(item.path)}
-                          className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1.5 hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                          className="w-full sm:w-auto text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-2.5 hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
                         >
                           <Share2 size={12} />
                           Abrir Individualmente

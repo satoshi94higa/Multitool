@@ -62,14 +62,14 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
       prompt = `${customPrompt}\n\n"${text || ''}"`;
     } else {
       const prompts: Record<string, string> = {
-        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave. No utilices formato Markdown (como asteriscos o almohadillas):",
-        spelling: "Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. No uses formato Markdown. Devuelve estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido sin markdown\", \"changes\": [\"lista de cambios\"]}",
-        translate: "Traduce el siguiente texto al inglés de forma natural. Sin formato Markdown:",
-        bullets: "Transforma el siguiente texto en una lista de puntos clara y organizada. No uses Markdown, usa guiones '-' o números:",
-        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto. No uses formato Markdown:",
-        screenplay: "Genera un esquema de guion basado en la siguiente premisa. No uses formato Markdown:",
-        journalist: "Escribe un artículo periodístico breve basado en la siguiente información. No uses formato Markdown:",
-        director: "Genera una descripción visual y técnica para una escena basada en este texto. No uses formato Markdown:"
+        summarize: "Sintetizá el siguiente texto de forma concisa pero manteniendo los puntos clave. Usá un tono natural de Argentina (voseo). No utilices formato Markdown (como asteriscos o almohadillas):",
+        spelling: "Actuá como un corrector experto. Corregí la ortografía y gramática del siguiente texto usando español de Argentina (voseo). No uses formato Markdown. Devolvé estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido sin markdown\", \"changes\": [\"lista de cambios\"]}",
+        translate: "Traducí el siguiente texto al inglés de forma natural. Sin formato Markdown:",
+        bullets: "Transformá el siguiente texto en una lista de puntos clara y organizada. Usá voseo y guiones '-' o números, sin Markdown:",
+        brainstorm: "Generá 5 ideas creativas basadas en el siguiente concepto. Usá español de Argentina (voseo). No uses formato Markdown:",
+        screenplay: "Generá un esquema de guion basado en la siguiente premisa. Usá español de Argentina (voseo). No uses formato Markdown:",
+        journalist: "Escribí un artículo periodístico breve basado en la siguiente información. Usá español de Argentina (voseo). No uses formato Markdown:",
+        director: "Generá una descripción visual y técnica para una escena basada en este texto. Usá español de Argentina (voseo). No uses formato Markdown:"
       };
       prompt = (prompts[type as keyof typeof prompts] || "") + (text ? `\n\n"${text}"` : "");
     }
@@ -78,18 +78,19 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
     const toneLabel = tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico';
 
     if (mode === 'social') {
-      prompt = `Actúa como un experto en redes sociales. Toma el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
-      Agrega emojis relevantes. Mantén un tono ${toneLabel}.
+      prompt = `Actuá como un experto en redes sociales. Tomá el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
+      Usá español de Argentina (voseo, vocabulario local).
+      Agregá emojis relevantes. Mantené un tono ${toneLabel}.
       ${noMarkdown ? 'IMPORTANTE: No uses negritas o cursivas.' : ''}
-      Solo devuelve el texto final formateado.\n\nTexto: "${input}"`;
+      Solo devolvé el texto final formateado.\n\nTexto: "${input}"`;
     } else if (mode === 'grammar') {
-      prompt = `Actúa como corrector gramatical experto. Corrige el texto y devuelve estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}\n\nTexto: "${input}"`;
+      prompt = `Actuá como corrector gramatical experto. Corregí el texto usando español de Argentina (voseo) y devolvé estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}\n\nTexto: "${input}"`;
     } else if (mode === 'emojis') {
-      prompt = `Agrega emojis relevantes al siguiente texto sin cambiar las palabras originales.\n\nTexto: "${input}"`;
+      prompt = `Agregá emojis relevantes al siguiente texto sin cambiar las palabras originales.\n\nTexto: "${input}"`;
     } else if (mode === 'cta') {
-      prompt = `Genera 3 Call to Action cortos basados en: ${input}. Tono: ${toneLabel}.`;
+      prompt = `Generá 3 Call to Action cortos basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
     } else if (mode === 'hooks') {
-      prompt = `Genera 3 Hooks impactantes basados en: ${input}. Tono: ${toneLabel}.`;
+      prompt = `Generá 3 Hooks impactantes basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
     }
   }
 

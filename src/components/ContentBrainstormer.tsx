@@ -25,13 +25,14 @@ export default function ContentBrainstormer() {
     setLoading(true);
     setError(null);
     try {
-      const prompt = `Actúa como un estratega de contenido creativo y productor multimedia.
+      const prompt = `Actuá como un estratega de contenido creativo y productor multimedia.
       Tengo que cubrir la siguiente actividad/tema: "${input}"
       Somos un equipo de ${peopleCount} personas.
+      Usá español de Argentina (voseo, vocabulario local).
       
       ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
       
-      Genera una lluvia de ideas (brainstorming) dividida en 5 categorías. Cada categoría debe tener ideas realistas pero creativas adaptadas al tamaño del equipo (${peopleCount} personas).
+      Generá una lluvia de ideas (brainstorming) dividida en 5 categorías. Cada categoría debe tener ideas realistas pero creativas adaptadas al tamaño del equipo (${peopleCount} personas).
       
       Categorías:
       1. General: Estrategia de cobertura global.

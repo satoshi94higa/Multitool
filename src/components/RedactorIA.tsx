@@ -144,18 +144,19 @@ export default function RedactorIA() {
         `;
       }
 
-      const prompt = `Actúa como un redactor jefe experto y estratega de contenido visual. 
-      Toma el siguiente material y conviértelo en una pieza profesional de alto impacto.
+      const prompt = `Actuá como un redactor jefe experto y estratega de contenido visual. 
+      Toma el siguiente material y convertilo en una pieza profesional de alto impacto.
+      Usá español de Argentina (voseo, vocabulario local).
       
       ESTRUCTURA SOLICITADA: ${structureLabel}.
       ${extraInstructions ? `INSTRUCCIONES ADICIONALES DEL USUARIO: ${extraInstructions}` : ''}
       
       Reglas:
-      1. Sigue estrictamente la estructura "${structureLabel}".
-      2. Extrae las declaraciones más importantes (quotes).
-      3. Sugiere 3 tipos de titulares.
-      4. Propón ángulos periodísticos adicionales.
-      5. Genera un "Social Media Briefing" con ganchos para plataformas, resumen ejecutivo y hashtags relevantes.
+      1. Seguí estrictamente la estructura "${structureLabel}".
+      2. Extraé las declaraciones más importantes (quotes).
+      3. Sugerí 3 tipos de titulares.
+      4. Proponé ángulos periodísticos adicionales.
+      5. Generá un "Social Media Briefing" con ganchos para plataformas, resumen ejecutivo y hashtags relevantes.
       6. IMPORTANTE: No utilices formato Markdown (como asteriscos para negritas, cursivas o almohadillas para títulos) en el contenido de la respuesta.
       ${carruselRules}
       
@@ -218,7 +219,7 @@ export default function RedactorIA() {
       <div className="flex flex-col gap-8">
         {/* Selector de Estructura */}
         <div className="space-y-6">
-           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 overflow-x-auto pb-4 scrollbar-hide">
             {(['piramide_invertida', 'cronica', 'hilo_x', 'gacetilla', 'storytelling', 'reportaje', 'carrusel'] as const).map((s) => (
               <button
                 key={s}

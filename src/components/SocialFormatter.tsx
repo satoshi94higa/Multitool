@@ -135,7 +135,7 @@ export default function SocialFormatter() {
       </div>
       
       <div className="space-y-8">
-        <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm">
+        <div className="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm scrollbar-hide">
           {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
             <button
               key={m}

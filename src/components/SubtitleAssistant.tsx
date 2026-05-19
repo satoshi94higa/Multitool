@@ -23,29 +23,30 @@ export default function SubtitleAssistant() {
     if (!input.trim()) return;
     setIsProcessing(true);
     try {
-      const prompt = `Actúa como un editor de video experto en subtítulos dinámicos para redes sociales y post-producción. 
-      Toma el siguiente texto (transcripción) y conviértelo en subtítulos con el estilo: "${style}".
+      const prompt = `Actuá como un editor de video experto en subtítulos dinámicos para redes sociales y post-producción. 
+      Tomá el siguiente texto (transcripción) y convertilo en subtítulos con el estilo: "${style}".
+      Usá español de Argentina (voseo, vocabulario local).
       
       CONFIGURACIÓN GLOBAL:
-      - Emojis: ${useEmojis ? "SÍ, incluye 1-2 emojis pertinentes por cada 2-3 frases." : "NO, no incluyas ningún emoji bajo ninguna circunstancia."}
+      - Emojis: ${useEmojis ? "SÍ, incluí 1-2 emojis pertinentes por cada 2-3 frases." : "NO, no incluyas ningún emoji bajo ninguna circunstancia."}
       
-      ${useSrt ? `IMPORTANTE: Debes devolver el resultado estrictamente en FORMATO SRT (.srt) estándar para Premiere Pro.
-      - Incluye índices numéricos (1, 2, 3...).
+      ${useSrt ? `IMPORTANTE: Debés devolver el resultado estrictamente en FORMATO SRT (.srt) estándar para Premiere Pro.
+      - Incluí índices numéricos (1, 2, 3...).
       - Usa timecodes en formato: 00:00:00,000 --> 00:00:00,000.
-      - Si el texto de entrada NO tiene timecodes, estima los tiempos con estas reglas:
-        * Deja un espacio de 100ms a 200ms de silencio entre cada bloque (que no termine uno en el mismo milisegundo que empieza el otro).
-        * Si hay un punto final o punto y coma en el texto, deja una pausa de silencio más larga (500ms).
-        * Calcula la duración basada en la cantidad de palabras (~300ms por palabra o lo necesario para legibilidad).
-      - Respeta el estilo visual solicitado ("${style}") dentro del texto del subtítulo.` : `Devuelve solo el texto formateado línea por línea.`}
+      - Si el texto de entrada NO tiene timecodes, estimá los tiempos con estas reglas:
+        * Dejá un espacio de 100ms a 200ms de silencio entre cada bloque (que no termine uno en el mismo milisegundo que empieza el otro).
+        * Si hay un punto final o punto y coma en el texto, dejá una pausa de silencio más larga (500ms).
+        * Calculá la duración basada en la cantidad de palabras (~300ms por palabra o lo necesario para legibilidad).
+      - Respetá el estilo visual solicitado ("${style}") dentro del texto del subtítulo.` : `Devolvé solo el texto formateado línea por línea.`}
       
       Instrucciones por estilo visual:
-      - bold: Líneas muy cortas (máximo 3-4 palabras por bloque). Alta legibilidad. Usa mayúsculas/minúsculas normales (no todo en mayúsculas). NO USES negritas, ni asteriscos, ni ningún tipo de formato markdown.
+      - bold: Líneas muy cortas (máximo 3-4 palabras por bloque). Alta legibilidad. Usá mayúsculas/minúsculas normales. NO USES negritas, ni asteriscos, ni ningún tipo de formato markdown.
       - minimal: Puntuación perfecta, sin énfasis exagerado. Bloques medianos (5-7 palabras).
-      - storytelling: Agrega puntos suspensivos (...) para marcar pausas dramáticas o cambios de idea. Tono cálido.
+      - storytelling: Agregá puntos suspensivos (...) para marcar pausas dramáticas o cambios de idea. Tono cálido.
       - podcast: Estilo Late Night. Bloques de 1 o 2 frases completas. Máximo 2 líneas por subtítulo. Gramática perfecta.
       - dynamic: Usa símbolos como [ ] o * * para resaltar palabras clave que el editor colorearía luego.
       
-      IMPORTANTE: Devuelve SOLO el contenido de los subtítulos. NO utilices formato Markdown (como **negrita** o *itálica*) a menos que el estilo "dynamic" lo solicite específicamente con símbolos. No incluyas explicaciones ni introducciones.
+      IMPORTANTE: Devolvé SOLO el contenido de los subtítulos. NO utilices formato Markdown (como **negrita** o *itálica*) a menos que el estilo "dynamic" lo solicite específicamente con símbolos. No incluyas explicaciones ni introducciones.
       
       Texto a procesar: "${input}"`;
 

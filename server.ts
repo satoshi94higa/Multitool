@@ -50,20 +50,20 @@ app.post("/api/gemini/process", async (req, res) => {
       fullContent = `${customPrompt}\n\n"${text || ''}"`;
     } else {
       const prompts = {
-        summarize: "Resume el siguiente texto de forma concisa pero manteniendo los puntos clave. No utilices formato Markdown (como asteriscos para negritas o almohadillas para títulos):",
-        spelling: `Actúa como un corrector ortográfico experto. Corrige la ortografía y gramática del siguiente texto. 
+        summarize: "Sintetizá el siguiente texto de forma concisa pero manteniendo los puntos clave. Usá un tono natural de Argentina (voseo). No utilices formato Markdown (como asteriscos para negritas o almohadillas para títulos):",
+        spelling: `Actuá como un corrector ortográfico experto. Corregí la ortografía y gramática del siguiente texto usando español de Argentina (voseo). 
         No utilices formato Markdown en el campo 'text' (no uses asteriscos, guiones de lista, etc.).
         Devuelve estrictamente un objeto JSON con esta estructura:
         {
           "text": "el texto completo corregido sin formato markdown",
           "changes": ["lista de cambios importantes realizados"]
         }`,
-        translate: "Traduce el siguiente texto al inglés de forma natural. No uses formato Markdown:",
-        bullets: "Transforma el siguiente texto en una lista de puntos clara y organizada sin usar formato Markdown (usa guiones simples '-' o números):",
-        brainstorm: "Genera 5 ideas creativas basadas en el siguiente concepto. No uses formato Markdown:",
-        screenplay: "Genera un esquema de guion basado en la siguiente premisa. No uses formato Markdown:",
-        journalist: "Escribe un artículo periodístico breve basado en la siguiente información. No uses formato Markdown:",
-        director: "Genera una descripción visual y técnica para una escena basada en este texto. No uses formato Markdown:"
+        translate: "Traducí el siguiente texto al inglés de forma natural. No uses formato Markdown:",
+        bullets: "Transformá el siguiente texto en una lista de puntos clara y organizada. Usá voseo si es necesario y no utilices formato Markdown (usá guiones simples '-' o números):",
+        brainstorm: "Generá 5 ideas creativas basadas en el siguiente concepto. Usá español de Argentina (voseo). No uses formato Markdown:",
+        screenplay: "Generá un esquema de guion basado en la siguiente premisa. Usá español de Argentina (voseo). No uses formato Markdown:",
+        journalist: "Escribí un artículo periodístico breve basado en la siguiente información. Usá español de Argentina (voseo). No uses formato Markdown:",
+        director: "Generá una descripción visual y técnica para una escena basada en este texto. Usá español de Argentina (voseo). No uses formato Markdown:"
       };
       const prompt = prompts[type as keyof typeof prompts] || "";
       fullContent = prompt + (text ? `\n\n"${text}"` : "");
@@ -99,18 +99,19 @@ app.post("/api/gemini/social", async (req, res) => {
     const toneLabel = tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico';
 
     if (mode === 'social') {
-      prompt = `Actúa como un experto en redes sociales. Toma el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
-      Agrega emojis relevantes. Mantén un tono ${toneLabel}.
+      prompt = `Actuá como un experto en redes sociales. Tomá el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
+      Usá español de Argentina (voseo, vocabulario local como 're' en vez de 'muy' si es casual, etc.).
+      Agregá emojis relevantes. Mantené un tono ${toneLabel}.
       ${noMarkdown ? 'IMPORTANTE: No uses negritas o cursivas.' : ''}
-      Solo devuelve el texto final formateado.`;
+      Solo devolvé el texto final formateado.`;
     } else if (mode === 'grammar') {
-      prompt = `Actúa como corrector gramatical experto. Corrige el texto y devuelve estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}`;
+      prompt = `Actuá como corrector gramatical experto. Corregí el texto usando español de Argentina (voseo) y devolvé estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}`;
     } else if (mode === 'emojis') {
-      prompt = `Agrega emojis relevantes al siguiente texto sin cambiar las palabras originales.`;
+      prompt = `Agregá emojis relevantes al siguiente texto sin cambiar las palabras originales.`;
     } else if (mode === 'cta') {
-      prompt = `Genera 3 Call to Action cortos basados en: ${input}. Tono: ${toneLabel}.`;
+      prompt = `Generá 3 Call to Action cortos basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
     } else if (mode === 'hooks') {
-      prompt = `Genera 3 Hooks impactantes basados en: ${input}. Tono: ${toneLabel}.`;
+      prompt = `Generá 3 Hooks impactantes basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
     }
 
     const client = getAI();

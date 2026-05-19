@@ -190,12 +190,13 @@ export default function ScreenwriterIA() {
       }[narrator];
 
       const prompt = platform === 'instagram' 
-        ? `Actúa como un guionista experto en contenido vertical para Instagram Reels y TikTok. 
+        ? `Actuá como un guionista experto en contenido vertical para Instagram Reels y TikTok. 
            El narrador debe sonar como ${narratorDescriptor}.
-           Transforma el siguiente texto en un guion dinámico.
-           ${powerHook ? 'IMPORTANTE: Crea un "Hook Potenciado" extremadamente impactante para los primeros 3 segundos.' : 'Incluye un hook claro en los primeros 3 segundos.'}
+           Transformá el siguiente texto en un guion dinámico.
+           Usá español de Argentina (voseo, vocabulario local).
+           ${powerHook ? 'IMPORTANTE: Creá un "Hook Potenciado" extremadamente impactante para los primeros 3 segundos.' : 'Incluí un hook claro en los primeros 3 segundos.'}
            El guion debe durar máximo 1:30 minutos.
-           Manten un tono ${toneDescriptor}.
+           Mantené un tono ${toneDescriptor}.
            No utilices formato Markdown (como asteriscos o almohadillas) en el contenido del guion.
            ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
            
@@ -228,9 +229,10 @@ export default function ScreenwriterIA() {
                "total_duration": "45-60 segundos"
              }
            }`
-        : `Actúa como un guionista profesional de YouTube para contenido horizontal. 
+        : `Actuá como un guionista profesional de YouTube para contenido horizontal. 
            El narrador debe sonar como ${narratorDescriptor}.
-           Transforma el siguiente texto en un guion estructurado con: Intro, Desarrollo, Valor y CTA.
+           Transformá el siguiente texto en un guion estructurado con: Intro, Desarrollo, Valor y CTA.
+           Usá español de Argentina (voseo, vocabulario local).
            El tono debe ser ${toneDescriptor}.
            No utilices formato Markdown (como asteriscos o almohadillas) en el contenido del guion.
            ${extraPrompt ? `Instrucciones adicionales: ${extraPrompt}` : ''}
