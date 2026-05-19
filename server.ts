@@ -143,7 +143,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.join(process.cwd(), 'build');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       // Avoid sending index.html for API routes that missed the match
