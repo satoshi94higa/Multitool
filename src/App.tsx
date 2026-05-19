@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key, Captions, CircleDollarSign, TrendingUp } from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
@@ -14,15 +15,31 @@ import BudgetCalculator from './components/BudgetCalculator';
 import InflationCalculator from './components/InflationCalculator';
 import { processWithGemini, getLocalApiKey, setLocalApiKey, getLocalModel, setLocalModel } from './services/geminiService';
 
+const TOOLS = [
+  { id: 'text-processor', path: '/text', icon: SquarePen, label: 'Text', short: 'Procesador', component: TextProcessor, category: 'creativity' },
+  { id: 'screenwriter-ia', path: '/screenwriter', icon: Video, label: 'Guión', short: 'Guionista IA', component: ScreenwriterIA, category: 'creativity' },
+  { id: 'redactor-ia', path: '/redactor', icon: Newspaper, label: 'Escritor', short: 'Redactor IA', component: RedactorIA, category: 'creativity' },
+  { id: 'content-brainstormer', path: '/ideas', icon: Brain, label: 'Ideas', short: 'Lluvia de Ideas', component: ContentBrainstormer, category: 'creativity' },
+  { id: 'social-formatter', path: '/social', icon: Share2, label: 'Social', short: 'Formateador Social', component: SocialFormatter, category: 'creativity' },
+  { id: 'subtitle-assistant', path: '/subs', icon: Captions, label: 'Subs', short: 'Subtítulos Style', component: SubtitleAssistant, category: 'creativity' },
+  { id: 'qr-generator', path: '/qr', icon: QrCode, label: 'QR', short: 'Generador QR', component: QRGenerator, category: 'utilities' },
+  { id: 'inflation-calc', path: '/inflation', icon: TrendingUp, label: 'Infla', short: 'Calculadora Inflación', component: InflationCalculator, category: 'utilities' },
+  { id: 'budget-calculator', path: '/budget', icon: CircleDollarSign, label: 'Presu', short: 'Presupuestos', component: BudgetCalculator, category: 'utilities' },
+  { id: 'percentage-calc', path: '/percentage', icon: Calculator, label: 'Perc', short: 'Porcentajes', component: PercentageCalculator, category: 'utilities' },
+  { id: 'fuel-calc', path: '/fuel', icon: Zap, label: 'Fuel', short: 'Combustible', component: FuelCalculator, category: 'utilities' },
+];
+
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showTeleprompter, setShowTeleprompter] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const [tempModel, setTempModel] = useState('gemini-3-flash-preview');
   const [testingKey, setTestingKey] = useState(false);
+  const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
 
   useEffect(() => {
     setTempApiKey(getLocalApiKey());
@@ -36,7 +53,6 @@ export default function App() {
     }
     setTestingKey(true);
     try {
-      // Usamos una operación simple para probar
       const result = await processWithGemini({ customPrompt: 'Responde solo con la palabra OK' }, 'process', tempApiKey);
       if (result.text.includes('OK')) {
         showNotification('¡Clave válida!');
@@ -59,8 +75,6 @@ export default function App() {
     showNotification('Configuración guardada correctamente');
   };
 
-  const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
-
   const showNotification = (message: string) => {
     setNotification({ message, show: true });
     setTimeout(() => setNotification({ message: '', show: false }), 3000);
@@ -68,23 +82,11 @@ export default function App() {
 
   const toggleTeleprompter = () => setShowTeleprompter(prev => !prev);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="min-h-screen bg-zinc-50 flex font-sans text-zinc-950 selection:bg-zinc-900 selection:text-white" id="app">
-      {/* Sidebar - Sharp Swiss Style */}
+      {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-[100] bg-white transition-transform duration-300 ease-in-out border-r border-zinc-200
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -100,7 +102,7 @@ export default function App() {
         </button>
 
         <div className="mb-12 px-6 py-8 md:py-0 md:px-4 w-full flex items-center justify-between">
-           <div className={`w-12 h-12 bg-black rounded-none shadow-2xl flex items-center justify-center group cursor-pointer transition-transform hover:scale-105 active:scale-95 flex-none`} onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }}>
+           <div className="w-12 h-12 bg-black rounded-none shadow-2xl flex items-center justify-center group cursor-pointer transition-transform hover:scale-105 active:scale-95 flex-none" onClick={() => { navigate('/'); setMobileMenuOpen(false); }}>
               <span className="font-black text-white text-2xl tracking-tighter italic">U</span>
            </div>
            {(!sidebarCollapsed || mobileMenuOpen) && <span className="font-black text-xs uppercase tracking-[0.3em] ml-4 animate-in fade-in duration-500">Utility.Hub</span>}
@@ -108,29 +110,21 @@ export default function App() {
 
         <nav className="flex-1 overflow-y-auto w-full flex flex-col items-center px-3 py-2 overscroll-contain">
           <button 
-            onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); setMobileMenuOpen(false); }}
-            className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative ${activeTab === 'dashboard' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
+            onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
+            className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative ${isActive('/') ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black hover:bg-zinc-50'}`}
           >
             <LayoutDashboard size={18} className="flex-none" />
             {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Panel</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Panel</span>}
           </button>
 
           <div className="w-full mt-4 mb-2">
             {(!sidebarCollapsed || mobileMenuOpen) && <span className="px-3 text-[8px] font-black text-zinc-300 uppercase tracking-[0.2em]">Creatividad</span>}
             <div className={`mt-2 ${(!sidebarCollapsed || mobileMenuOpen) ? 'grid grid-cols-2 gap-1' : 'space-y-1'}`}>
-              {[
-                { id: 'text-processor', icon: SquarePen, label: 'Text', short: 'Procesador' },
-                { id: 'screenwriter-ia', icon: Video, label: 'Guión', short: 'Guionista IA' },
-                { id: 'redactor-ia', icon: Newspaper, label: 'Escritor', short: 'Redactor IA' },
-                { id: 'content-brainstormer', icon: Brain, label: 'Ideas', short: 'Lluvia de Ideas' },
-                { id: 'social-formatter', icon: Share2, label: 'Social', short: 'Formateador Social' },
-                { id: 'subtitle-assistant', icon: Captions, label: 'Subs', short: 'Subtítulos Style' },
-              ].map((item) => (
+              {TOOLS.filter(t => t.category === 'creativity').map((item) => (
                 <button 
                   key={item.id}
-                  onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
-                  className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50 border border-transparent hover:border-zinc-100`}
+                  onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                  className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative ${isActive(item.path) ? 'bg-zinc-100 text-black border-zinc-200' : 'text-zinc-400 hover:text-black hover:bg-zinc-50 border-transparent'} border hover:border-zinc-100`}
                 >
                   <item.icon size={18} className="flex-none" />
                   {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
@@ -143,17 +137,11 @@ export default function App() {
           <div className="w-full mt-4 mb-2">
              {(!sidebarCollapsed || mobileMenuOpen) && <span className="px-3 text-[8px] font-black text-zinc-300 uppercase tracking-[0.2em]">Utilidades</span>}
              <div className={`mt-2 ${(!sidebarCollapsed || mobileMenuOpen) ? 'grid grid-cols-2 gap-1' : 'space-y-1'}`}>
-                {[
-                  { id: 'qr-generator', icon: QrCode, label: 'QR', short: 'Generador QR' },
-                  { id: 'inflation-calc', icon: TrendingUp, label: 'Infla', short: 'Calculadora Inflación' },
-                  { id: 'budget-calculator', icon: CircleDollarSign, label: 'Presu', short: 'Presupuestos' },
-                  { id: 'percentage-calc', icon: Calculator, label: 'Perc', short: 'Porcentajes' },
-                  { id: 'fuel-calc', icon: Zap, label: 'Fuel', short: 'Combustible' },
-                ].map((item) => (
+                {TOOLS.filter(t => t.category === 'utilities').map((item) => (
                   <button 
                     key={item.id}
-                    onClick={() => { scrollToSection(item.id); setMobileMenuOpen(false); }}
-                    className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative text-zinc-400 hover:text-black hover:bg-zinc-50 border border-transparent hover:border-zinc-100`}
+                    onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                    className={`w-full h-10 rounded-none flex-none flex items-center ${sidebarCollapsed && !mobileMenuOpen ? 'md:justify-center' : 'justify-start px-3'} transition-all group relative ${isActive(item.path) ? 'bg-zinc-100 text-black border-zinc-200' : 'text-zinc-400 hover:text-black hover:bg-zinc-50 border-transparent'} border hover:border-zinc-100`}
                   >
                     <item.icon size={18} className="flex-none" />
                     {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
@@ -171,7 +159,6 @@ export default function App() {
           >
             <Monitor size={18} className="flex-none" />
             {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Monitor</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Teleprompter</span>}
           </button>
 
           <button 
@@ -180,10 +167,8 @@ export default function App() {
           >
             <Settings size={18} className="flex-none" />
             {(!sidebarCollapsed || mobileMenuOpen) && <span className="ml-3 text-[9px] font-black uppercase tracking-widest whitespace-nowrap animate-in slide-in-from-left-2">Ajustes</span>}
-            {sidebarCollapsed && !mobileMenuOpen && <span className="absolute left-full ml-4 px-3 py-1.5 bg-black text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-2xl hidden md:block">Configuración</span>}
           </button>
         </nav>
-
 
         <div className="mt-auto w-full px-4 mb-4 hidden md:block">
           <button 
@@ -213,7 +198,7 @@ export default function App() {
               <Menu size={24} />
             </button>
             <div className="flex flex-col">
-              <h1 className="text-lg md:text-xl font-black tracking-tighter text-black uppercase leading-none mb-1 md:mb-1.5 italic">Estudio.Modular</h1>
+              <h1 className="text-lg md:text-xl font-black tracking-tighter text-black uppercase leading-none mb-1 md:mb-1.5 italic cursor-pointer" onClick={() => navigate('/')}>Estudio.Modular</h1>
                <div className="flex items-center gap-2">
                   <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400">Modular_04</span>
                   <span className="hidden md:block w-4 h-[1px] bg-zinc-200" />
@@ -223,17 +208,6 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-4">
-             <div className="hidden lg:flex items-center gap-6 pr-6 mr-6 border-r border-zinc-100">
-                <div className="flex flex-col items-end">
-                   <span className="text-[9px] font-black uppercase text-zinc-400">Canal</span>
-                   <span className="text-[11px] font-mono text-zinc-950 font-bold tracking-tighter">CIFRADO.AES_256</span>
-                </div>
-                <div className="flex flex-col items-end">
-                   <span className="text-[9px] font-black uppercase text-zinc-400">Entorno</span>
-                   <span className="text-[11px] font-mono text-black font-bold">PRODUCCIÓN</span>
-                </div>
-             </div>
-             
              <button onClick={() => setShowSettings(true)} className="w-10 h-10 bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
                 <Settings size={20} />
              </button>
@@ -241,100 +215,83 @@ export default function App() {
         </header>
 
         <main className="flex-1 p-4 md:p-12 pb-24 overflow-x-hidden">
-          <div className="max-w-[1600px] mx-auto space-y-8 md:space-y-10">
-            {/* Text Processor - Full Width */}
-            <section id="text-processor" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <TextProcessor />
-              </div>
-            </section>
+          <div className="max-w-[1600px] mx-auto">
+            <Routes>
+              <Route path="/" element={
+                <div className="space-y-8 md:space-y-10">
+                  {TOOLS.map((item) => (
+                    <section key={item.id} id={item.id} className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
+                      <div className="flex items-center justify-between px-6 py-4 border-b-2 border-black bg-zinc-50">
+                        <div className="flex items-center gap-3">
+                          <item.icon size={20} />
+                          <h2 className="text-sm font-black uppercase tracking-tighter">{item.short}</h2>
+                        </div>
+                        <button 
+                          onClick={() => navigate(item.path)}
+                          className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1.5 hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                        >
+                          <Share2 size={12} />
+                          Abrir Individualmente
+                        </button>
+                      </div>
+                      <div className="p-4 md:p-10 flex-1">
+                        <item.component />
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              } />
 
-            {/* Screenwriter IA - Full Width */}
-            <section id="screenwriter-ia" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <ScreenwriterIA />
-              </div>
-            </section>
+              {TOOLS.map((item) => (
+                <Route 
+                  key={item.id} 
+                  path={item.path} 
+                  element={
+                    <div className="animate-in fade-in zoom-in-95 duration-500">
+                       <div className="mb-8 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                             <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+                                <item.icon size={24} />
+                             </div>
+                             <div>
+                                <h2 className="text-2xl font-black uppercase tracking-tighter italic">{item.short}</h2>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Módulo Individual / Compartible</p>
+                             </div>
+                          </div>
+                          <button 
+                            onClick={() => navigate('/')}
+                            className="bg-zinc-100 px-6 h-12 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center gap-2"
+                          >
+                             <LayoutDashboard size={16} />
+                             Volver al Panel
+                          </button>
+                       </div>
+                       <section className="bg-white border-4 border-black shadow-[24px_24px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+                          <div className="p-6 md:p-12">
+                             <item.component />
+                          </div>
+                       </section>
+                    </div>
+                  } 
+                />
+              ))}
 
-            {/* Redactor IA - Full Width */}
-            <section id="redactor-ia" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <RedactorIA />
-              </div>
-            </section>
-
-            {/* Lluvia de Ideas - Full Width */}
-            <section id="content-brainstormer" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <ContentBrainstormer />
-              </div>
-            </section>
-
-            {/* Social Formatter - Full Width */}
-            <section id="social-formatter" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <SocialFormatter />
-              </div>
-            </section>
-
-            {/* Subtitle Assistant - Full Width */}
-            <section id="subtitle-assistant" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <SubtitleAssistant />
-              </div>
-            </section>
-
-            {/* QR Generator - Full Width */}
-            <section id="qr-generator" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <QRGenerator />
-              </div>
-            </section>
-
-            {/* Inflation Calculator - Full Width */}
-            <section id="inflation-calc" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <InflationCalculator />
-              </div>
-            </section>
-
-            {/* Budget Calculator - Full Width */}
-            <section id="budget-calculator" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <BudgetCalculator />
-              </div>
-            </section>
-
-            {/* Percentage Calculator - Full Width */}
-            <section id="percentage-calc" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <PercentageCalculator />
-              </div>
-            </section>
-
-            {/* Fuel Calculator - Full Width */}
-            <section id="fuel-calc" className="bg-white border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group transition-all duration-300">
-              <div className="p-4 md:p-10 flex-1 scroll-smooth">
-                <FuelCalculator />
-              </div>
-            </section>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </div>
         </main>
         
         <footer className="h-12 border-t border-zinc-200 bg-white flex items-center justify-between px-4 md:px-12">
-           <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Sistema.Inactivo</span>
-           <div className="flex gap-4 md:gap-8">
-              <span className="text-[8px] md:text-[10px] font-mono text-zinc-400 uppercase">Nexus_v4.0</span>
-              <span className="hidden md:inline text-[10px] font-mono text-zinc-400 uppercase">Latencia: 14ms</span>
+           <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Sistema.Activo / Enrutado</span>
+           <div className="flex gap-4 md:gap-8 text-[10px] font-mono text-zinc-400 uppercase">
+              <span>{location.pathname}</span>
            </div>
         </footer>
       </div>
 
-      {showTeleprompter && (
-        <Teleprompter onClose={() => setShowTeleprompter(false)} />
-      )}
+      {showTeleprompter && <Teleprompter onClose={() => setShowTeleprompter(false)} />}
 
-      {/* Settings Modal */}
+      {/* Settings Modal - kept identical logic */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
@@ -345,7 +302,7 @@ export default function App() {
 
              <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-black flex items-center justify-center text-white">
-                  <Settings size={24} />
+                   <Settings size={24} />
                 </div>
                 <div>
                    <h2 className="text-2xl font-black uppercase tracking-tighter italic">Configuración</h2>
@@ -357,8 +314,8 @@ export default function App() {
                 <div className="space-y-4">
                    <div className="flex items-center justify-between">
                       <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                        <Key size={14} />
-                        Gemini API Key (Modo Local/Static)
+                         <Key size={14} />
+                         Gemini API Key
                       </label>
                       <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-zinc-400 hover:text-black underline">Obtener clave</a>
                    </div>
@@ -369,65 +326,57 @@ export default function App() {
                       placeholder="Pega tu clave aquí..."
                       className="w-full h-14 bg-zinc-50 border-2 border-zinc-100 px-6 font-mono text-sm focus:border-black focus:bg-white outline-none transition-all placeholder:text-zinc-300"
                    />
-                   <p className="text-[10px] text-zinc-500 leading-relaxed">
-                     <strong className="text-black">Nota:</strong> El sistema intenta usar el servidor central (seguro). Si estás en un entorno estático (GitHub Pages), puedes ingresar tu propia clave. Se guarda <strong>solo localmente</strong> en tu navegador.
-                   </p>
                    <button 
-                     onClick={handleTestKey}
-                     disabled={testingKey || !tempApiKey.trim()}
-                     className="w-full h-10 border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                      onClick={handleTestKey}
+                      disabled={testingKey || !tempApiKey.trim()}
+                      className="w-full h-10 border border-zinc-200 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors disabled:opacity-50"
                    >
-                     {testingKey ? 'Probando...' : 'Probar Clave Local'}
+                      {testingKey ? 'Probando...' : 'Probar Clave Local'}
                    </button>
                 </div>
 
                 <div className="space-y-4">
                    <label className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                     <Brain size={14} />
-                     Modelo de Inteligencia Artificial
+                      <Brain size={14} />
+                      Modelo IA
                    </label>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {[
-                        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Preview', desc: 'Sugerido para creación (Alta Precisión)', color: 'border-zinc-100' },
-                        { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Lite', desc: 'Máxima Velocidad y Cuota RPD', color: 'border-zinc-100' },
-                        { id: 'gemini-flash-latest', name: 'Gemini Flash Stable', desc: 'Equilibrio perfecto (Recomendado)', color: 'border-zinc-100' },
-                        { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', desc: 'Máximo Razonamiento (Más Lento)', color: 'border-zinc-100' }
+                        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Preview' },
+                        { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Lite' },
+                        { id: 'gemini-flash-latest', name: 'Gemini Flash Stable' },
+                        { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro' }
                       ].map(model => (
                         <button
                           key={model.id}
                           onClick={() => setTempModel(model.id)}
-                          className={`p-4 border-2 text-left transition-all ${tempModel === model.id ? 'border-black bg-zinc-50 shadow-[4px_4px_0px_rgba(0,0,0,1)]' : 'border-zinc-100 bg-white hover:border-zinc-300'}`}
+                          className={`p-3 border-2 text-left transition-all ${tempModel === model.id ? 'border-black bg-zinc-50 shadow-[4px_4px_0px_rgba(0,0,0,1)]' : 'border-zinc-100 bg-white hover:border-zinc-300'}`}
                         >
-                          <div className="font-bold text-xs uppercase tracking-tighter">{model.name}</div>
-                          <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{model.desc}</div>
+                          <div className="font-bold text-[10px] uppercase tracking-tighter">{model.name}</div>
                         </button>
                       ))}
                    </div>
-                   <p className="text-[10px] text-zinc-500 leading-relaxed font-bold italic">
-                     <span className="text-black not-italic underline decoration-red-500 decoration-2">IMPORTANTE:</span> Si recibes errores de "Quota Exceeded" (RPD) frecuentemente, te recomendamos cambiar a <strong className="text-black">Gemini 3.1 Lite</strong>.
-                   </p>
                 </div>
 
                 <div className="pt-4 flex gap-4">
-                  <button 
-                    onClick={handleSaveSettings}
-                    className="flex-1 h-14 bg-black text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-colors shadow-xl"
-                  >
-                    Guardar Cambios
-                  </button>
-                  <button 
-                    onClick={() => setShowSettings(false)}
-                    className="px-8 h-14 border-2 border-black font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-50 transition-colors"
-                  >
-                    Cerrar
-                  </button>
+                   <button 
+                      onClick={handleSaveSettings}
+                      className="flex-1 h-14 bg-black text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-colors shadow-xl"
+                   >
+                      Guardar
+                   </button>
+                   <button 
+                      onClick={() => setShowSettings(false)}
+                      className="px-8 h-14 border-2 border-black font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-50 transition-colors"
+                   >
+                      Cerrar
+                   </button>
                 </div>
              </div>
           </div>
         </div>
       )}
 
-      {/* Notification Toast */}
       {notification.show && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[110] bg-black text-white px-8 py-4 font-black uppercase tracking-widest text-[10px] shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
            {notification.message}
