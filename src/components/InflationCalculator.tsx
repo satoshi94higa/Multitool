@@ -126,6 +126,8 @@ export default function InflationCalculator() {
       purchasingPowerUSD: formatNum(adjustedUSD),
       heldCurrencyAsARS: formatNum(heldCurrencyAsARS),
       heldCurrencyAsUSD: formatNum(heldCurrencyAsUSD),
+      initialUSD: formatNum(initialUSD),
+      initialARS: formatNum(initialARS),
       startRate: formatNum(startPoint[rateType]),
       endRate: formatNum(endPoint[rateType]),
       baseCurrency
@@ -210,6 +212,16 @@ export default function InflationCalculator() {
               ))}
             </div>
           </div>
+
+          {calculation && (
+            <div className="p-4 bg-zinc-100 rounded-sm border-2 border-zinc-200">
+               <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase text-zinc-500">Monto Inicial en USD</span>
+                  <span className="font-mono font-bold text-sm">u$s {calculation.initialUSD}</span>
+               </div>
+               <p className="text-[9px] font-bold text-zinc-400 mt-1 uppercase">Convertido al inicio ({calculation.startRate})</p>
+            </div>
+          )}
         </div>
 
         {/* RESULTADOS */}
