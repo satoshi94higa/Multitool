@@ -8,18 +8,25 @@ const InfoTooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
   return (
     <div className="relative inline-block ml-1 align-middle">
-      <button 
-        type="button"
+      <span 
+        role="button"
+        tabIndex={0}
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         onClick={(e) => {
           e.stopPropagation();
           setShow(!show);
         }}
-        className="text-zinc-300 hover:text-black transition-colors p-1"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.stopPropagation();
+            setShow(!show);
+          }
+        }}
+        className="text-zinc-300 hover:text-black transition-colors p-1 cursor-help inline-flex items-center justify-center"
       >
         <Info size={10} />
-      </button>
+      </span>
       <AnimatePresence>
         {show && (
           <motion.div 
