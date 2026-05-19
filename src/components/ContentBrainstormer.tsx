@@ -105,23 +105,42 @@ export default function ContentBrainstormer() {
   const exportToPDF = () => {
     if (!ideas) return;
     const doc = new jsPDF();
-    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+
+    let y = 20;
+
     // Add title
-    doc.setFontSize(22);
+    doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text("INFORME DE BRAINSTORMING", 105, 20, { align: "center" });
+    doc.text("INFORME DE BRAINSTORMING", pageWidth / 2, y, { align: "center" });
     
+    y += 8;
     doc.setDrawColor(0);
-    doc.setLineWidth(1);
-    doc.line(20, 25, 190, 25);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 15;
 
     doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("CONTEXTO DEL PROYECTO", margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text(`TEMA: ${input.toUpperCase()}`, 20, 40);
-    doc.text(`EQUIPO: ${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`, 20, 48);
-    doc.text(`FECHA: ${new Date().toLocaleString()}`, 20, 56);
     
-    let y = 75;
+    // Input wrapping - crucial to prevent overlap
+    const themeLines = doc.splitTextToSize(`TEMA: ${input.toUpperCase()}`, contentWidth);
+    doc.text(themeLines, margin, y);
+    y += (themeLines.length * 6) + 4;
+
+    doc.text(`EQUIPO: ${peopleCount} ${peopleCount === 1 ? 'persona' : 'personas'}`, margin, y);
+    y += 6;
+    doc.text(`FECHA: ${new Date().toLocaleString()}`, margin, y);
+    y += 15;
+
     const categories = [
       { name: 'ESTRATEGIA GENERAL', key: 'general' },
       { name: 'COBERTURA FOTOGRÁFICA', key: 'photographic' },
@@ -131,33 +150,44 @@ export default function ContentBrainstormer() {
     ];
 
     categories.forEach(cat => {
+      // Check for space for header + at least one line of intent
+      if (y > pageHeight - 35) {
+        doc.addPage();
+        y = 20;
+      }
+
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.setFillColor(245, 245, 245);
-      doc.rect(20, y - 5, 170, 8, 'F');
-      doc.text(cat.name, 22, y + 1);
+      doc.rect(margin, y - 5, contentWidth, 8, 'F');
+      doc.text(cat.name, margin + 2, y + 1);
       y += 12;
       
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      (ideas as any)[cat.key].forEach((idea: string) => {
-        const lines = doc.splitTextToSize(`• ${idea}`, 160);
-        
-        // Check if we need a new page
-        if (y + (lines.length * 5) > 275) {
+      
+      const categoryIdeas = (ideas as any)[cat.key] || [];
+      categoryIdeas.forEach((idea: string) => {
+        const lines = doc.splitTextToSize(`• ${idea}`, contentWidth - 5);
+        const itemHeight = (lines.length * 6);
+
+        // Individual item page break check
+        if (y + itemHeight > pageHeight - margin) {
           doc.addPage();
           y = 20;
+          // Re-draw background slightly if we just switched page in middle of category
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "italic");
+          doc.text(`${cat.name} (continuación)`, margin, y);
+          y += 10;
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
         }
         
-        doc.text(lines, 25, y);
-        y += (lines.length * 6);
+        doc.text(lines, margin + 4, y);
+        y += itemHeight + 2;
       });
-      y += 10;
-      
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
+      y += 6;
     });
 
     const fileName = `brainstorming-${input.slice(0, 20).toLowerCase().replace(/[^a-z0-9]/g, '-')}.pdf`;
@@ -179,13 +209,14 @@ export default function ContentBrainstormer() {
 
   return (
     <div className="space-y-12 bg-transparent pb-4" id="content-brainstormer">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4">
-        <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-4 gap-4">
+        <h1 className="text-2xl font-black uppercase tracking-tighter inline-flex items-center gap-3">
+          <Brain size={28} />
           Lluvia de Ideas
         </h1>
         <button 
           onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200 w-full sm:w-auto"
         >
           <History size={14} />
           {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
@@ -242,19 +273,19 @@ export default function ContentBrainstormer() {
         )}
       </AnimatePresence>
       
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mt-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 p-2 border border-zinc-200">
-          <div className="flex items-center gap-3 px-3 py-2 sm:py-0">
-            <Users size={16} className="text-zinc-400" />
-            <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Equipo</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-0 bg-zinc-50 border border-zinc-200 w-full md:w-auto">
+          <div className="flex items-center gap-3 px-4 py-3 bg-zinc-100/50 border-r border-zinc-200 sm:h-full">
+            <Users size={16} className="text-zinc-500" />
+            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Equipo</span>
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-1 justify-around sm:justify-start p-1 bg-white">
             {[1, 2, 3, 4, 5, 6].map((num) => (
               <button
                 key={num}
                 onClick={() => setPeopleCount(num)}
-                className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[12px] font-mono transition-all border-2 ${
-                  peopleCount === num ? 'bg-black text-white border-black shadow-lg scale-105 z-10' : 'text-zinc-400 border-transparent hover:text-black hover:border-zinc-200'
+                className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[12px] font-mono transition-all border ${
+                  peopleCount === num ? 'bg-black text-white border-black z-10 shadow-lg' : 'text-zinc-400 border-transparent hover:text-black hover:bg-zinc-50'
                 }`}
               >
                 {num}
