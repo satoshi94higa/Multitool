@@ -56,6 +56,34 @@ export default function BudgetCalculator() {
   const [extras, setExtras] = useState<Expense[]>([]);
   const [copied, setCopied] = useState(false);
 
+  // Helper handling comma decimal input
+  const [activeStrings, setActiveStrings] = useState<Record<string, string>>({});
+  
+  const handleNumericInput = (id: string, val: string, field: string, setter: (v: number) => void) => {
+    // Allows digits and at most one comma or dot
+    if (/^[0-9]*[.,]?[0-9]*$/.test(val)) {
+      setActiveStrings(prev => ({ ...prev, [`${id}-${field}`]: val }));
+      const normalized = val.replace(',', '.');
+      const num = parseFloat(normalized);
+      if (!isNaN(num)) setter(num);
+      else if (val === '') setter(0);
+    }
+  };
+
+  const getDisplayValue = (id: string, field: string, currentNum: number) => {
+    const key = `${id}-${field}`;
+    if (activeStrings[key] !== undefined) return activeStrings[key];
+    return currentNum.toString().replace('.', ',');
+  };
+
+  const clearActiveString = (id: string, field: string) => {
+    setActiveStrings(prev => {
+      const next = { ...prev };
+      delete next[`${id}-${field}`];
+      return next;
+    });
+  };
+
   const addTask = () => {
     setTasks([...tasks, { id: Math.random().toString(36).substr(2, 9), name: '', hours: 0, type: 'editing' }]);
   };
@@ -109,20 +137,20 @@ export default function BudgetCalculator() {
       }
     });
     summary += `-----------------------------------\n`;
-    summary += `TOTAL HORAS: ${totalHours}h\n`;
-    summary += `SUBTOTAL TRABAJO: $${hoursSubtotal.toLocaleString()}\n`;
+    summary += `TOTAL HORAS: ${totalHours.toString().replace('.', ',')}h\n`;
+    summary += `SUBTOTAL TRABAJO: $${hoursSubtotal.toLocaleString('es-AR')}\n`;
     
     if (extras.length > 0) {
       summary += `-----------------------------------\n`;
       summary += `GASTOS EXTRAS:\n`;
       extras.forEach(e => {
-        if (e.description) summary += `- ${e.description}: $${e.amount}\n`;
+        if (e.description) summary += `- ${e.description}: $${e.amount.toLocaleString('es-AR')}\n`;
       });
-      summary += `TOTAL EXTRAS: $${extrasTotal}\n`;
+      summary += `TOTAL EXTRAS: $${extrasTotal.toLocaleString('es-AR')}\n`;
     }
     
     summary += `-----------------------------------\n`;
-    summary += `TOTAL ESTIMADO: $${grandTotal}`;
+    summary += `TOTAL ESTIMADO: $${grandTotal.toLocaleString('es-AR')}`;
     return summary;
   };
 
@@ -216,7 +244,7 @@ export default function BudgetCalculator() {
           showDetailsInPDF ? 'TARIFA FIJA' : '',
           showDetailsInPDF ? '-' : '',
           showDetailsInPDF ? '-' : '',
-          `$${(t.amount || 0).toLocaleString()}`
+          `$${(t.amount || 0).toLocaleString('es-AR')}`
         ].filter(v => v !== '');
       }
       const rate = t.type === 'shooting' ? shootingRate : editingRate;
@@ -224,9 +252,9 @@ export default function BudgetCalculator() {
         (index + 1).toString().padStart(2, '0'),
         t.name.toUpperCase(),
         showDetailsInPDF ? (t.type === 'shooting' ? 'RODAJE' : 'EDICIÓN') : '',
-        showDetailsInPDF ? `${t.hours}H` : '',
-        showDetailsInPDF ? `$${rate.toLocaleString()}` : '',
-        `$${(t.hours * rate).toLocaleString()}`
+        showDetailsInPDF ? `${t.hours.toString().replace('.', ',')}H` : '',
+        showDetailsInPDF ? `$${rate.toLocaleString('es-AR')}` : '',
+        `$${(t.hours * rate).toLocaleString('es-AR')}`
       ].filter(v => v !== '');
     });
     
@@ -274,7 +302,7 @@ export default function BudgetCalculator() {
       const extraRows = extras.filter(e => e.description).map((e, index) => [
         (index + 1).toString().padStart(2, '0'),
         e.description.toUpperCase(),
-        `$${e.amount.toLocaleString()}`
+        `$${e.amount.toLocaleString('es-AR')}`
       ]);
       
       autoTable(doc, {
@@ -310,10 +338,10 @@ export default function BudgetCalculator() {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.text('Subtotal Servicios', summaryX + 4, currentY + 12);
-    doc.text(`$${hoursSubtotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 12, { align: 'right' });
+    doc.text(`$${hoursSubtotal.toLocaleString('es-AR')}`, summaryX + summaryWidth - 4, currentY + 12, { align: 'right' });
     
     doc.text('Gastos Adicionales', summaryX + 4, currentY + 19);
-    doc.text(`$${extrasTotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 19, { align: 'right' });
+    doc.text(`$${extrasTotal.toLocaleString('es-AR')}`, summaryX + summaryWidth - 4, currentY + 19, { align: 'right' });
     
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.3);
@@ -322,7 +350,7 @@ export default function BudgetCalculator() {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('TOTAL', summaryX + 4, currentY + 29);
-    doc.text(`$${grandTotal.toLocaleString()}`, summaryX + summaryWidth - 4, currentY + 29, { align: 'right' });
+    doc.text(`$${grandTotal.toLocaleString('es-AR')}`, summaryX + summaryWidth - 4, currentY + 29, { align: 'right' });
     
     // --- Notes and Terms ---
     if (notes) {
@@ -552,20 +580,22 @@ export default function BudgetCalculator() {
                       <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3 py-1">
                         <span className="text-[10px] font-black text-zinc-400 uppercase">$</span>
                         <input
-                          type="number"
-                          value={task.amount || 0}
-                          onChange={(e) => updateTask(task.id, { amount: parseFloat(e.target.value) || 0 })}
+                          type="text"
+                          inputMode="decimal"
+                          value={getDisplayValue(task.id, 'amount', task.amount || 0)}
+                          onChange={(e) => handleNumericInput(task.id, e.target.value, 'amount', (v) => updateTask(task.id, { amount: v }))}
+                          onBlur={() => clearActiveString(task.id, 'amount')}
                           className="w-20 border-none p-0 text-center font-mono text-sm focus:ring-0 outline-none bg-transparent"
                         />
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3 py-1">
                         <input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          value={task.hours}
-                          onChange={(e) => updateTask(task.id, { hours: parseFloat(e.target.value) || 0 })}
+                          type="text"
+                          inputMode="decimal"
+                          value={getDisplayValue(task.id, 'hours', task.hours)}
+                          onChange={(e) => handleNumericInput(task.id, e.target.value, 'hours', (v) => updateTask(task.id, { hours: v }))}
+                          onBlur={() => clearActiveString(task.id, 'hours')}
                           className="w-12 border-none p-0 text-center font-mono text-sm focus:ring-0 outline-none bg-transparent"
                         />
                         <span className="text-[10px] font-black text-zinc-400 uppercase">Horas</span>
@@ -585,7 +615,7 @@ export default function BudgetCalculator() {
             <div className="flex justify-end pt-2">
               <div className="flex items-center gap-4 text-zinc-400">
                 <span className="text-[10px] font-black uppercase tracking-widest">Total Horas</span>
-                <span className="text-xl font-mono font-black text-black">{totalHours}h</span>
+                <span className="text-xl font-mono font-black text-black">{totalHours.toString().replace('.', ',')}h</span>
               </div>
             </div>
           </div>
@@ -603,9 +633,11 @@ export default function BudgetCalculator() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black opacity-20">$</span>
                     <input
-                      type="number"
-                      value={shootingRate}
-                      onChange={(e) => setShootingRate(parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getDisplayValue('global', 'shootingRate', shootingRate)}
+                      onChange={(e) => handleNumericInput('global', e.target.value, 'shootingRate', setShootingRate)}
+                      onBlur={() => clearActiveString('global', 'shootingRate')}
                       className="w-full bg-transparent border-none p-0 text-lg font-mono font-black focus:ring-0 outline-none"
                     />
                   </div>
@@ -615,9 +647,11 @@ export default function BudgetCalculator() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black opacity-20">$</span>
                     <input
-                      type="number"
-                      value={editingRate}
-                      onChange={(e) => setEditingRate(parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getDisplayValue('global', 'editingRate', editingRate)}
+                      onChange={(e) => handleNumericInput('global', e.target.value, 'editingRate', setEditingRate)}
+                      onBlur={() => clearActiveString('global', 'editingRate')}
                       className="w-full bg-transparent border-none p-0 text-lg font-mono font-black focus:ring-0 outline-none"
                     />
                   </div>
@@ -657,9 +691,11 @@ export default function BudgetCalculator() {
                     <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded">
                       <span className="text-[10px] text-zinc-400">$</span>
                       <input
-                        type="number"
-                        value={extra.amount}
-                        onChange={(e) => updateExtra(extra.id, { amount: parseFloat(e.target.value) || 0 })}
+                        type="text"
+                        inputMode="decimal"
+                        value={getDisplayValue(extra.id, 'extraAmount', extra.amount)}
+                        onChange={(e) => handleNumericInput(extra.id, e.target.value, 'extraAmount', (v) => updateExtra(extra.id, { amount: v }))}
+                        onBlur={() => clearActiveString(extra.id, 'extraAmount')}
                         className="w-16 bg-transparent border-none p-0 text-xs font-mono font-bold focus:ring-0 outline-none text-right"
                       />
                     </div>
@@ -696,18 +732,18 @@ export default function BudgetCalculator() {
             <div className="space-y-2">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Presupuesto Final</span>
               <div className="text-6xl font-black tracking-tighter italic tabular-nums leading-none">
-                ${grandTotal.toLocaleString()}
+                ${grandTotal.toLocaleString('es-AR')}
               </div>
             </div>
 
             <div className="space-y-4 pt-4 border-t border-white/10">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-bold uppercase tracking-widest opacity-50">Subtotal Horas ({totalHours}h)</span>
-                <span className="font-mono text-zinc-300">${hoursSubtotal.toLocaleString()}</span>
+                <span className="font-bold uppercase tracking-widest opacity-50">Subtotal Horas ({totalHours.toString().replace('.', ',')}h)</span>
+                <span className="font-mono text-zinc-300">${hoursSubtotal.toLocaleString('es-AR')}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="font-bold uppercase tracking-widest opacity-50">Total Extras</span>
-                <span className="font-mono text-zinc-300">${extrasTotal.toLocaleString()}</span>
+                <span className="font-mono text-zinc-300">${extrasTotal.toLocaleString('es-AR')}</span>
               </div>
             </div>
 
