@@ -85,8 +85,10 @@ export default function RedactorIA() {
           7. Para el Carrusel de Instagram: 
              - Genera exactamente entre 1 y ${slideCount} diapositivas.
              - Los textos deben ser MUY breves (máximo 15-20 palabras por slide).
-             - Destaca cifras impactantes o citas clave.
-             - No todas las imágenes deben tener texto (pueden ser solo visuales sugeridas).
+             - El tono debe ser estrictamente INFORMATIVO y PRECISO.
+             - NO utilices slogans, frases publicitarias o ganchos genéricos.
+             - Destaca cifras impactantes, datos concretos o citas clave extraídas directamente del material.
+             - No todas las imágenes deben tener texto (algunas pueden ser solo visuales sugeridas para dar aire al diseño).
              - Incluye una sugerencia detallada de qué mostrar en la foto de cada imagen.
         `;
       }
