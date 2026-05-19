@@ -1,7 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Newspaper, Quote, Heading1, Send, Check, Copy, Loader2, Zap, Info, FileText, Share2, AlignLeft, MessageSquarePlus } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { processWithGemini } from '../services/geminiService';
+
+const InfoTooltip = ({ text }: { text: string }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative inline-block ml-1 align-middle">
+      <button 
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShow(!show);
+        }}
+        className="text-zinc-300 hover:text-black transition-colors p-1"
+      >
+        <Info size={10} />
+      </button>
+      <AnimatePresence>
+        {show && (
+          <motion.div 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 text-white text-[9px] font-bold uppercase tracking-widest leading-relaxed pointer-events-none shadow-2xl border border-white/10"
+          >
+            {text}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string;
@@ -63,6 +97,16 @@ export default function RedactorIA() {
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const structureInfo = {
+    piramide_invertida: 'Información más importante primero, seguida de detalles en orden descendente.',
+    cronica: 'Relato detallado y cronológico enfocado en la vivencia y lo sensorial.',
+    hilo_x: 'Secuencia de posts cortos y conectados optimizados para lectura rápida en X.',
+    gacetilla: 'Comunicado formal corporativo listo para ser difundido por medios.',
+    storytelling: 'Relato emocional con un arco narrativo claro: inicio, nudo y desenlace.',
+    reportaje: 'Investigación profunda con datos, múltiples ángulos y análisis exhaustivo.',
+    carrusel: 'Guion para diapositivas con textos potentes y sugerencias visuales.'
+  };
 
   const processNews = async () => {
     if (!input.trim()) return;
@@ -167,16 +211,17 @@ export default function RedactorIA() {
       <div className="flex flex-col gap-8">
         {/* Selector de Estructura */}
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
             {(['piramide_invertida', 'cronica', 'hilo_x', 'gacetilla', 'storytelling', 'reportaje', 'carrusel'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setStructure(s)}
-                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 ${
+                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 flex flex-col items-center justify-center gap-1 leading-tight ${
                   structure === s ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
                 }`}
               >
-                {s.replace('_', ' ')}
+                <span>{s.replace('_', ' ')}</span>
+                <InfoTooltip text={structureInfo[s]} />
               </button>
             ))}
           </div>

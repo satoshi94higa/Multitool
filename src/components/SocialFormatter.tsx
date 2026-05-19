@@ -1,10 +1,44 @@
 import React, { useState } from 'react';
-import { Sparkles, Copy, Check, Loader2 } from 'lucide-react';
+import { Sparkles, Copy, Check, Loader2, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 type Mode = 'social' | 'grammar' | 'emojis' | 'cta' | 'hooks';
 type Tone = 'casual' | 'professional' | 'energetic';
 
 import { processWithGemini } from '../services/geminiService';
+
+const InfoTooltip = ({ text }: { text: string }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative inline-block ml-1 align-middle">
+      <button 
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShow(!show);
+        }}
+        className="text-zinc-300 hover:text-black transition-colors p-1"
+      >
+        <Info size={12} />
+      </button>
+      <AnimatePresence>
+        {show && (
+          <motion.div 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 text-white text-[9px] font-bold uppercase tracking-widest leading-relaxed pointer-events-none shadow-2xl border border-white/10"
+          >
+            {text}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default function SocialFormatter() {
   const [input, setInput] = useState('');
@@ -16,6 +50,20 @@ export default function SocialFormatter() {
   const [tone, setTone] = useState<Tone>('casual');
   const [noMarkdown, setNoMarkdown] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const modeInfo = {
+    social: 'Mejora general del texto para mayor engagement y claridad en redes sociales.',
+    grammar: 'Corrige errores ortográficos, gramaticales y de puntuación manteniendo el sentido.',
+    emojis: 'Agrega emojis estratégicos para hacer el contenido más visual y expresivo.',
+    cta: 'Genera llamadas a la acción directas y persuasivas para tu audiencia.',
+    hooks: 'Crea primeras líneas impactantes (ganchos) para retener la atención al inicio.'
+  };
+
+  const toneInfo = {
+    casual: 'Tono relajado, cercano y amigable. Ideal para contenido cotidiano.',
+    professional: 'Tono serio, autoritario y corporativo. Ideal para LinkedIn o B2B.',
+    energetic: 'Tono entusiasta, dinámico y motivador. Ideal para lanzamientos o ventas.'
+  };
 
   const charLimits = {
     twitter: 280,
@@ -85,14 +133,17 @@ export default function SocialFormatter() {
             <button
               key={m}
               onClick={() => { setMode(m); setOutput(''); setReport(null); }}
-              className={`px-4 py-2.5 rounded-none transition-all ${
+              className={`px-4 py-2.5 rounded-none transition-all flex items-center gap-1 ${
                 mode === m ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'
               }`}
             >
-              {m === 'social' ? 'Optimizar' : 
-               m === 'grammar' ? 'Gramática' : 
-               m === 'emojis' ? 'Emojis' :
-               m === 'cta' ? 'CTA' : 'Ganchos'}
+              <span>
+                {m === 'social' ? 'Optimizar' : 
+                 m === 'grammar' ? 'Gramática' : 
+                 m === 'emojis' ? 'Emojis' :
+                 m === 'cta' ? 'CTA' : 'Ganchos'}
+              </span>
+              <InfoTooltip text={modeInfo[m]} />
             </button>
           ))}
         </div>
@@ -106,7 +157,8 @@ export default function SocialFormatter() {
                 className={`transition-colors flex items-center gap-2 leading-none h-4 ${tone === t ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
               >
                 <div className={`w-2 h-2 rounded-none ${tone === t ? 'bg-black' : 'bg-transparent border border-zinc-300'}`} />
-                {t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}
+                <span>{t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}</span>
+                <InfoTooltip text={toneInfo[t]} />
               </button>
             ))}
           </div>

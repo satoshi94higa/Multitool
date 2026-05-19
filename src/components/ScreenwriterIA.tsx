@@ -1,9 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw, FileText, Download } from 'lucide-react';
+import { Video, ScrollText, Play, Copy, Check, Loader2, Youtube, Instagram, MonitorSmartphone, Clock, Send, MessageSquarePlus, Zap, RefreshCw, FileText, Download, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { processWithGemini } from '../services/geminiService';
+
+const InfoTooltip = ({ text }: { text: string }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative inline-block ml-1 align-middle">
+      <button 
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShow(!show);
+        }}
+        className="text-zinc-400 hover:text-black transition-colors p-1"
+      >
+        <Info size={10} />
+      </button>
+      <AnimatePresence>
+        {show && (
+          <motion.div 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 text-white text-[9px] font-bold uppercase tracking-widest leading-relaxed pointer-events-none shadow-2xl border border-white/10"
+          >
+            {text}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
@@ -78,6 +112,26 @@ export default function ScreenwriterIA() {
   const [productionEstimate, setProductionEstimate] = useState<{ budget: string; difficulty: string; equipment: string[]; total_duration?: string } | null>(null);
   const [history, setHistory] = useState<{id: string, title: string, date: string, data: any}[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  const platformInfo = {
+    instagram: 'Formato vertical (9:16) y ritmo rápido. Ideal para Reels, TikToks y Shorts.',
+    youtube: 'Formato horizontal (16:9) con estructura clásica. Ideal para videos largos.'
+  };
+
+  const toneInfo = {
+    energetic: 'Tono con mucha fuerza, ritmo rápido y palabras de acción.',
+    casual: 'Tono relajado y natural, como una charla cercana.',
+    professional: 'Tono serio, confiable y con autoridad corporativa.',
+    humorous: 'Tono divertido con toques ligeros para entretener.'
+  };
+
+  const narratorInfo = {
+    expert: 'Demuestra conocimiento técnico y autoridad.',
+    creator: 'Dinámico, cercano y auténtico (vlogger).',
+    storyteller: 'Enfocado en la narrativa emocional y épica.',
+    minimalist: 'Directo al grano, conciso y sin distracciones.',
+    hype: 'Máxima emoción e intensidad (estilo MrBeast).'
+  };
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('screenwriter_history');
@@ -442,20 +496,26 @@ export default function ScreenwriterIA() {
 
       <div className="space-y-6 mt-4">
         {/* Fila 1: Plataformas */}
-        <div className="grid grid-cols-2 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
+         <div className="grid grid-cols-2 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
           <button
             onClick={() => setPlatform('instagram')}
             className={`flex items-center justify-center gap-3 py-4 transition-all font-black text-[10px] uppercase tracking-widest ${platform === 'instagram' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black'}`}
           >
             <Instagram size={18} />
-            <span>Instagram / TikTok</span>
+            <div className="flex flex-col items-center">
+              <span>Instagram / TikTok</span>
+              <InfoTooltip text={platformInfo.instagram} />
+            </div>
           </button>
           <button
             onClick={() => setPlatform('youtube')}
             className={`flex items-center justify-center gap-3 py-4 transition-all font-black text-[10px] uppercase tracking-widest ${platform === 'youtube' ? 'bg-black text-white shadow-xl' : 'text-zinc-400 hover:text-black'}`}
           >
             <Youtube size={18} />
-            <span>YouTube HD</span>
+            <div className="flex flex-col items-center">
+              <span>YouTube HD</span>
+              <InfoTooltip text={platformInfo.youtube} />
+            </div>
           </button>
         </div>
 
@@ -464,15 +524,16 @@ export default function ScreenwriterIA() {
           <div className="space-y-2">
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest pl-1">Vibe / Tono</span>
             <div className="grid grid-cols-2 gap-2">
-              {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
+               {(['energetic', 'casual', 'professional', 'humorous'] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTone(t)}
-                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight ${
                     tone === t ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
                   }`}
                 >
-                  {t === 'energetic' ? 'Energético' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}
+                  <span>{t === 'energetic' ? 'Energético' : t === 'casual' ? 'Casual' : t === 'humorous' ? 'Humorístico' : 'Profesional'}</span>
+                  <InfoTooltip text={toneInfo[t]} />
                 </button>
               ))}
             </div>
@@ -480,15 +541,16 @@ export default function ScreenwriterIA() {
           <div className="space-y-2">
             <span className="text-[8px] font-black uppercase text-zinc-400 tracking-widest pl-1">Perfil del Narrador</span>
             <div className="grid grid-cols-3 gap-2">
-              {(['expert', 'creator', 'storyteller', 'minimalist', 'hype'] as const).map((n) => (
+               {(['expert', 'creator', 'storyteller', 'minimalist', 'hype'] as const).map((n) => (
                 <button
                   key={n}
                   onClick={() => setNarrator(n)}
-                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight ${
                     narrator === n ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
                   }`}
                 >
-                  {n === 'expert' ? 'Experto' : n === 'creator' ? 'Creador' : n === 'storyteller' ? 'Relator' : n === 'minimalist' ? 'Minimal' : 'Hype'}
+                  <span>{n === 'expert' ? 'Experto' : n === 'creator' ? 'Creador' : n === 'storyteller' ? 'Relator' : n === 'minimalist' ? 'Minimal' : 'Hype'}</span>
+                  <InfoTooltip text={narratorInfo[n]} />
                 </button>
               ))}
             </div>
@@ -502,9 +564,12 @@ export default function ScreenwriterIA() {
             powerHook ? 'bg-zinc-900 border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
           }`}
         >
-          <div className="flex items-center gap-4">
+           <div className="flex items-center gap-4">
             <Zap size={18} className={powerHook ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-300'} />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Gancho de Alto Impacto (Psicología Inversa)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Gancho de Alto Impacto (Psicología Inversa)</span>
+              <InfoTooltip text="Técnica de alto impacto psicológico para captar la atención en los primeros 3 segundos." />
+            </div>
           </div>
           <div className={`w-10 h-5 rounded-none p-1 transition-colors ${powerHook ? 'bg-zinc-700' : 'bg-zinc-200'}`}>
             <div className={`w-3 h-3 rounded-none transition-transform ${powerHook ? 'bg-yellow-400 translate-x-5' : 'bg-white translate-x-0'}`} />
