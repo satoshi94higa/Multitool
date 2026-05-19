@@ -10,8 +10,11 @@ export const saveToHistory = (key: string, input: string, output: any, title: st
   try {
     const existingHistory = JSON.parse(localStorage.getItem(`history_${key}`) || '[]');
     
+    // Fallback for crypto.randomUUID
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
+
     const newItem: HistoryItem = {
-      id: crypto.randomUUID(),
+      id,
       timestamp: Date.now(),
       input,
       output,

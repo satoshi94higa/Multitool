@@ -222,8 +222,21 @@ export default function App() {
                 const isHome = location.pathname === '/';
                 const shouldHide = !isSelected && !isHome;
 
+                // Si no es home y no es la seleccionada, Ocultamos con CSS para mantener estado,
+                // Pero podemos evitar renderizar si nunca se ha visitado para no sobrecargar el inicio.
+                // Sin embargo, el requerimiento es "Mantener datos de TODOS". 
+                // Para simplificar y evitar el "blank screen", asegurémonos que el contenedor
+                // principal no colapse.
+
                 return (
-                  <div key={item.id} className={`${shouldHide ? 'hidden' : 'block'} ${isSelected ? 'animate-in fade-in zoom-in-95 duration-500' : ''}`}>
+                  <div 
+                    key={item.id} 
+                    className={`
+                      ${shouldHide ? 'hidden' : 'block'} 
+                      ${isSelected ? 'animate-in fade-in zoom-in-95 duration-500' : ''}
+                      w-full
+                    `}
+                  >
                     {isSelected && (
                        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                           <div className="flex items-center gap-4">

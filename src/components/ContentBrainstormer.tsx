@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Brain, Users, Zap, Search, Send, Check, Loader2, Sparkles, Camera, Video, Newspaper, Dice5, MessageSquarePlus, History, Trash2, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 import { processWithGemini } from '../services/geminiService';
+import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../lib/persistence';
 
 interface BrainstormOutput {
   general: string[];
@@ -19,6 +21,12 @@ export default function ContentBrainstormer() {
   const [ideas, setIdeas] = useState<BrainstormOutput | null>(null);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    setHistory(getHistory('ideas'));
+  }, []);
 
   const generateIdeas = async () => {
     if (!input.trim()) return;
@@ -53,6 +61,9 @@ export default function ContentBrainstormer() {
       const data = await processWithGemini({ customPrompt: prompt }, 'process');
       const result = JSON.parse(data.text.replace(/```json|```/g, '').trim());
       setIdeas(result);
+
+      const newHistory = saveToHistory('ideas', input, result, input.slice(0, 30));
+      setHistory(newHistory);
     } catch (error: any) {
       console.error('Error generating ideas:', error);
       setError(error.message || "Error al generar ideas");
@@ -90,11 +101,84 @@ export default function ContentBrainstormer() {
     setTimeout(() => setSent(false), 2000);
   };
 
+  const loadFromHistory = (item: HistoryItem) => {
+    setIdeas(item.output);
+    setInput(item.input);
+    setShowHistory(false);
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const removeHistoryItem = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newHistory = deleteFromHistory('ideas', id);
+    setHistory(newHistory);
+  };
+
   return (
     <div className="space-y-12 bg-transparent pb-4" id="content-brainstormer">
-      <h1 className="text-xl font-black uppercase tracking-tighter border-b-4 border-black pb-2 inline-block self-start">
-        Lluvia de Ideas
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4">
+        <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
+          Lluvia de Ideas
+        </h1>
+        <button 
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
+        >
+          <History size={14} />
+          {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-zinc-50 border-2 border-black p-6 mb-8 mt-4">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Últimas 10 Sesiones</span>
+                <span className="text-[9px] font-bold text-zinc-300">Autoguardado Local</span>
+              </div>
+              {history.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed border-zinc-200">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No hay sesiones guardadas</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {history.map((item) => (
+                    <div 
+                      key={item.id}
+                      onClick={() => loadFromHistory(item)}
+                      className="group p-4 bg-white border border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-black uppercase tracking-tight text-black truncate">{item.title}</p>
+                          <p className="text-[9px] font-bold text-zinc-400 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
+                        </div>
+                        <button 
+                          onClick={(e) => removeHistoryItem(e, item.id)}
+                          className="text-zinc-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 text-zinc-300 group-hover:text-black transition-colors">
+                        <span className="text-[8px] font-black uppercase tracking-widest">Recuperar</span>
+                        <ChevronRight size={10} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mt-4">
         <div className="flex items-center gap-4 bg-zinc-50 p-2 rounded-none border border-zinc-200">
           <div className="flex items-center gap-3 px-3">
