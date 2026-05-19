@@ -17,6 +17,8 @@ export default function TextProcessor() {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [corrections, setCorrections] = useState<string[] | null>(null);
+  const [aiResult, setAiResult] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'editor' | 'result'>('editor');
 
   const editor = useEditor({
     extensions: [
@@ -66,19 +68,30 @@ export default function TextProcessor() {
     try {
       const data = await processWithGemini({ type, text: plainText }, 'process');
       
-      if (type === 'spelling') {
+      if (type === 'spelling' || type === 'style') {
         try {
           const cleanJson = data.text.replace(/```json|```/g, '').trim();
           const parsed = JSON.parse(cleanJson);
-          editor.commands.setContent(parsed.text);
-          setCorrections(parsed.changes || []);
-          setNotification("Ortografía corregida.");
+          
+          if (type === 'spelling') {
+            setAiResult(parsed.text);
+            setCorrections(parsed.changes || []);
+            setActiveTab('result');
+            setNotification("Ortografía corregida.");
+          } else {
+            setAiResult(parsed.text);
+            setCorrections(parsed.changes || []);
+            setActiveTab('result');
+            setNotification("Mejora de estilo lista.");
+          }
         } catch (e) {
-          editor.commands.setContent(data.text);
-          setNotification("Corrección aplicada.");
+          setAiResult(data.text);
+          setActiveTab('result');
+          setNotification("Proceso completado.");
         }
       } else {
-        editor.commands.setContent(data.text.trim());
+        setAiResult(data.text.trim());
+        setActiveTab('result');
         setNotification("Proceso completado.");
       }
     } catch (error: any) {
@@ -211,24 +224,97 @@ export default function TextProcessor() {
           )}
 
           {/* AI Floating Actions */}
-          <div className="p-4 md:absolute md:bottom-8 md:left-10 flex flex-col md:flex-row gap-2 md:gap-4 md:items-center bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none border-t border-black md:border-none">
-            <span className="text-[9px] font-black uppercase text-zinc-400 tracking-widest">Magic IA</span>
-            <div className="flex gap-2">
+          <div className="p-4 md:absolute md:bottom-8 md:left-10 flex flex-col gap-3 bg-white/90 md:bg-white/80 p-4 border border-black shadow-[4px_4px_0px_black] md:max-w-md z-30">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black uppercase text-zinc-400 tracking-widest">Magic IA</span>
+              {aiResult && (
+                <button 
+                  onClick={() => setActiveTab(activeTab === 'editor' ? 'result' : 'editor')}
+                  className="text-[8px] font-black uppercase bg-zinc-100 px-2 py-0.5 hover:bg-black hover:text-white transition-colors"
+                >
+                  {activeTab === 'editor' ? 'Ver Resultado' : 'Ver Original'}
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => runAiOp('summarize')} 
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 h-10 md:h-8 bg-black text-white text-[9px] font-black uppercase transition-all hover:bg-zinc-800"
+                className="flex items-center gap-2 px-3 py-1.5 bg-black text-white text-[9px] font-black uppercase transition-all hover:bg-zinc-800"
               >
-                <Sparkles size={12} /> Resumen
+                <Sparkles size={10} /> Resumen
+              </button>
+              <button 
+                onClick={() => runAiOp('simplify')} 
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
+              >
+                Simplificar
+              </button>
+              <button 
+                onClick={() => runAiOp('keywords')} 
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
+              >
+                Puntos Clave
+              </button>
+              <button 
+                onClick={() => runAiOp('style')} 
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
+              >
+                Estilo
               </button>
               <button 
                 onClick={() => runAiOp('spelling')} 
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 h-10 md:h-8 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-[9px] font-black uppercase transition-all hover:bg-zinc-50"
               >
                 Ortografía
               </button>
             </div>
           </div>
         </div>
+
+        {/* AI Result Area (Conditional) */}
+        {activeTab === 'result' && aiResult && (
+          <div className="flex-1 flex flex-col bg-amber-50 border-2 border-black animate-in slide-in-from-right-4 relative">
+            <div className="bg-black text-white px-4 py-2 flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <Sparkles size={12} className="text-amber-400" /> Resultado Magic IA
+              </span>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    editor.commands.setContent(aiResult);
+                    setActiveTab('editor');
+                    setNotification("Aplicado al texto original");
+                  }}
+                  className="text-[9px] font-black uppercase bg-white text-black px-3 py-1 hover:bg-amber-100 transition-colors"
+                >
+                  Usar este texto
+                </button>
+                <button 
+                  onClick={() => setActiveTab('editor')}
+                  className="text-[9px] font-black uppercase bg-zinc-800 text-white px-3 py-1 hover:bg-zinc-700 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+            <div className="p-6 md:p-10 prose prose-sm md:prose-lg max-w-none overflow-auto flex-1 font-sans text-zinc-900 leading-relaxed whitespace-pre-wrap">
+              {aiResult}
+            </div>
+            <div className="p-4 border-t border-black/10 flex justify-between items-center">
+               <button 
+                 onClick={() => {
+                   navigator.clipboard.writeText(aiResult);
+                   setNotification("Copiado al portapapeles");
+                   setTimeout(() => setNotification(null), 2000);
+                 }}
+                 className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm bg-white"
+               >
+                 <Copy size={12} /> Copiar Resultado
+               </button>
+               <span className="text-[8px] font-bold text-zinc-400 uppercase italic">El texto original se mantiene intacto</span>
+            </div>
+          </div>
+        )}
 
         {/* AI Corrections Panel */}
         {corrections && corrections.length > 0 && !loading && (

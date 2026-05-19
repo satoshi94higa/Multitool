@@ -60,6 +60,15 @@ app.post("/api/gemini/process", async (req, res) => {
         }`,
         translate: "Traducí el siguiente texto al inglés de forma natural. No uses formato Markdown:",
         bullets: "Transformá el siguiente texto en una lista de puntos clara y organizada. Usá voseo si es necesario y no utilices formato Markdown (usá guiones simples '-' o números):",
+        simplify: "Simplificá el siguiente texto para que sea más fácil de leer y entender, manteniendo el significado original. Usá español de Argentina (voseo). No uses formato Markdown:",
+        keywords: "Extraé los puntos clave o conceptos más importantes del siguiente texto y presentalos en una lista clara. Usá español de Argentina (voseo). No uses formato Markdown:",
+        style: `Actuá como un editor de estilo experto. Mejora la legibilidad, fluidez y claridad del siguiente texto usando español de Argentina (voseo). 
+        No utilices formato Markdown en el campo 'text' (no uses asteriscos, guiones de lista, etc.).
+        Devuelve estrictamente un objeto JSON con esta estructura:
+        {
+          "text": "el texto completo mejorado sin formato markdown",
+          "changes": ["lista de las principales mejoras de estilo y legibilidad realizadas"]
+        }`,
         brainstorm: "Generá 5 ideas creativas basadas en el siguiente concepto. Usá español de Argentina (voseo). No uses formato Markdown:",
         screenplay: "Generá un esquema de guion basado en la siguiente premisa. Usá español de Argentina (voseo). No uses formato Markdown:",
         journalist: "Escribí un artículo periodístico breve basado en la siguiente información. Usá español de Argentina (voseo). No uses formato Markdown:",
