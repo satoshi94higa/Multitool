@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Plus, Trash2, Download, Copy, Check, DollarSign, Clock, Briefcase, Camera, Film, ListPlus, ReceiptText, Zap, User, Mail, Phone, Calendar, FileText, Info } from 'lucide-react';
+import { Calculator, Plus, Trash2, Download, Copy, Check, DollarSign, Clock, Briefcase, Camera, Film, ListPlus, ReceiptText, Zap, User, Mail, Phone, Calendar, FileText, Info, History, Save } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../lib/persistence';
 
 interface Task {
   id: string;
@@ -55,6 +56,52 @@ export default function BudgetCalculator() {
   ]);
   const [extras, setExtras] = useState<Expense[]>([]);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
+    setHistory(getHistory('budget'));
+  }, []);
+
+  const handleSaveToHistory = () => {
+    const data = {
+      clientName,
+      projectName,
+      clientEmail,
+      date,
+      validity,
+      notes,
+      tasks,
+      extras,
+      shootingRate,
+      editingRate
+    };
+    const newHistory = saveToHistory('budget', JSON.stringify(data), { total: grandTotal }, `${projectName || 'Proyecto'} - ${clientName || 'Cliente'}`);
+    setHistory(newHistory);
+  };
+
+  const handleLoadFromHistory = (item: HistoryItem) => {
+    try {
+      const data = JSON.parse(item.input);
+      setClientName(data.clientName || '');
+      setProjectName(data.projectName || '');
+      setClientEmail(data.clientEmail || '');
+      setDate(data.date || new Date().toISOString().split('T')[0]);
+      setValidity(data.validity || '15 días');
+      setNotes(data.notes || '');
+      setTasks(data.tasks || []);
+      setExtras(data.extras || []);
+      if (data.shootingRate) setShootingRate(data.shootingRate);
+      if (data.editingRate) setEditingRate(data.editingRate);
+    } catch (e) {
+      console.error('Error loading from history:', e);
+    }
+  };
+
+  const handleDeleteHistory = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const newHistory = deleteFromHistory('budget', id);
+    setHistory(newHistory);
+  };
 
   // Helper handling comma decimal input
   const [activeStrings, setActiveStrings] = useState<Record<string, string>>({});
@@ -544,18 +591,21 @@ export default function BudgetCalculator() {
 
             <div className="space-y-px bg-zinc-100 border border-zinc-100">
               {tasks.map((task, index) => (
-                <div key={task.id} className="flex items-center gap-4 p-4 bg-white group">
-                  <div className="text-[10px] font-mono text-zinc-300 w-4">{index + 1}</div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={task.name}
-                      onChange={(e) => updateTask(task.id, { name: e.target.value })}
-                      placeholder="Nombre de la etapa (ej: Guion, Color, Sonido...)"
-                      className="w-full bg-transparent border-none p-0 font-bold text-sm focus:ring-0 outline-none placeholder:text-zinc-200"
-                    />
+                <div key={task.id} className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 p-4 bg-white group border-b border-zinc-50 md:border-b-0">
+                  <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="text-[10px] font-mono text-zinc-300 w-4 shrink-0">{index + 1}</div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={task.name}
+                        onChange={(e) => updateTask(task.id, { name: e.target.value })}
+                        placeholder="Nombre de la etapa (ej: Guion, Color, Sonido...)"
+                        className="w-full bg-transparent border-none p-0 font-bold text-sm focus:ring-0 outline-none placeholder:text-zinc-200"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full md:w-auto mt-2 md:mt-0 pl-8 md:pl-0">
                     <div className="flex items-center bg-zinc-50 border border-zinc-200">
                       <button
                         onClick={() => updateTask(task.id, { type: 'shooting' })}
@@ -603,7 +653,7 @@ export default function BudgetCalculator() {
                     )}
                     <button
                       onClick={() => removeTask(task.id)}
-                      className="text-zinc-200 hover:text-red-500 transition-colors pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100"
+                      className="text-zinc-300 hover:text-red-500 transition-colors p-1 md:opacity-0 md:group-hover:opacity-100"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -680,31 +730,33 @@ export default function BudgetCalculator() {
                   </div>
                 )}
                 {extras.map(extra => (
-                  <div key={extra.id} className="flex items-center gap-3 p-2 bg-white border border-zinc-100 group">
+                  <div key={extra.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-white border border-zinc-100 group">
                     <input
                       type="text"
                       placeholder="Ej: Licencias, Transporte..."
                       value={extra.description}
                       onChange={(e) => updateExtra(extra.id, { description: e.target.value })}
-                      className="flex-1 bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none"
+                      className="w-full sm:flex-1 bg-transparent border-none p-0 text-xs font-bold focus:ring-0 outline-none"
                     />
-                    <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded">
-                      <span className="text-[10px] text-zinc-400">$</span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={getDisplayValue(extra.id, 'extraAmount', extra.amount)}
-                        onChange={(e) => handleNumericInput(extra.id, e.target.value, 'extraAmount', (v) => updateExtra(extra.id, { amount: v }))}
-                        onBlur={() => clearActiveString(extra.id, 'extraAmount')}
-                        className="w-16 bg-transparent border-none p-0 text-xs font-mono font-bold focus:ring-0 outline-none text-right"
-                      />
+                    <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+                      <div className="flex items-center gap-1 bg-zinc-50 px-2 py-1 rounded">
+                        <span className="text-[10px] text-zinc-400">$</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={getDisplayValue(extra.id, 'extraAmount', extra.amount)}
+                          onChange={(e) => handleNumericInput(extra.id, e.target.value, 'extraAmount', (v) => updateExtra(extra.id, { amount: v }))}
+                          onBlur={() => clearActiveString(extra.id, 'extraAmount')}
+                          className="w-20 sm:w-16 bg-transparent border-none p-0 text-xs font-mono font-bold focus:ring-0 outline-none text-right"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeExtra(extra.id)}
+                        className="text-zinc-300 hover:text-red-500 transition-colors p-1 md:opacity-0 md:group-hover:opacity-100"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeExtra(extra.id)}
-                      className="text-zinc-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 size={14} />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -773,9 +825,54 @@ export default function BudgetCalculator() {
                 >
                   <Download size={16} /> Descargar PDF
                 </button>
+                <button
+                  onClick={handleSaveToHistory}
+                  className="w-full h-14 border border-white/20 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors flex items-center justify-center gap-3 active:scale-[0.98]"
+                >
+                  <Save size={16} /> Guardar en Historial
+                </button>
               </div>
             </div>
           </div>
+
+          {/* History Section */}
+          {history.length > 0 && (
+            <div className="bg-white border border-zinc-200 overflow-hidden">
+              <div className="bg-zinc-100 px-6 py-3 border-b border-zinc-200 flex items-center gap-2">
+                <History size={16} className="text-zinc-500" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Historial Reciente</h4>
+              </div>
+              <div className="divide-y divide-zinc-100">
+                {history.map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => handleLoadFromHistory(item)}
+                    className="p-4 hover:bg-zinc-50 cursor-pointer transition-colors group flex items-center justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-tight text-black line-clamp-1">
+                        {item.title}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-mono text-zinc-400">
+                          {new Date(item.timestamp).toLocaleDateString()} {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="text-[9px] font-black text-green-600 bg-green-50 px-1 rounded">
+                          ${item.output.total.toLocaleString('es-AR')}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteHistory(e, item.id)}
+                      className="p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all rounded"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-zinc-50 border border-zinc-200 p-6 space-y-4">
             <div className="flex items-center justify-between">
