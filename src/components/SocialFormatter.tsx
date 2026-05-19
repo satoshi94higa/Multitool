@@ -45,6 +45,9 @@ const InfoTooltip = ({ text }: { text: string }) => {
   );
 };
 
+type Mode = 'social' | 'grammar' | 'emojis' | 'cta' | 'hooks';
+type Tone = 'casual' | 'professional' | 'energetic';
+
 export default function SocialFormatter() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');

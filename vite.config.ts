@@ -9,7 +9,7 @@ export default defineConfig(({mode}) => {
   const isProd = mode === 'production';
   
   return {
-    base: isProd ? '/Multitool/' : '/',
+    base: '/',
     plugins: [
       react(),
       tailwindcss(),

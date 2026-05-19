@@ -10,7 +10,7 @@ registerSW({ immediate: true });
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.MODE === 'production' ? '/Multitool' : '/'}>
+    <BrowserRouter basename="/">
       <App />
     </BrowserRouter>
   </StrictMode>,

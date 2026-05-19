@@ -51,6 +51,27 @@ type Platform = 'instagram' | 'youtube';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous';
 type NarratorProfile = 'expert' | 'creator' | 'storyteller' | 'minimalist' | 'hype';
 
+const platformInfo = {
+  instagram: 'Scripts cortos (60-90s) optimizados para formato vertical y hooks rápidos.',
+  youtube: 'Scripts estructurados para videos horizontales con introducción, desarrollo y cierre.'
+};
+
+const toneInfo = {
+  energetic: 'Alta energía, ritmo rápido y tono emocionante.',
+  casual: 'Cercano, relajado y modo conversación natural.',
+  professional: 'Voz de autoridad, serio y experto.',
+  humorous: 'Divertido, con chistes o remates ligeros.',
+  professional_stable: 'Voz de autoridad, serio y experto.' // Fallback if professional is mapped differently
+};
+
+const narratorInfo = {
+  expert: 'Voz de autoridad técnica en el tema.',
+  creator: 'Voz de creador compartiendo su proceso personal.',
+  storyteller: 'Enfocado en la narrativa emocional.',
+  minimalist: 'Conciso, directo y sin rellenos.',
+  hype: 'Entusiasmo máximo para captar atención inmediata.'
+};
+
 interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   value: string;
 }
