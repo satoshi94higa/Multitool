@@ -60,6 +60,8 @@ export default function SocialFormatter() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [hoveredMode, setHoveredMode] = useState<Mode | null>(null);
+  const [hoveredTone, setHoveredTone] = useState<Tone | null>(null);
 
   useEffect(() => {
     setHistory(getHistory('social'));
@@ -217,39 +219,61 @@ export default function SocialFormatter() {
       </div>
       
       <div className="space-y-8">
-        <div className="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm scrollbar-hide">
-          {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => { setMode(m); setOutput(''); setReport(null); }}
-              className={`px-4 py-2.5 rounded-none transition-all flex items-center gap-1 ${
-                mode === m ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'
-              }`}
-            >
-              <span>
-                {m === 'social' ? 'Optimizar' : 
-                 m === 'grammar' ? 'Gramática' : 
-                 m === 'emojis' ? 'Emojis' :
-                 m === 'cta' ? 'CTA' : 'Ganchos'}
-              </span>
-              <InfoTooltip text={modeInfo[m]} />
-            </button>
-          ))}
+        <div className="space-y-3">
+          <div className="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm scrollbar-hide">
+            {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => { setMode(m); setOutput(''); setReport(null); }}
+                onMouseEnter={() => setHoveredMode(m)}
+                onMouseLeave={() => setHoveredMode(null)}
+                className={`px-4 py-2.5 rounded-none transition-all flex items-center gap-1 ${
+                  mode === m ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'
+                }`}
+              >
+                <span>
+                  {m === 'social' ? 'Optimizar' : 
+                   m === 'grammar' ? 'Gramática' : 
+                   m === 'emojis' ? 'Emojis' :
+                   m === 'cta' ? 'CTA' : 'Ganchos'}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="text-[11px] text-zinc-600 bg-zinc-50 border border-zinc-200 p-3.5 flex items-start gap-2.5 rounded-none shadow-sm animate-in fade-in duration-300">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[#222222] bg-zinc-200 px-2 py-0.5 select-none shrink-0 border border-zinc-300">
+              {hoveredMode ? 'Previsualizar' : 'Función Activa'}
+            </span>
+            <p className="font-medium text-zinc-750 self-center leading-relaxed">
+              {modeInfo[hoveredMode || mode]}
+            </p>
+          </div>
         </div>
 
         {(mode === 'social' || mode === 'cta' || mode === 'hooks') && (
-          <div className="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] ml-1">
-            {(['casual', 'professional', 'energetic'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTone(t)}
-                className={`transition-colors flex items-center gap-2 leading-none h-4 ${tone === t ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
-              >
-                <div className={`w-2 h-2 rounded-none ${tone === t ? 'bg-black' : 'bg-transparent border border-zinc-300'}`} />
-                <span>{t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}</span>
-                <InfoTooltip text={toneInfo[t]} />
-              </button>
-            ))}
+          <div className="space-y-3">
+            <div className="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] ml-1">
+              {(['casual', 'professional', 'energetic'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTone(t)}
+                  onMouseEnter={() => setHoveredTone(t)}
+                  onMouseLeave={() => setHoveredTone(null)}
+                  className={`transition-colors flex items-center gap-2 leading-none h-4 ${tone === t ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
+                >
+                  <div className={`w-2 h-2 rounded-none ${tone === t ? 'bg-black' : 'bg-transparent border border-zinc-300'}`} />
+                  <span>{t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}</span>
+                </button>
+              ))}
+            </div>
+            <div className="text-[11px] text-zinc-600 bg-zinc-50 border border-zinc-200 p-3.5 flex items-start gap-2.5 rounded-none shadow-sm animate-in fade-in duration-300">
+              <span className="text-[9px] font-black uppercase tracking-widest text-[#222222] bg-zinc-200 px-2 py-0.5 select-none shrink-0 border border-zinc-300">
+                {hoveredTone ? 'Tono Destacado' : 'Tono Activo'}
+              </span>
+              <p className="font-medium text-zinc-750 self-center leading-relaxed">
+                {toneInfo[hoveredTone || tone]}
+              </p>
+            </div>
           </div>
         )}
 
