@@ -103,65 +103,83 @@ app.post("/api/gemini/process", async (req, res) => {
 
 app.post("/api/gemini/social", async (req, res) => {
   try {
-    const { input, mode, tone, noMarkdown } = req.body;
-    let prompt = '';
+    const { 
+      input, 
+      tone, 
+      noMarkdown, 
+      includeEmojis = true, 
+      includeCta = true, 
+      includeHooks = true, 
+      includeHashtags = true 
+    } = req.body;
+    
     const toneLabel = tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico';
 
-    if (mode === 'social') {
-      prompt = `Actuá como un creador de contenido y redactor freelance nativo del Río de la Plata.
-      Tomá el siguiente texto y adaptalo para que sea súper atractivo, fluido y listo para publicar directo en Instagram.
+    let emojiRule = includeEmojis 
+      ? 'Agregá un máximo de un emoji pequeño al final de un párrafo o frase clave para dar color. No satures ni arranques líneas con emojis.'
+      : 'NO uses emojis bajo ningún concepto. Tu texto no debe contener emojis.';
+    
+    let ctaRule = includeCta
+      ? 'Terminá siempre con un llamado a la acción (CTA) natural, planteando una pregunta interactiva o invitación directa coherente con el tono (ej: "Contame abajo si te pasó", "Guardate este post si te sirve"). NO uses clichés de venta agresiva.'
+      : 'NO incluyas ningún llamado a la acción (CTA) al final del texto.';
 
-      PAUTAS DE ESCRITURA PARA EVITAR EL "TONO IA" (SLOP):
-      1. USÁ ESPAÑOL RIOPLATENSE NATURAL: Usá voseo con total naturalidad (ej. "vos tenés", "si querés", "pensá", "hacé", "mirá"). Usá un tono auténtico de acá, fresco y relajado, pero profesional cuando sea pertinente. Evitá modismos exagerados o forzados (no abuses de lunfardo), pero sí usá vocabulario habitual (como "un montón", "bárbaro", "buenísimo", "tranqui").
-      2. CERO CLICHÉS DE IA: Prohibido usar introducciones genéricas de marketing como "¡Atención!", "¿Estás listo para...?", "En el mundo de hoy...", "¡Descubrí el secreto!", "¡Llegó la hora!". Empezá directo con el concepto o con una frase con gancho que suene humana y conversacional.
-      3. LISTO PARA INSTAGRAM (SIN MARKDOWN): No uses negritas de tipo asteriscos (**), cursivas (*), ni símbolos raros. Instagram no soporta Markdown. El texto debe estar limpio, usando saltos de línea dobles para estructurar párrafos y que sea súper legible al copiar y pegar.
-      4. EMOJIS CON CRITERIO: No pongas emojis al inicio de cada línea ni abuses de ellos. Colocá máximo uno o dos emojis sutiles por párrafo para dar calidez, siempre al final de las oraciones.
-      5. SIN EXCESOS: Evitá listas numeradas con emojis de números (como 1️⃣, 2️⃣, 3️⃣) a menos que sea estrictamente necesario. Si hacés una lista, usá guiones simples o puntos limpios.
-      6. TONO SELECCIONADO: Ajustá el mensaje al tono "${toneLabel}".
-         - casual: Muy cercano, amigable, relajado y cómplice, directo al grano.
-         - profesional: Serio, interesante, con autoridad y respeto, pero con la cercanía del voseo profesional rioplatense.
-         - enérgico: Con empuje, entusiasmo real y motivación genuina, sin sonar como un infomercial de televisión.
+    let hookRule = includeHooks
+      ? 'La primera frase (el gancho o hook) debe ser sumamente magnética, frenar el scroll del usuario planteando una duda, experiencia o verdad interesante de forma 100% humana y conversacional (sin clichés de IA).'
+      : 'Empezá de forma directa con la idea o núcleo central del post sin redactar un gancho dramático ni rebuscado.';
 
-      Solo devolvé el texto final formateado y listo para copiar y pegar directamente en Instagram.`;
-    } else if (mode === 'grammar') {
-      prompt = `Actuá como un corrector de estilo y editor profesional del Río de la Plata.
-      Corregí la ortografía, gramática y sintaxis del texto ingresado usando español rioplatense (voseo) de forma fluida y natural.
-      Evitá que suene robótico o acartonado.
-      Devolvé estrictamente un objeto JSON con esta estructura exacta, sin formato de código markdown alrededor:
+    let hashtagRule = includeHashtags
+      ? 'Generá entre 3 y 5 hashtags estratégicos, cortos e intuitivos.'
+      : 'NO incluyas hashtags en el texto final.';
+
+    const prompt = `Actuá como un experto creador de contenido y redactor estratégico freelance nativo de la región del Río de la Plata (Argentina/Uruguay).
+      Tu tarea es tomar el texto ingresado y optimizarlo de manera profesional para publicar directamente en Instagram, garantizando el máximo enganche y claridad.
+
+      DEBÉS GENERAR DOS VARIANTES DISTINTAS (POST A Y POST B) para dar opciones de elección:
+      - Variante A: Enfocada en un ángulo directo, de conexión emocional, transparente y ágil.
+      - Variante B: Enfocada en un ángulo más enfático/profesional, estructurado o con un giro creativo alternativo.
+
+      REGLAS DE FORMATO Y ESTRUCTURA OBLIGATORIAS PARA AMBAS:
+      1. PÁRRAFOS SÚPER CORTOS: El texto debe estructurarse en párrafos muy cortos (máximo 2 o 3 líneas por párrafo). Dejá espacios limpios entre párrafos usando saltos de línea dobles. En el celular la gente escanea la pantalla, la lectura debe ser ágil y liviana.
+      2. INFORMACIÓN CENTRAL CRISTALINA: Identificá la idea principal del texto y que quede clarísima.
+      3. REGLA DE ADAPTABILIDAD SELECCIONADA:
+         - Gancho inicial: ${hookRule}
+         - Llamado a la acción (CTA): ${ctaRule}
+         - Hashtags sutiles: ${hashtagRule}
+      4. EVITÁ EL "TONO IA" (ANTISLOP):
+         - Usá español rioplatense natural (voseo: "tenés", "mirá", "pensá", "hacé") con total fluidez. Que suene como un audio de WhatsApp de un amigo súper profesional, no como un folleto corporativo o manual rígido.
+         - Prohibidísimo arrancar con frases hechas de IA como: "¡Atención!", "¿Estás listo para...?", "En el mundo tan acelerado de hoy...", "¡Llegó la hora!".
+         - ${noMarkdown ? 'No uses ningún tipo de Markdown (nada de asteriscos como **, ni guiones bajos con formato _). Instagram no los interpreta y queda desprolijo.' : 'Podés usar formato limpio.'}
+      5. EMOJIS: ${emojiRule}
+      6. TONO SELECCIONADO: Adaptá la redacción siguiendo el formato "${toneLabel}":
+         - casual: Muy relajado, simpático y cómplice.
+         - profesional: Experto, interesante y confiable, sin perder la frescura rioplatense del voseo.
+         - enérgico: Motivador, con garra y entusiasmo real por compartir un mensaje valioso.
+      7. INVITACIONES A EVENTOS: Si el texto original es sobre un evento, festejo o invitación, remarcá obligatoriamente los datos de fecha, lugar/dirección y hora. Hacelo en un bloque condensado y cortito al final del cuerpo principal (antes del CTA), usando emojis temáticos y claros (ej: 📅 para fecha, 🕒 para hora, 📍 para lugar), ideal para lectura rápida.
+
+      DEBÉS responder EXCLUSIVAMENTE con un objeto JSON válido con la siguiente estructura, sin ningún bloque de código markdown de envoltura (es decir, NO agregues \`\`\`json ni \`\`\`):
       {
-        "corrected": "el texto completamente corregido y optimizado, listo para copiar y pegar",
-        "changes": ["lista abreviada y clara de los cambios realizados"],
-        "tips": ["un consejo corto y práctico de redacción humana para este texto"]
-      }`;
-    } else if (mode === 'emojis') {
-      prompt = `Tomá el siguiente texto y agregale emojis acordes que sumen dinamismo, pero hacelo de forma orgánica y humana, sin saturar.
-      Seguí estas reglas estrictas:
-      - No pongas más de 1 o 2 emojis por párrafo.
-      - No remplaces palabras clave por emojis, colocalos siempre al final de las frases para acompañar el sentido.
-      - No uses negritas ni formato markdown (asteriscos, guiones raros, etc.).
-      - Debe estar listo para copiar y pegar en Instagram.`;
-    } else if (mode === 'cta') {
-      prompt = `Generá 3 llamados a la acción (CTA) cortos, humanos y sumamente persuasivos basados en el tema del texto.
-      Deben sonar 100% auténticos, escritos por una persona real del Río de la Plata (usando voseo natural y amigable, ej: "Contame abajo qué opinás", "Dejame tu comentario", "Guardate este post para tenerlo a mano").
-      Evitá clichés de venta agresiva o robóticos del estilo "¡No dejes pasar esta oportunidad única!".
-      Tono: ${toneLabel}.
-      Entregá solo las 3 opciones separadas por saltos de línea limpios, sin números ni viñetas, sin markdown, listas para copiar y pegar en Instagram.`;
-    } else if (mode === 'hooks') {
-      prompt = `Generá 3 ganchos (primeras líneas de lectura o hooks) impactantes y curiosos basados en el tema del texto.
-      El objetivo es frenar el scroll del usuario en Instagram de inmediato.
-      Deben sonar espontáneos, intrigantes y sumamente humanos, al estilo de un creador de contenido profesional del Río de la Plata (usando voseo natural y amigable, ej: "Me costó un montón de años darme cuenta de esto...", "¿Te pasó alguna vez que...?", "Esto es lo que nadie te cuenta sobre...").
-      Evitá ganchos típicos de IA como "Descubrí el fascinante secreto de...".
-      Tono: ${toneLabel}.
-      Entregá solo las 3 opciones separadas por saltos de línea limpios, sin números ni viñetas, sin markdown, listas para copiar y pegar en Instagram.`;
-    }
+        "variantA": "Texto completo optimizado de la Variante A",
+        "variantB": "Texto completo optimizado de la Variante B",
+        "hashtags": ["etiqueta1", "etiqueta2", "etiqueta3"],
+        "readability": {
+          "score": 95,
+          "level": "green", 
+          "feedback": "Resumen cortito (máximo 2 líneas) en español de Río de la Plata indicando por qué es fácil leer este texto en el celu."
+        }
+      }
+
+      El nivel de legibilidad "level" debe ser "green" (óptimo con párrafos de 3 líneas o menos), "yellow" (algunas partes densas) o "red" (párrafos muy largos).`;
 
     const client = getAI();
-    const modelName = req.body.model || "gemini-3-flash-preview";
-    console.log(`[Gemini Social] Calling model: ${modelName}`);
+    const modelName = req.body.model || "gemini-3.5-flash";
+    console.log(`[Gemini Social JSON] Calling model: ${modelName}`);
 
     const result = await client.models.generateContent({
       model: modelName,
-      contents: `${prompt}\n\nTexto: "${input}"`
+      contents: `${prompt}\n\nTexto original para optimizar: "${input}"`,
+      config: {
+        responseMimeType: "application/json"
+      }
     });
 
     res.json({ text: result.text });
