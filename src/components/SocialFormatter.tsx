@@ -34,7 +34,7 @@ const InfoTooltip = ({ text }: { text: string }) => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
-            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-zinc-900 text-white text-[9px] font-bold uppercase tracking-widest leading-relaxed pointer-events-none shadow-2xl border border-white/10"
+            className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-zinc-900 text-zinc-100 text-xs font-medium leading-relaxed pointer-events-none shadow-2xl border border-white/10 rounded-lg text-center normal-case tracking-normal"
           >
             {text}
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
@@ -66,17 +66,17 @@ export default function SocialFormatter() {
   }, []);
 
   const modeInfo = {
-    social: 'Mejora general del texto para mayor engagement y claridad en redes sociales.',
-    grammar: 'Corrige errores ortográficos, gramaticales y de puntuación manteniendo el sentido.',
-    emojis: 'Agrega emojis estratégicos para hacer el contenido más visual y expresivo.',
-    cta: 'Genera llamadas a la acción directas y persuasivas para tu audiencia.',
-    hooks: 'Crea primeras líneas impactantes (ganchos) para retener la atención al inicio.'
+    social: 'Mejorá el estilo, estructura y fluidez de tu texto para lograr mayor interacción y claridad en redes sociales.',
+    grammar: 'Corregí la ortografía, gramática y puntuación sin perder tu esencia o personalidad original.',
+    emojis: 'Sumá emojis de forma estratégica y natural para que tu publicación sea más visual y atractiva.',
+    cta: 'Generá llamados a la acción directos y amigables que incentiven la interacción real de tus seguidores.',
+    hooks: 'Creá ganchos o primeras líneas atrapantes para captar la atención desde el principio del post.'
   };
 
   const toneInfo = {
-    casual: 'Tono relajado, cercano y amigable. Ideal para contenido cotidiano.',
-    professional: 'Tono serio, autoritario y corporativo. Ideal para LinkedIn o B2B.',
-    energetic: 'Tono entusiasta, dinámico y motivador. Ideal para lanzamientos o ventas.'
+    casual: 'Un estilo relajado, espontáneo y bien cercano. Ideal para conectar en el día a día.',
+    professional: 'Un tono cuidado, profesional y con autoridad. Perfecto para LinkedIn o tu marca personal.',
+    energetic: 'Con fuerza, motivación y mucho entusiasmo. Genial para anuncios y ventas con empuje.'
   };
 
   const charLimits = {
@@ -141,7 +141,7 @@ export default function SocialFormatter() {
     <div id="social-booster" className="bg-transparent">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 mb-6 gap-4">
         <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
-          Potenciador Social
+          Formateador Social
         </h1>
         <button 
           onClick={() => setShowHistory(!showHistory)}
@@ -257,7 +257,7 @@ export default function SocialFormatter() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Entrada de datos crudos..."
+            placeholder="Escribí o pegá tu texto acá..."
             className="w-full h-40 p-6 bg-zinc-50 border-2 border-black/5 rounded-none text-sm focus:outline-none focus:border-black resize-none font-sans text-black placeholder-zinc-300 scrollbar-hide"
           />
           <div className="flex gap-6 mt-3 ml-1">
@@ -280,7 +280,19 @@ export default function SocialFormatter() {
           className="w-full py-5 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-95"
         >
           {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-          {loading ? 'Sintetizando...' : `Ejecutar Lógica de ${mode.toUpperCase()}`}
+          {loading ? (
+            mode === 'social' ? 'Formatando texto...' :
+            mode === 'grammar' ? 'Corrigiendo ortografía...' :
+            mode === 'emojis' ? 'Sumando emojis...' :
+            mode === 'cta' ? 'Generando llamados...' :
+            'Generando ganchos...'
+          ) : (
+            mode === 'social' ? 'Optimizar y dar formato' :
+            mode === 'grammar' ? 'Corregir ortografía y gramática' :
+            mode === 'emojis' ? 'Agregar emojis para Instagram' :
+            mode === 'cta' ? 'Generar llamados a la acción (CTA)' :
+            'Generar ganchos de lectura'
+          )}
         </button>
 
         {error && (
@@ -288,7 +300,7 @@ export default function SocialFormatter() {
             <div className="flex items-center gap-4">
               <Sparkles size={18} className="animate-pulse" />
               <p className="text-[11px] font-black uppercase tracking-widest leading-relaxed">
-                [ALERTA_SISTEMA]: {error}
+                Hubo un error al procesar el texto: {error}
               </p>
             </div>
           </div>
@@ -296,7 +308,7 @@ export default function SocialFormatter() {
 
         {output && (
           <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="relative group p-8 bg-zinc-50 border-2 border-zinc-100 rounded-none text-sm text-black leading-loose font-sans shadow-2xl">
+            <div className="relative group p-8 bg-zinc-50 border-2 border-zinc-100 rounded-none text-sm text-zinc-900 leading-loose font-sans shadow-2xl">
               <p className="whitespace-pre-wrap">{output}</p>
               <button 
                 onClick={copyToClipboard}
@@ -309,13 +321,13 @@ export default function SocialFormatter() {
             {report && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] font-black tracking-widest font-mono">
                 <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-none text-zinc-600">
-                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-200 pb-3">Cambios_Realizados:</p>
+                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-200 pb-3">Cambios realizados:</p>
                   <ul className="space-y-3">
                     {report.corrections.map((c, i) => <li key={i} className="flex gap-2"><span>•</span> {c}</li>)}
                   </ul>
                 </div>
                 <div className="bg-zinc-950 border border-black p-6 rounded-none text-zinc-400">
-                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-800 pb-3 text-white">Refinamientos:</p>
+                  <p className="mb-4 uppercase opacity-40 border-b border-zinc-800 pb-3 text-white">Sugerencias de mejora:</p>
                   <ul className="space-y-3">
                     {report.tips.map((t, i) => <li key={i} className="flex gap-2 italic"><span>›</span> {t}</li>)}
                   </ul>

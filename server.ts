@@ -108,19 +108,51 @@ app.post("/api/gemini/social", async (req, res) => {
     const toneLabel = tone === 'casual' ? 'casual' : tone === 'professional' ? 'profesional' : 'enérgico';
 
     if (mode === 'social') {
-      prompt = `Actuá como un experto en redes sociales. Tomá el siguiente texto y formatéalo para que sea atractivo (Instagram/Twitter/LinkedIn). 
-      Usá español de Argentina (voseo, vocabulario local como 're' en vez de 'muy' si es casual, etc.).
-      Agregá emojis relevantes. Mantené un tono ${toneLabel}.
-      ${noMarkdown ? 'IMPORTANTE: No uses negritas o cursivas.' : ''}
-      Solo devolvé el texto final formateado.`;
+      prompt = `Actuá como un creador de contenido y redactor freelance nativo del Río de la Plata.
+      Tomá el siguiente texto y adaptalo para que sea súper atractivo, fluido y listo para publicar directo en Instagram.
+
+      PAUTAS DE ESCRITURA PARA EVITAR EL "TONO IA" (SLOP):
+      1. USÁ ESPAÑOL RIOPLATENSE NATURAL: Usá voseo con total naturalidad (ej. "vos tenés", "si querés", "pensá", "hacé", "mirá"). Usá un tono auténtico de acá, fresco y relajado, pero profesional cuando sea pertinente. Evitá modismos exagerados o forzados (no abuses de lunfardo), pero sí usá vocabulario habitual (como "un montón", "bárbaro", "buenísimo", "tranqui").
+      2. CERO CLICHÉS DE IA: Prohibido usar introducciones genéricas de marketing como "¡Atención!", "¿Estás listo para...?", "En el mundo de hoy...", "¡Descubrí el secreto!", "¡Llegó la hora!". Empezá directo con el concepto o con una frase con gancho que suene humana y conversacional.
+      3. LISTO PARA INSTAGRAM (SIN MARKDOWN): No uses negritas de tipo asteriscos (**), cursivas (*), ni símbolos raros. Instagram no soporta Markdown. El texto debe estar limpio, usando saltos de línea dobles para estructurar párrafos y que sea súper legible al copiar y pegar.
+      4. EMOJIS CON CRITERIO: No pongas emojis al inicio de cada línea ni abuses de ellos. Colocá máximo uno o dos emojis sutiles por párrafo para dar calidez, siempre al final de las oraciones.
+      5. SIN EXCESOS: Evitá listas numeradas con emojis de números (como 1️⃣, 2️⃣, 3️⃣) a menos que sea estrictamente necesario. Si hacés una lista, usá guiones simples o puntos limpios.
+      6. TONO SELECCIONADO: Ajustá el mensaje al tono "${toneLabel}".
+         - casual: Muy cercano, amigable, relajado y cómplice, directo al grano.
+         - profesional: Serio, interesante, con autoridad y respeto, pero con la cercanía del voseo profesional rioplatense.
+         - enérgico: Con empuje, entusiasmo real y motivación genuina, sin sonar como un infomercial de televisión.
+
+      Solo devolvé el texto final formateado y listo para copiar y pegar directamente en Instagram.`;
     } else if (mode === 'grammar') {
-      prompt = `Actuá como corrector gramatical experto. Corregí el texto usando español de Argentina (voseo) y devolvé estrictamente un objeto JSON con esta estructura: {"corrected": "el texto corregido", "changes": ["cambio 1", "cambio 2"], "tips": ["consejo 1"]}`;
+      prompt = `Actuá como un corrector de estilo y editor profesional del Río de la Plata.
+      Corregí la ortografía, gramática y sintaxis del texto ingresado usando español rioplatense (voseo) de forma fluida y natural.
+      Evitá que suene robótico o acartonado.
+      Devolvé estrictamente un objeto JSON con esta estructura exacta, sin formato de código markdown alrededor:
+      {
+        "corrected": "el texto completamente corregido y optimizado, listo para copiar y pegar",
+        "changes": ["lista abreviada y clara de los cambios realizados"],
+        "tips": ["un consejo corto y práctico de redacción humana para este texto"]
+      }`;
     } else if (mode === 'emojis') {
-      prompt = `Agregá emojis relevantes al siguiente texto sin cambiar las palabras originales.`;
+      prompt = `Tomá el siguiente texto y agregale emojis acordes que sumen dinamismo, pero hacelo de forma orgánica y humana, sin saturar.
+      Seguí estas reglas estrictas:
+      - No pongas más de 1 o 2 emojis por párrafo.
+      - No remplaces palabras clave por emojis, colocalos siempre al final de las frases para acompañar el sentido.
+      - No uses negritas ni formato markdown (asteriscos, guiones raros, etc.).
+      - Debe estar listo para copiar y pegar en Instagram.`;
     } else if (mode === 'cta') {
-      prompt = `Generá 3 Call to Action cortos basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
+      prompt = `Generá 3 llamados a la acción (CTA) cortos, humanos y sumamente persuasivos basados en el tema del texto.
+      Deben sonar 100% auténticos, escritos por una persona real del Río de la Plata (usando voseo natural y amigable, ej: "Contame abajo qué opinás", "Dejame tu comentario", "Guardate este post para tenerlo a mano").
+      Evitá clichés de venta agresiva o robóticos del estilo "¡No dejes pasar esta oportunidad única!".
+      Tono: ${toneLabel}.
+      Entregá solo las 3 opciones separadas por saltos de línea limpios, sin números ni viñetas, sin markdown, listas para copiar y pegar en Instagram.`;
     } else if (mode === 'hooks') {
-      prompt = `Generá 3 Hooks impactantes basados en: ${input}. Usá español de Argentina (voseo). Tono: ${toneLabel}.`;
+      prompt = `Generá 3 ganchos (primeras líneas de lectura o hooks) impactantes y curiosos basados en el tema del texto.
+      El objetivo es frenar el scroll del usuario en Instagram de inmediato.
+      Deben sonar espontáneos, intrigantes y sumamente humanos, al estilo de un creador de contenido profesional del Río de la Plata (usando voseo natural y amigable, ej: "Me costó un montón de años darme cuenta de esto...", "¿Te pasó alguna vez que...?", "Esto es lo que nadie te cuenta sobre...").
+      Evitá ganchos típicos de IA como "Descubrí el fascinante secreto de...".
+      Tono: ${toneLabel}.
+      Entregá solo las 3 opciones separadas por saltos de línea limpios, sin números ni viñetas, sin markdown, listas para copiar y pegar en Instagram.`;
     }
 
     const client = getAI();
