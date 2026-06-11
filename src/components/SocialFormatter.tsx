@@ -8,7 +8,7 @@ import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../li
 const InfoTooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
   return (
-    <div className="relative inline-block ml-1 align-middle">
+    <div className={`relative inline-block ml-1 align-middle ${show ? 'z-[65]' : 'z-0'}`}>
       <span 
         role="button"
         tabIndex={0}
@@ -219,16 +219,16 @@ export default function SocialFormatter() {
       </div>
       
       <div className="space-y-8">
-        <div className="space-y-3">
-          <div className="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto gap-2 text-[10px] font-black uppercase tracking-widest bg-zinc-50 p-1.5 rounded-none border border-zinc-200 shadow-sm scrollbar-hide">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 overflow-visible pb-4">
             {(['social', 'grammar', 'emojis', 'cta', 'hooks'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setOutput(''); setReport(null); }}
                 onMouseEnter={() => setHoveredMode(m)}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`px-4 py-2.5 rounded-none transition-all flex items-center gap-1 ${
-                  mode === m ? 'bg-black text-white shadow-2xl' : 'text-zinc-400 hover:text-black'
+                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 flex flex-col items-center justify-center gap-1 leading-tight ${
+                  mode === m ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
                 }`}
               >
                 <span>
@@ -237,42 +237,29 @@ export default function SocialFormatter() {
                    m === 'emojis' ? 'Emojis' :
                    m === 'cta' ? 'CTA' : 'Ganchos'}
                 </span>
+                <InfoTooltip text={modeInfo[m]} />
               </button>
             ))}
-          </div>
-          <div className="text-[11px] text-zinc-600 bg-zinc-50 border border-zinc-200 p-3.5 flex items-start gap-2.5 rounded-none shadow-sm animate-in fade-in duration-300">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#222222] bg-zinc-200 px-2 py-0.5 select-none shrink-0 border border-zinc-300">
-              {hoveredMode ? 'Previsualizar' : 'Función Activa'}
-            </span>
-            <p className="font-medium text-zinc-750 self-center leading-relaxed">
-              {modeInfo[hoveredMode || mode]}
-            </p>
           </div>
         </div>
 
         {(mode === 'social' || mode === 'cta' || mode === 'hooks') && (
-          <div className="space-y-3">
-            <div className="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] ml-1">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 overflow-visible pb-4">
               {(['casual', 'professional', 'energetic'] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTone(t)}
                   onMouseEnter={() => setHoveredTone(t)}
                   onMouseLeave={() => setHoveredTone(null)}
-                  className={`transition-colors flex items-center gap-2 leading-none h-4 ${tone === t ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
+                  className={`py-3 px-2 border-2 text-[9px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight ${
+                    tone === t ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                  }`}
                 >
-                  <div className={`w-2 h-2 rounded-none ${tone === t ? 'bg-black' : 'bg-transparent border border-zinc-300'}`} />
                   <span>{t === 'casual' ? 'Casual' : t === 'professional' ? 'Profesional' : 'Enérgico'}</span>
+                  <InfoTooltip text={toneInfo[t]} />
                 </button>
               ))}
-            </div>
-            <div className="text-[11px] text-zinc-600 bg-zinc-50 border border-zinc-200 p-3.5 flex items-start gap-2.5 rounded-none shadow-sm animate-in fade-in duration-300">
-              <span className="text-[9px] font-black uppercase tracking-widest text-[#222222] bg-zinc-200 px-2 py-0.5 select-none shrink-0 border border-zinc-300">
-                {hoveredTone ? 'Tono Destacado' : 'Tono Activo'}
-              </span>
-              <p className="font-medium text-zinc-750 self-center leading-relaxed">
-                {toneInfo[hoveredTone || tone]}
-              </p>
             </div>
           </div>
         )}

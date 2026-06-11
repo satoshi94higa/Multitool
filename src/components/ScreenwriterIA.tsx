@@ -10,7 +10,7 @@ import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../li
 const InfoTooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
   return (
-    <div className="relative inline-block ml-1 align-middle">
+    <div className={`relative inline-block ml-1 align-middle ${show ? 'z-[65]' : 'z-0'}`}>
       <span 
         role="button"
         tabIndex={0}

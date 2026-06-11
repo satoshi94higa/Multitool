@@ -8,7 +8,7 @@ import { saveToHistory, getHistory, deleteFromHistory, HistoryItem } from '../li
 const InfoTooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
   return (
-    <div className="relative inline-block ml-1 align-middle">
+    <div className={`relative inline-block ml-1 align-middle ${show ? 'z-[65]' : 'z-0'}`}>
       <span 
         role="button"
         tabIndex={0}
@@ -301,7 +301,7 @@ export default function RedactorIA() {
       <div className="flex flex-col gap-8">
         {/* Selector de Estructura */}
         <div className="space-y-6">
-           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 overflow-x-auto pb-4 scrollbar-hide">
+           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 overflow-visible pb-4">
             {(['piramide_invertida', 'cronica', 'hilo_x', 'gacetilla', 'storytelling', 'reportaje', 'carrusel'] as const).map((s) => (
               <button
                 key={s}
