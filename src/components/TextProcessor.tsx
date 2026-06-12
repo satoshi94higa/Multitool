@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Copy, Check, Trash2, Sparkles, Loader2, 
   Bold, Strikethrough, List, ListOrdered, Download, Italic,
-  HelpCircle, CornerDownLeft
+  HelpCircle, CornerDownLeft, Undo2, Redo2, Maximize2, Minimize2, ChevronDown, Type, Palette
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -28,6 +28,22 @@ export default function TextProcessor() {
     return saved !== null ? saved === 'true' : true;
   });
 
+  // Editor focus/zen mode
+  const [focusMode, setFocusMode] = useState<boolean>(false);
+
+  // Editor background themes (Classic White, Sepia Paper, Midnight Black)
+  const [editorTheme, setEditorTheme] = useState<'classic' | 'sepia' | 'dark'>(() => {
+    return (localStorage.getItem('hub-util-editor-theme') as 'classic' | 'sepia' | 'dark') || 'classic';
+  });
+
+  // Editor font size scale (Small, Medium, Large, Extra Large)
+  const [editorSize, setEditorSize] = useState<'sm' | 'base' | 'lg' | 'xl'>(() => {
+    return (localStorage.getItem('hub-util-editor-size') as 'sm' | 'base' | 'lg' | 'xl') || 'base';
+  });
+
+  // Dropdown menus open state for flexible format downloading and copying
+  const [openDropdown, setOpenDropdown] = useState<'export' | 'copy' | null>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -42,7 +58,7 @@ export default function TextProcessor() {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm md:prose-lg max-w-none focus:outline-none min-h-full p-6 md:p-8 font-sans leading-relaxed text-zinc-900',
+        class: 'prose prose-sm md:prose-lg max-w-none focus:outline-none min-h-full p-6 md:p-8 font-sans leading-relaxed text-inherit',
       },
     },
   });
@@ -65,9 +81,30 @@ export default function TextProcessor() {
     return () => window.removeEventListener('app-set-text', handleSetText);
   }, [editor]);
 
+  // Escape key support to exit focus/zen mode cleanly
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && focusMode) {
+        setFocusMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusMode]);
+
   const changeEditorHeight = (val: 'fixed-md' | 'fixed-lg' | 'auto') => {
     setEditorHeight(val);
     localStorage.setItem('hub-util-editor-height', val);
+  };
+
+  const changeEditorTheme = (theme: 'classic' | 'sepia' | 'dark') => {
+    setEditorTheme(theme);
+    localStorage.setItem('hub-util-editor-theme', theme);
+  };
+
+  const changeEditorSize = (size: 'sm' | 'base' | 'lg' | 'xl') => {
+    setEditorSize(size);
+    localStorage.setItem('hub-util-editor-size', size);
   };
 
   const toggleAiConsole = () => {
@@ -87,7 +124,7 @@ export default function TextProcessor() {
     try {
       const data = await processWithGemini({ type, text: plainText }, 'process');
       
-      if (type === 'spelling' || type === 'style') {
+      if (type === 'spelling' || type === 'style' || type === 'grammar') {
         try {
           const cleanJson = data.text.replace(/```json|```/g, '').trim();
           const parsed = JSON.parse(cleanJson);
@@ -96,10 +133,18 @@ export default function TextProcessor() {
             setAiResult(parsed.text);
             setCorrections(parsed.changes || []);
             setNotification("Ortografía corregida.");
-          } else {
+          } else if (type === 'grammar') {
+            setAiResult(parsed.text);
+            setCorrections(parsed.changes || []);
+            setNotification("Gramática y sintaxis corregidas.");
+          } else if (type === 'style') {
             setAiResult(parsed.text);
             setCorrections(parsed.changes || []);
             setNotification("Mejora de estilo lista.");
+          } else {
+            setAiResult(parsed.text);
+            setCorrections(parsed.changes || []);
+            setNotification("Correcciones aplicadas.");
           }
         } catch (e) {
           setAiResult(data.text);
@@ -118,6 +163,68 @@ export default function TextProcessor() {
     }
   };
 
+  // Convert rich text html to markdown seamlessly
+  const convertHtmlToMarkdown = (html: string): string => {
+    if (!html) return '';
+    let md = html;
+
+    // Headings
+    md = md.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n');
+    md = md.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n');
+    md = md.replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n');
+    
+    // Lists
+    md = md.replace(/<li>(.*?)<\/li>/gi, '- $1\n');
+    md = md.replace(/<ul>/gi, '\n');
+    md = md.replace(/<\/ul>/gi, '\n');
+    md = md.replace(/<ol>/gi, '\n');
+    md = md.replace(/<\/ol>/gi, '\n');
+    
+    // Formatting tags
+    md = md.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+    md = md.replace(/<b>(.*?)<\/b>/gi, '**$1**');
+    md = md.replace(/<em>(.*?)<\/em>/gi, '*$1*');
+    md = md.replace(/<i>(.*?)<\/i>/gi, '*$1*');
+    md = md.replace(/<s>(.*?)<\/s>/gi, '~~$1~~');
+    md = md.replace(/<del>(.*?)<\/del>/gi, '~~$1~~');
+    md = md.replace(/<strike>(.*?)<\/strike>/gi, '~~$1~~');
+    
+    // Paragraphs and breaks
+    md = md.replace(/<p>(.*?)<\/p>/gi, '$1\n\n');
+    md = md.replace(/<br\s*\/?>/gi, '\n');
+
+    // Strip rest of elements
+    md = md.replace(/<[^>]+>/g, '');
+
+    // standard HTML entities
+    md = md.replace(/&nbsp;/g, ' ')
+           .replace(/&amp;/g, '&')
+           .replace(/&lt;/g, '<')
+           .replace(/&gt;/g, '>')
+           .replace(/&quot;/g, '"');
+
+    return md.trim();
+  };
+
+  const copyFormatted = (format: 'plain' | 'html' | 'markdown') => {
+    if (!editor) return;
+    let text = '';
+    if (format === 'plain') {
+      text = editor.getText();
+    } else if (format === 'html') {
+      text = editor.getHTML();
+    } else if (format === 'markdown') {
+      text = convertHtmlToMarkdown(editor.getHTML());
+    }
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setNotification(`Copiado como ${format.toUpperCase()}`);
+    setTimeout(() => {
+      setCopied(false);
+      setNotification(null);
+    }, 2000);
+  };
+
   const downloadTxt = () => {
     if (!editor) return;
     const element = document.createElement("a");
@@ -127,13 +234,78 @@ export default function TextProcessor() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    setNotification("Archivo TXT guardado.");
+    setTimeout(() => setNotification(null), 2500);
   };
 
-  const copyToClipboard = () => {
+  const downloadHtml = () => {
     if (!editor) return;
-    navigator.clipboard.writeText(editor.getText());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const content = editor.getHTML();
+    const fullHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documento Exportado - ${new Date().toLocaleDateString()}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      max-width: 740px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #ffffff;
+    }
+    h1, h2, h3 {
+      font-weight: 800;
+      color: #000;
+      line-height: 1.2;
+      margin-top: 2em;
+    }
+    h1 { font-size: 2.2em; border-bottom: 2px solid #eaeaea; padding-bottom: 0.3em; }
+    h2 { font-size: 1.65em; }
+    p { margin: 1.2em 0; }
+    ul, ol { padding-left: 2em; }
+    li { margin: 0.5em 0; }
+    strong { font-weight: 700; }
+    em { font-style: italic; }
+    s { text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  ${content}
+</body>
+</html>`;
+
+    const element = document.createElement("a");
+    const file = new Blob([fullHtml], {type: 'text/html'});
+    element.href = URL.createObjectURL(file);
+    element.download = `nota-${new Date().toISOString().slice(0,10)}.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setNotification("Archivo HTML guardado.");
+    setTimeout(() => setNotification(null), 2500);
+  };
+
+  const downloadMarkdown = () => {
+    if (!editor) return;
+    const content = convertHtmlToMarkdown(editor.getHTML());
+    const element = document.createElement("a");
+    const file = new Blob([content], {type: 'text/markdown'});
+    element.href = URL.createObjectURL(file);
+    element.download = `nota-${new Date().toISOString().slice(0,10)}.md`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    setNotification("Archivo Markdown guardado.");
+    setTimeout(() => setNotification(null), 2500);
+  };
+
+  const exportPdfOrPrint = () => {
+    if (!editor) return;
+    window.print();
   };
 
   const getWordCount = () => {
@@ -145,6 +317,31 @@ export default function TextProcessor() {
   const getCharCount = () => {
     if (!editor) return 0;
     return editor.getText().length;
+  };
+
+  const getReadingTime = () => {
+    const words = getWordCount();
+    return Math.max(1, Math.ceil(words / 200));
+  };
+
+  const getParagraphCount = () => {
+    if (!editor) return 0;
+    const content = editor.getHTML();
+    const matches = content.match(/<p>/g);
+    return matches ? matches.length : 0;
+  };
+
+  const getThemeClasses = () => {
+    if (editorTheme === 'sepia') return 'bg-[#FAF4E8] text-[#5D4E3E] border-[#5D4E3E]/10 shadow-[#5D4E3E]/5';
+    if (editorTheme === 'dark') return 'bg-[#121214] text-[#E4E4E7] border-zinc-800 shadow-black/40';
+    return 'bg-white text-zinc-900 border-zinc-200';
+  };
+
+  const getSizeClasses = () => {
+    if (editorSize === 'sm') return 'text-sm';
+    if (editorSize === 'lg') return 'text-lg';
+    if (editorSize === 'xl') return 'text-xl';
+    return 'text-base';
   };
 
   // Get CSS class matching the user selection for height
@@ -161,7 +358,7 @@ export default function TextProcessor() {
   return (
     <div className="flex flex-col h-full space-y-4" id="text-processor">
       {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4 select-none">
         <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
           Procesador de Texto
         </h1>
@@ -183,9 +380,9 @@ export default function TextProcessor() {
 
       {/* Toolbar & Preferences */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b-2 border-black pb-4">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Editor commands */}
-          <div className="flex bg-zinc-100 p-1 border border-zinc-200">
+          <div className="flex bg-zinc-100 p-1 border border-zinc-200 h-9 items-center">
             <button 
               onClick={() => editor.chain().focus().toggleBold().run()}
               className={`p-2 transition-colors ${editor.isActive('bold') ? 'bg-black text-white' : 'hover:bg-zinc-200 text-zinc-600'}`}
@@ -207,7 +404,9 @@ export default function TextProcessor() {
             >
               <Strikethrough size={14} />
             </button>
+            
             <div className="w-px h-6 bg-zinc-300 mx-1" />
+            
             <button 
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               className={`p-2 transition-colors ${editor.isActive('bulletList') ? 'bg-black text-white' : 'hover:bg-zinc-200 text-zinc-600'}`}
@@ -222,60 +421,205 @@ export default function TextProcessor() {
             >
               <ListOrdered size={14} />
             </button>
+
+            <div className="w-px h-6 bg-zinc-300 mx-1" />
+
+            {/* Undo and Redo system */}
+            <button 
+              onClick={() => editor.chain().focus().undo().run()}
+              disabled={!editor.can().undo()}
+              className="p-2 transition-colors hover:bg-zinc-200 text-zinc-600 disabled:opacity-30 disabled:hover:bg-transparent"
+              title="Deshacer (Ctrl+Z)"
+            >
+              <Undo2 size={14} />
+            </button>
+            <button 
+              onClick={() => editor.chain().focus().redo().run()}
+              disabled={!editor.can().redo()}
+              className="p-2 transition-colors hover:bg-zinc-200 text-zinc-600 disabled:opacity-30 disabled:hover:bg-transparent"
+              title="Rehacer (Ctrl+Y)"
+            >
+              <Redo2 size={14} />
+            </button>
           </div>
 
-          {/* Configurable window height selector - Fulfills "scrollbars" OR "grow as we write" requirement */}
-          <div className="flex items-center bg-zinc-100 p-1 border border-zinc-200">
-            <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400 px-2 select-none">
-              Altura del Editor:
+          {/* Visual Theme Selector (Section 1) */}
+          <div className="flex items-center bg-zinc-100 p-1 border border-zinc-200 gap-1.5 h-9">
+            <Palette size={12} className="text-zinc-400 ml-1.5" />
+            <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400 pr-1 select-none">
+              Tono:
             </span>
-            <div className="flex gap-1">
+            <button 
+              onClick={() => changeEditorTheme('classic')}
+              className={`w-4 h-4 rounded-full border border-black/20 bg-white transition-all ${editorTheme === 'classic' ? 'scale-110 ring-1 ring-black shadow-sm' : 'opacity-60 hover:opacity-100'}`}
+              title="Lienzo Blanco (Día)"
+            />
+            <button 
+              onClick={() => changeEditorTheme('sepia')}
+              className={`w-4 h-4 rounded-full border border-orange-950/20 bg-[#FAF4E8] transition-all ${editorTheme === 'sepia' ? 'scale-110 ring-1 ring-orange-900 shadow-sm' : 'opacity-60 hover:opacity-100'}`}
+              title="Papel Sepia (Cálido)"
+            />
+            <button 
+              onClick={() => changeEditorTheme('dark')}
+              className={`w-4 h-4 rounded-full border border-white/10 bg-zinc-800 transition-all ${editorTheme === 'dark' ? 'scale-110 ring-1 ring-white shadow-sm' : 'opacity-60 hover:opacity-100'}`}
+              title="Lienzo Oscuro (Noche)"
+            />
+          </div>
+
+          {/* Typography Font Sizing (Section 1) */}
+          <div className="flex items-center bg-zinc-100 p-1 border border-zinc-200 h-9 select-none">
+            <Type size={12} className="text-zinc-400 ml-1.5" />
+            <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400 px-1.5">
+              Letra:
+            </span>
+            <div className="flex gap-1 pr-1.5">
+              {(['sm', 'base', 'lg', 'xl'] as const).map((sz) => (
+                <button
+                  key={sz}
+                  onClick={() => changeEditorSize(sz)}
+                  className={`px-1.5 py-0.5 text-[8px] font-black uppercase transition-colors ${
+                    editorSize === sz 
+                      ? 'bg-black text-white' 
+                      : 'text-zinc-500 hover:text-black hover:bg-zinc-200'
+                  }`}
+                >
+                  {sz === 'base' ? 'Med' : sz}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Configurable window height selector */}
+          <div className="flex items-center bg-zinc-100 p-1 border border-zinc-200 h-9">
+            <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400 px-2 select-none">
+              Pantalla:
+            </span>
+            <div className="flex gap-1 pr-1">
               <button 
                 onClick={() => changeEditorHeight('fixed-md')}
-                className={`px-2.5 py-1 text-[9px] font-black uppercase transition-colors ${
+                className={`px-2 py-0.5 text-[8px] font-black uppercase transition-colors ${
                   editorHeight === 'fixed-md' ? 'bg-black text-white' : 'hover:bg-zinc-200 text-zinc-600'
                 }`}
-                title="Mantener un tamaño estándar con barra de desplazamiento"
+                title="Talla estándar de edición"
               >
                 Medio
               </button>
               <button 
                 onClick={() => changeEditorHeight('fixed-lg')}
-                className={`px-2.5 py-1 text-[9px] font-black uppercase transition-colors ${
+                className={`px-2 py-0.5 text-[8px] font-black uppercase transition-colors ${
                   editorHeight === 'fixed-lg' ? 'bg-black text-white' : 'hover:bg-zinc-200 text-zinc-600'
                 }`}
-                title="Mantener un tamaño grande con barra de desplazamiento"
+                title="Talla extendida de edición"
               >
                 Alto
               </button>
               <button 
                 onClick={() => changeEditorHeight('auto')}
-                className={`px-2.5 py-1 text-[9px] font-black uppercase transition-colors ${
+                className={`px-2 py-0.5 text-[8px] font-black uppercase transition-colors ${
                   editorHeight === 'auto' ? 'bg-black text-white' : 'hover:bg-zinc-200 text-zinc-600'
                 }`}
-                title="La ventana se agranda sola a medida que vas escribiendo"
+                title="Crecimiento automático de lienzo"
               >
-                Auto (Crecer)
+                Crecer
               </button>
             </div>
           </div>
         </div>
         
-        {/* Actions bar */}
-        <div className="flex flex-wrap gap-2">
+        {/* Actions bar (Section 3: Flex formats & Downloads) */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Zen Focus Mode trigger (Section 1) */}
           <button 
-            onClick={copyToClipboard} 
-            className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm bg-white"
+            onClick={() => setFocusMode(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-black bg-amber-100 text-black text-[9px] font-black uppercase hover:bg-amber-200 transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_rgba(0,0,0,1)] active:translate-y-[1px]"
+            title="Activar Modo Zen Libre de Distracciones"
           >
-            {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
-            {copied ? 'Copiado' : 'Copiar Todo'}
+            <Maximize2 size={12} />
+            Modo Enfoque
           </button>
-          <button 
-            onClick={downloadTxt} 
-            className="flex items-center gap-2 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm bg-white"
-          >
-            <Download size={12} /> Guardar TXT
-          </button>
+
+          {/* Copy Dropdown (Section 3) */}
+          <div className="relative inline-block text-left">
+            <button 
+              onClick={() => setOpenDropdown(openDropdown === 'copy' ? null : 'copy')}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm bg-white"
+            >
+              {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+              {copied ? 'Copiado' : 'Copiar...'}
+              <ChevronDown size={10} className={`transition-transform duration-200 ${openDropdown === 'copy' ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {openDropdown === 'copy' && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                <div className="absolute right-0 mt-1 w-44 bg-white border-2 border-black shadow-[4px_4px_0px_black] z-50 animate-in fade-in slide-in-from-top-1">
+                  <button 
+                    onClick={() => { copyFormatted('plain'); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black border-b border-zinc-100"
+                  >
+                    📋 Texto Plano
+                  </button>
+                  <button 
+                    onClick={() => { copyFormatted('markdown'); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black border-b border-zinc-100"
+                  >
+                    ✍️ Copiar como Markdown
+                  </button>
+                  <button 
+                    onClick={() => { copyFormatted('html'); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black"
+                  >
+                    🌐 Copiar como HTML
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Download Dropdown (Section 3) */}
+          <div className="relative inline-block text-left">
+            <button 
+              onClick={() => setOpenDropdown(openDropdown === 'export' ? null : 'export')}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-black text-[9px] font-black uppercase hover:bg-black hover:text-white transition-all shadow-sm bg-white"
+            >
+              <Download size={12} />
+              Exportar...
+              <ChevronDown size={10} className={`transition-transform duration-200 ${openDropdown === 'export' ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {openDropdown === 'export' && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                <div className="absolute right-0 mt-1 w-48 bg-white border-2 border-black shadow-[4px_4px_0px_black] z-50 animate-in fade-in slide-in-from-top-1">
+                  <button 
+                    onClick={() => { downloadTxt(); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black border-b border-zinc-100"
+                  >
+                    📄 Guardar TXT (.txt)
+                  </button>
+                  <button 
+                    onClick={() => { downloadHtml(); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black border-b border-zinc-100"
+                  >
+                    🌐 Guardar HTML (.html)
+                  </button>
+                  <button 
+                    onClick={() => { downloadMarkdown(); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black border-b border-zinc-100"
+                  >
+                    ✍️ Guardar Markdown (.md)
+                  </button>
+                  <button 
+                    onClick={() => { exportPdfOrPrint(); setOpenDropdown(null); }}
+                    className="w-full text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-wider text-zinc-700 hover:bg-zinc-100 hover:text-black"
+                  >
+                    🖨️ Exportar PDF / Imprimir
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           <button 
             onClick={() => { if (confirm('¿Borrar todo el texto?')) { editor.commands.setContent(''); setCorrections(null); setAiResult(null); } }} 
             className="flex items-center gap-2 px-3 py-1.5 border border-red-200 text-red-600 text-[9px] font-black uppercase hover:bg-red-600 hover:text-white hover:border-red-600 transition-all"
@@ -289,11 +633,11 @@ export default function TextProcessor() {
       <div className="flex-1 flex flex-col lg:flex-row gap-6 items-start">
         
         {/* Left Column: The Editor Box (Completely self-contained, no absolute elements blocking) */}
-        <div className={`flex-1 w-full flex flex-col bg-zinc-50 border-2 border-black focus-within:border-all focus-within:border-black transition-all relative overflow-hidden group shadow-[4px_4px_0px_black] ${getEditorHeightClass()}`}>
+        <div className={`flex-1 w-full flex flex-col border-2 border-black focus-within:border-black transition-all relative overflow-hidden group shadow-[4px_4px_0px_black] ${getEditorHeightClass()} ${getThemeClasses()}`}>
           
           {/* TipTap main space with custom pretty scrollbar */}
-          <div className="flex-1 overflow-y-auto scroller-pretty bg-white h-full">
-            <EditorContent editor={editor} className="prose-zinc focus:outline-none" />
+          <div className={`flex-1 overflow-y-auto scroller-pretty h-full transition-colors duration-300 ${getThemeClasses()} ${getSizeClasses()}`}>
+            <EditorContent editor={editor} className="prose-zinc focus:outline-none h-full" />
           </div>
           
           {/* Spinner Overlay */}
@@ -322,7 +666,7 @@ export default function TextProcessor() {
           }`}>
             
             {/* Sidebar header */}
-            <div className="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
+            <div className="flex items-center justify-between border-b-2 border-black pb-3 mb-4 select-none">
               <div className="flex items-center gap-2">
                 <Sparkles size={15} className="text-black animate-pulse text-amber-500" />
                 <span className="text-[10px] font-black uppercase tracking-wider text-black">Consola Magic IA</span>
@@ -378,10 +722,18 @@ export default function TextProcessor() {
               <button 
                 onClick={() => runAiOp('spelling')}
                 disabled={loading || !editor.getText().trim()}
-                className="col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white border-2 border-black text-[9px] font-black uppercase tracking-[0.1em] transition-all hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-white border-2 border-black text-[9px] font-black uppercase tracking-[0.05em] transition-all hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Detectar ortografía y aplicar correcciones"
               >
-                Corregir Ortografía
+                Ortografía
+              </button>
+              <button 
+                onClick={() => runAiOp('grammar')}
+                disabled={loading || !editor.getText().trim()}
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-white border-2 border-black text-[9px] font-black uppercase tracking-[0.05em] transition-all hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Corregir gramática y sintaxis con IA"
+              >
+                Gramática y Sintaxis
               </button>
             </div>
 
@@ -497,17 +849,121 @@ export default function TextProcessor() {
         )}
       </div>
 
-      {/* Footer Info */}
-      <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-400 pt-4 border-t border-zinc-100 mt-2">
-        <div className="flex gap-6">
+      {/* Footer Info (Section 1) */}
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center text-[9px] font-black uppercase tracking-widest text-zinc-400 pt-4 border-t border-zinc-100 mt-2 gap-3 select-none">
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           <span>Palabras: <span className="text-black">{getWordCount()}</span></span>
-          <span>Caracteres: <span className="text-black">{getCharCount()}</span></span>
+          <span>Símbolos: <span className="text-black">{getCharCount()}</span></span>
+          <span>Párrafos: <span className="text-black">{getParagraphCount()}</span></span>
+          <span>Lectura: <span className="text-black inline-flex items-center gap-1">⏱️ {getReadingTime()} min</span></span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           <span>Auto-Guardado Local</span>
         </div>
       </div>
+
+      {/* Invisible Print container: strictly extracted on print trigger (Section 3) */}
+      <div id="print-area" className="hidden" dangerouslySetInnerHTML={{ __html: editor.getHTML() }} />
+
+      {/* Zen Focus Mode Overlay Grid (Section 1) */}
+      {focusMode && (
+        <div className={`fixed inset-0 z-[200] flex flex-col transition-colors duration-300 animate-in fade-in ${getThemeClasses()}`} id="focus-canvas">
+          {/* Minimalist Top Panel */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 select-none bg-inherit shrink-0">
+            <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-wider opacity-60">
+              <span className="flex items-center gap-1"><Sparkles size={11} className="text-amber-500" /> Zen Mode</span>
+              <span>•</span>
+              <span>Palabras: {getWordCount()}</span>
+              <span>•</span>
+              <span>Párrafos: {getParagraphCount()}</span>
+              <span>•</span>
+              <span>Lectura: {getReadingTime()} min</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {/* Quick theme swatches */}
+              <div className="flex gap-2 items-center">
+                <span className="text-[8px] font-black uppercase tracking-wider opacity-40">Tema:</span>
+                <button 
+                  onClick={() => changeEditorTheme('classic')} 
+                  className={`w-4 h-4 rounded-full border border-black/30 bg-white ${editorTheme === 'classic' ? 'ring-2 ring-black ring-offset-2' : ''}`}
+                  title="Blanco Día"
+                />
+                <button 
+                  onClick={() => changeEditorTheme('sepia')} 
+                  className={`w-4 h-4 rounded-full border border-[#5D4E3E]/30 bg-[#FAF4E8] ${editorTheme === 'sepia' ? 'ring-2 ring-black ring-offset-2' : ''}`}
+                  title="Sepia Cálido"
+                />
+                <button 
+                  onClick={() => changeEditorTheme('dark')} 
+                  className={`w-4 h-4 rounded-full border border-white/20 bg-zinc-800 ${editorTheme === 'dark' ? 'ring-2 ring-white ring-offset-2 hover:ring-offset-zinc-900' : ''}`}
+                  title="Noche Oscura"
+                />
+              </div>
+
+              {/* Quick font sizing */}
+              <div className="flex items-center border border-black/10 bg-black/5 divide-x divide-black/10 h-6">
+                <button 
+                  onClick={() => {
+                    const sizes: ('sm' | 'base' | 'lg' | 'xl')[] = ['sm', 'base', 'lg', 'xl'];
+                    const idx = sizes.indexOf(editorSize);
+                    if (idx > 0) changeEditorSize(sizes[idx - 1]);
+                  }}
+                  className="px-2.5 h-full text-[9px] font-bold hover:bg-black/10 transition-colors"
+                  title="Reducir letra"
+                >
+                  A-
+                </button>
+                <button 
+                  onClick={() => {
+                    const sizes: ('sm' | 'base' | 'lg' | 'xl')[] = ['sm', 'base', 'lg', 'xl'];
+                    const idx = sizes.indexOf(editorSize);
+                    if (idx < sizes.length - 1) changeEditorSize(sizes[idx + 1]);
+                  }}
+                  className="px-2.5 h-full text-[9px] font-bold hover:bg-black/10 transition-colors"
+                  title="Aumentar letra"
+                >
+                  A+
+                </button>
+              </div>
+
+              {/* Quick Export formats */}
+              <button 
+                onClick={downloadMarkdown}
+                className="px-2.5 py-1 border border-black/20 hover:border-black text-[8px] font-black uppercase tracking-wider bg-transparent hover:bg-black/5"
+                title="Sustraer a Markdown"
+              >
+                MD
+              </button>
+              <button 
+                onClick={exportPdfOrPrint}
+                className="px-2.5 py-1 border border-black/20 hover:border-black text-[8px] font-black uppercase tracking-wider bg-transparent hover:bg-black/5"
+                title="Guardar PDF / Imprimir"
+              >
+                PDF
+              </button>
+
+              {/* Exit Focus */}
+              <button 
+                onClick={() => setFocusMode(false)}
+                className="flex items-center gap-1.5 px-3 py-1 bg-black text-white hover:bg-zinc-800 text-[9px] font-black uppercase tracking-widest transition-colors duration-200"
+                title="Salir de Enfoque (Esc)"
+              >
+                <Minimize2 size={12} /> Salir
+              </button>
+            </div>
+          </div>
+
+          {/* Big typing container */}
+          <div className="flex-1 overflow-y-auto scroller-pretty px-6 py-12 md:py-16">
+            <div className={`max-w-3xl mx-auto h-full ${getSizeClasses()}`}>
+              <EditorContent editor={editor} className="prose-zinc focus:outline-none min-h-full pb-32" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

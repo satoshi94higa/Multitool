@@ -105,3 +105,61 @@
   scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
 }
 
+/* Print Styles for clean PDF export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  #app, header, aside, footer, #text-processor, button {
+    display: none !important;
+  }
+  #print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+  #print-area h1 {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 12pt;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 6pt;
+  }
+  #print-area h2 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+  }
+  #print-area h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+  }
+  #print-area p {
+    font-size: 11pt;
+    line-height: 1.6;
+    margin-bottom: 10pt;
+  }
+  #print-area ul, #print-area ol {
+    padding-left: 20pt;
+    margin-bottom: 10pt;
+  }
+  #print-area li {
+    font-size: 11pt;
+    margin-bottom: 4pt;
+  }
+}
+@media screen {
+  #print-area {
+    display: none !important;
+  }
+}
+

@@ -58,6 +58,13 @@ app.post("/api/gemini/process", async (req, res) => {
           "text": "el texto completo corregido sin formato markdown",
           "changes": ["lista de cambios importantes realizados"]
         }`,
+        grammar: `Actuá como un experto lingüista y corrector gramatical. Corregí los errores de gramática, sintaxis, concordancia, estructura oracional y cohesión del siguiente texto usando español de Argentina (voseo).
+        No alteres innecesariamente el tono o significado original del texto, solo hazlo correcto desde el punto de vista sintáctico-gramatical, y no utilices formato Markdown en el campo 'text'.
+        Devuelve estrictamente un objeto JSON con esta estructura:
+        {
+          "text": "el texto completo corregido sin formato markdown",
+          "changes": ["lista detallada de las correcciones de gramática y sintaxis realizadas"]
+        }`,
         translate: "Traducí el siguiente texto al inglés de forma natural. No uses formato Markdown:",
         bullets: "Transformá el siguiente texto en una lista de puntos clara y organizada. Usá voseo si es necesario y no utilices formato Markdown (usá guiones simples '-' o números):",
         simplify: "Simplificá el siguiente texto para que sea más fácil de leer y entender, manteniendo el significado original. Usá español de Argentina (voseo). No uses formato Markdown:",

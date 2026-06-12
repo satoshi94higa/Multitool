@@ -63,6 +63,7 @@ async function executeClientSide(body: any, endpoint: string, apiKey: string) {
       const prompts: Record<string, string> = {
         summarize: "Sintetizá el siguiente texto de forma concisa pero manteniendo los puntos clave. Usá un tono natural de Argentina (voseo). No utilices formato Markdown (como asteriscos o almohadillas):",
         spelling: "Actuá como un corrector experto. Corregí la ortografía y gramática del siguiente texto usando español de Argentina (voseo). No uses formato Markdown. Devolvé estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido sin markdown\", \"changes\": [\"lista de cambios\"]}",
+        grammar: "Actuá como un experto lingüista y corrector. Corregí la gramática y sintaxis del siguiente texto usando español de Argentina (voseo). No uses formato Markdown. Devolvé estrictamente un objeto JSON con esta estructura: {\"text\": \"el texto completo corregido sin markdown\", \"changes\": [\"lista de cambios sintácticos y gramatales\"]}",
         translate: "Traducí el siguiente texto al inglés de forma natural. Sin formato Markdown:",
         bullets: "Transformá el siguiente texto en una lista de puntos clara y organizada. Usá voseo y guiones '-' o números, sin Markdown:",
         simplify: "Simplificá el siguiente texto para que sea más fácil de leer y entender, manteniendo el significado original. Usá español de Argentina (voseo). No uses formato Markdown:",

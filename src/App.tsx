@@ -261,7 +261,7 @@ export default function App() {
                     <section 
                       id={item.id} 
                       className={`
-                        bg-white flex flex-col transition-all duration-300 relative z-10 hover:z-30 focus-within:z-30 overflow-visible
+                        bg-white flex flex-col transition-all duration-300 relative ${isSelected ? 'z-[60]' : 'z-10 hover:z-30 focus-within:z-30'} overflow-visible
                         ${isSelected 
                           ? 'border-4 border-black shadow-[24px_24px_0px_rgba(0,0,0,0.05)]' 
                           : 'border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.05)] md:shadow-[16px_16px_0px_rgba(0,0,0,0.05)] group'
