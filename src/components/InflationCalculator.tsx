@@ -163,12 +163,12 @@ export default function InflationCalculator() {
                 onChange={(e) => setAmount(e.target.value)}
                 className="flex-1 h-16 bg-zinc-50 border-b-4 border-zinc-200 px-6 font-mono text-2xl font-bold focus:border-black focus:bg-white outline-none transition-all"
               />
-              <div className="flex bg-zinc-100 p-1 rounded-sm">
+              <div className="flex bg-zinc-100 p-1 rounded-none border border-black">
                 {(['ARS', 'USD'] as Currency[]).map(c => (
                   <button 
                     key={c}
                     onClick={() => setBaseCurrency(c)}
-                    className={`px-4 py-2 text-[11px] font-black transition-all ${baseCurrency === c ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'}`}
+                    className={`px-4 py-2 text-[11px] font-black transition-all ${baseCurrency === c ? 'bg-black text-white' : 'text-zinc-400 hover:text-black'}`}
                   >
                     {c}
                   </button>
@@ -214,9 +214,9 @@ export default function InflationCalculator() {
           </div>
 
           {calculation && (
-            <div className="p-4 bg-zinc-100 rounded-sm border-2 border-zinc-200">
+            <div className="p-4 bg-zinc-100 rounded-none border-2 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase text-zinc-500">Monto Inicial en USD</span>
+                  <span className="text-[10px] font-black uppercase text-zinc-550">Monto Inicial en USD</span>
                   <span className="font-mono font-bold text-sm">u$s {calculation.initialUSD}</span>
                </div>
                <p className="text-[9px] font-bold text-zinc-400 mt-1 uppercase">Convertido al inicio ({calculation.startRate})</p>
@@ -233,7 +233,7 @@ export default function InflationCalculator() {
           ) : (
             <div className="space-y-6">
               {/* PODER DE COMPRA */}
-              <div className="bg-black text-white p-8 border-l-8 border-emerald-500 space-y-6 shadow-xl">
+              <div className="bg-black text-white p-8 border-l-8 border-emerald-500 space-y-6 border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Poder de compra hoy (ARS)</span>
                   <p className="text-3xl font-black italic">$ {calculation.purchasingPowerARS}</p>
@@ -276,12 +276,12 @@ export default function InflationCalculator() {
         </div>
       </div>
 
-      <div className="pt-10 border-t-2 border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="pt-10 border-t-2 border-zinc-200 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex flex-col">
           <p className="text-[10px] font-black uppercase text-zinc-400">Cotizaciones utilizadas ({rateType})</p>
           <p className="text-[10px] font-mono font-bold">INI: ${calculation?.startRate} | FIN: ${calculation?.endRate}</p>
         </div>
-        <div className="text-[10px] font-black bg-zinc-100 px-3 py-1 rounded-full uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+        <div className="text-[10px] font-black bg-zinc-100 px-3 py-1 rounded-none border-2 border-black uppercase tracking-widest text-zinc-500 flex items-center gap-2 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
           <RefreshCw size={12} className="animate-spin" />
           Datos Actualizados Mayo 2026
         </div>

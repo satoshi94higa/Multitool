@@ -10,6 +10,9 @@ export const getLocalModel = () => typeof window !== 'undefined' ? localStorage.
 export const setLocalModel = (model: string) => typeof window !== 'undefined' ? localStorage.setItem(MODEL_KEY, model) : null;
 
 export async function processWithGemini(body: any, endpoint: string = 'process', customKey?: string) {
+  if (typeof window !== 'undefined' && !navigator.onLine) {
+    throw new Error("Estás sin conexión a Internet. Las funciones de Inteligencia Artificial requieren conectividad activa.");
+  }
   const currentModel = getLocalModel();
   console.log(`[GeminiService] Calling ${endpoint} with model: ${body.model || currentModel}`);
   const apiPath = 'api/gemini/' + endpoint;

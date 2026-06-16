@@ -253,13 +253,13 @@ export default function SocialFormatter() {
         <div className="flex items-center gap-2">
           {/* Text Plano Toggle */}
           {mode === 'social' && (
-            <label className="flex items-center gap-2 cursor-pointer bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3 py-2 rounded-lg transition-all text-xs">
+            <label className="flex items-center gap-2 cursor-pointer bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3 py-2 rounded-none transition-all text-xs">
               <span className="text-[10px] font-black text-zinc-650 uppercase tracking-wider">Texto Plano</span>
               <input 
                 type="checkbox" 
                 checked={noMarkdown} 
                 onChange={(e) => setNoMarkdown(e.target.checked)}
-                className="accent-black w-4 h-4 rounded cursor-pointer"
+                className="accent-black w-4 h-4 rounded-none cursor-pointer"
               />
             </label>
           )}
@@ -268,10 +268,10 @@ export default function SocialFormatter() {
           <button 
             type="button"
             onClick={() => setShowHistory(!showHistory)}
-            className={`flex items-center justify-center gap-2 px-4 h-10 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${
+            className={`flex items-center justify-center gap-2 px-4 h-10 rounded-none border text-[11px] font-bold uppercase tracking-wider transition-all duration-200 ${
               showHistory 
-                ? 'bg-black border-black text-white' 
-                : 'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:border-zinc-350'
+                ? 'bg-black border-black text-white shadow-[2px_2px_0px_rgba(0,0,0,1)]' 
+                : 'bg-white border-black text-zinc-700 hover:bg-zinc-50'
             }`}
           >
             <History size={15} />
@@ -289,19 +289,19 @@ export default function SocialFormatter() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden mb-8"
           >
-            <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4 border-b border-zinc-200 pb-3">
+            <div className="bg-zinc-50 border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center justify-between mb-4 border-b border-black pb-3">
                 <div className="flex items-center gap-2">
-                  <History size={14} className="text-zinc-650" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Últimas 10 Optimizaciones</span>
+                  <History size={14} className="text-black" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Últimas 10 Optimizaciones</span>
                 </div>
-                <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" /> Autoguardado Local
+                <span className="text-[9px] font-black text-zinc-400 flex items-center gap-1.5 uppercase">
+                  <span className="w-1.5 h-1.5 bg-black rounded-none" /> Autoguardado Local
                 </span>
               </div>
 
               {history.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-zinc-250 rounded-lg bg-white/50">
+                <div className="text-center py-10 border-2 border-dashed border-zinc-300 rounded-none bg-white">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">No hay registros guardados todavía</p>
                   <p className="text-xs text-zinc-400 mt-1">Los textos que proceses se guardarán automáticamente acá.</p>
                 </div>
@@ -311,7 +311,7 @@ export default function SocialFormatter() {
                     <div 
                       key={item.id}
                       onClick={() => loadFromHistory(item)}
-                      className="group p-4 bg-white border border-zinc-250 hover:border-zinc-850 hover:shadow-md cursor-pointer transition-all duration-200 rounded-lg flex flex-col justify-between gap-3 relative"
+                      className="group p-4 bg-white border border-zinc-300 hover:border-black cursor-pointer transition-all duration-200 rounded-none flex flex-col justify-between gap-3 relative"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -321,7 +321,7 @@ export default function SocialFormatter() {
                         <button 
                           type="button"
                           onClick={(e) => removeHistoryItem(e, item.id)}
-                          className="text-zinc-400 hover:text-red-500 transition-colors p-1 hover:bg-zinc-50 rounded"
+                          className="text-zinc-400 hover:text-red-650 transition-colors p-1 hover:bg-zinc-100 rounded-none"
                           title="Eliminar del historial"
                         >
                           <Trash2 size={13} />
@@ -347,79 +347,79 @@ export default function SocialFormatter() {
         <div className="lg:col-span-7 space-y-6">
           
           {/* Step 1: Optimization Options */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-black uppercase tracking-[0.22em] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-black rounded-full" /> 1. Opciones de Inteligencia y Estructura:
+                <span className="w-1.5 h-1.5 bg-black rounded-none" /> 1. Opciones de Inteligencia y Estructura:
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-1">
               {/* Checkbox: Emojis */}
-              <label className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 rounded-xl cursor-pointer transition-all">
+              <label className="flex items-start gap-3 p-3 bg-zinc-50 border-2 border-black/5 hover:border-black rounded-none cursor-pointer transition-all">
                 <input 
                   type="checkbox" 
                   checked={includeEmojis} 
                   onChange={(e) => setIncludeEmojis(e.target.checked)}
-                  className="accent-black w-4 h-4 mt-0.5 rounded cursor-pointer"
+                  className="accent-black w-4 h-4 mt-0.5 rounded-none cursor-pointer"
                 />
                 <div>
-                  <p className="text-xs font-bold text-zinc-900 leading-none">Emojis sugeridos</p>
+                  <p className="text-xs font-black text-zinc-900 leading-none">Emojis sugeridos</p>
                   <p className="text-[10px] text-zinc-400 mt-1 leading-normal">Sumá color y expresividad sutil.</p>
                 </div>
               </label>
 
               {/* Checkbox: CTA */}
-              <label className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 rounded-xl cursor-pointer transition-all">
+              <label className="flex items-start gap-3 p-3 bg-zinc-50 border-2 border-black/5 hover:border-black rounded-none cursor-pointer transition-all">
                 <input 
                   type="checkbox" 
                   checked={includeCta} 
                   onChange={(e) => setIncludeCta(e.target.checked)}
-                  className="accent-black w-4 h-4 mt-0.5 rounded cursor-pointer"
+                  className="accent-black w-4 h-4 mt-0.5 rounded-none cursor-pointer"
                 />
                 <div>
-                  <p className="text-xs font-bold text-zinc-900 leading-none">Llamado a la Acción (CTA)</p>
+                  <p className="text-xs font-black text-zinc-900 leading-none">Llamado a la Acción (CTA)</p>
                   <p className="text-[10px] text-zinc-400 mt-1 leading-normal">Incentivá la interacción real al final.</p>
                 </div>
               </label>
 
               {/* Checkbox: Hooks */}
-              <label className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 rounded-xl cursor-pointer transition-all">
+              <label className="flex items-start gap-3 p-3 bg-zinc-50 border-2 border-black/5 hover:border-black rounded-none cursor-pointer transition-all">
                 <input 
                   type="checkbox" 
                   checked={includeHooks} 
                   onChange={(e) => setIncludeHooks(e.target.checked)}
-                  className="accent-black w-4 h-4 mt-0.5 rounded cursor-pointer"
+                  className="accent-black w-4 h-4 mt-0.5 rounded-none cursor-pointer"
                 />
                 <div>
-                  <p className="text-xs font-bold text-zinc-900 leading-none">Ganchos de Lectura (Hooks)</p>
-                  <p className="text-[10px] text-zinc-400 mt-1 leading-normal">Frená el scroll con un inicio de impacto.</p>
+                  <p className="text-xs font-black text-zinc-900 leading-none">Ganchos de Lectura (Hooks)</p>
+                  <p className="text-[10px] text-zinc-400 mt-1 leading-normal font-sans font-bold">Frená el scroll con un inicio de impacto.</p>
                 </div>
               </label>
 
               {/* Checkbox: Hashtags */}
-              <label className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 rounded-xl cursor-pointer transition-all">
+              <label className="flex items-start gap-3 p-3 bg-zinc-50 border-2 border-black/5 hover:border-black rounded-none cursor-pointer transition-all">
                 <input 
                   type="checkbox" 
                   checked={includeHashtags} 
                   onChange={(e) => setIncludeHashtags(e.target.checked)}
-                  className="accent-black w-4 h-4 mt-0.5 rounded cursor-pointer"
+                  className="accent-black w-4 h-4 mt-0.5 rounded-none cursor-pointer"
                 />
                 <div>
-                  <p className="text-xs font-bold text-zinc-900 leading-none font-sans">Sugeridor de Hashtags</p>
-                  <p className="text-[10px] text-zinc-400 mt-1 leading-normal">Sumá etiquetas de contexto estratégico.</p>
+                  <p className="text-xs font-black text-zinc-900 leading-none font-sans">Sugeridor de Hashtags</p>
+                  <p className="text-[10px] text-zinc-400 mt-1 leading-normal font-sans font-bold">Sumá etiquetas de contexto estratégico.</p>
                 </div>
               </label>
             </div>
 
             {/* Info Box explaining Selected Mode */}
-            <div className="bg-zinc-50 border border-zinc-100 p-3 rounded-lg flex gap-2.5 items-start">
-              <Sparkles size={16} className="text-zinc-650 shrink-0 mt-0.5" />
+            <div className="bg-zinc-50 border-2 border-black p-4 rounded-none flex gap-2.5 items-start">
+              <Sparkles size={16} className="text-black shrink-0 mt-0.5" />
               <div>
-                <p className="text-[10.5px] font-bold text-zinc-800 uppercase tracking-widest leading-none">
+                <p className="text-[10.5px] font-black text-zinc-800 uppercase tracking-widest leading-none">
                   Optimización Estructural Inteligente
                 </p>
-                <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+                <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed font-medium">
                   Creamos dos propuestas de posteo optimizadas (Variante A directa/emocional y Variante B profesional/creativa), aplicando reglas anti-slop rioplatenses, análisis de legibilidad para móviles, corrección de gramática y ganchos atractivos.
                 </p>
               </div>
@@ -427,9 +427,9 @@ export default function SocialFormatter() {
           </div>
 
           {/* Step 2: Tone Selection */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
-            <span className="text-[10px] font-black text-black uppercase tracking-[0.22em] flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-black rounded-full" /> 2. Elegí el tono de la publicación:
+          <div className="bg-white border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-4">
+            <span className="text-[10px] font-black text-black uppercase tracking-[0.22em] flex items-center gap-1.5 font-sans">
+              <span className="w-1.5 h-1.5 bg-black rounded-none" /> 2. Elegí el tono de la publicación:
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-1">
@@ -440,10 +440,10 @@ export default function SocialFormatter() {
                     key={t}
                     type="button"
                     onClick={() => setTone(t)}
-                    className={`py-3 px-2 border-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-150 flex flex-col items-center justify-center gap-1 leading-tight cursor-pointer ${
+                    className={`py-3 px-2 border-2 rounded-none text-[10px] font-black uppercase tracking-widest transition-all duration-150 flex flex-col items-center justify-center gap-1 leading-tight cursor-pointer ${
                       isActive 
-                        ? 'bg-zinc-950 border-zinc-950 text-white shadow-md shadow-zinc-200' 
-                        : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:bg-zinc-50'
+                        ? 'bg-black border-black text-white shadow-[2px_2px_0px_rgba(0,0,0,1)]' 
+                        : 'bg-white border-zinc-200 text-zinc-500 hover:border-black hover:bg-zinc-50'
                     }`}
                   >
                     <span>{t === 'casual' ? 'Casual 😊' : t === 'professional' ? 'Profesional 💼' : 'Enérgico 🚀'}</span>
@@ -459,17 +459,17 @@ export default function SocialFormatter() {
           </div>
 
           {/* Step 3: Text input stage */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-black uppercase tracking-[0.22em] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-black rounded-full" /> 3. Redactá tu mensaje borrador:
+                <span className="w-1.5 h-1.5 bg-black rounded-none" /> 3. Redactá tu mensaje borrador:
               </span>
 
               {input.trim() && (
                 <button 
                   type="button"
                   onClick={() => setInput('')}
-                  className="text-zinc-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  className="text-zinc-400 hover:text-red-500 text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   Limpiar borrador
                 </button>
@@ -481,12 +481,12 @@ export default function SocialFormatter() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Escribí o pegá tu texto acá... (ej: 'hola quiero contarles que lanzamos un nuevo producto es ideal para emprendedores')"
-                className="w-full h-44 p-4 bg-zinc-50 hover:bg-zinc-50/75 focus:bg-white border border-zinc-200 focus:border-zinc-900 rounded-xl text-sm focus:outline-none transition-all duration-200 resize-none font-sans text-zinc-900 placeholder-zinc-400 scroller-pretty"
+                className="w-full h-44 p-4 bg-zinc-50 hover:bg-zinc-100 focus:bg-white border-2 border-black rounded-none text-sm focus:outline-none transition-all duration-200 resize-none font-sans text-zinc-900 placeholder-zinc-400 scroller-pretty"
               />
             </div>
 
             {/* Character warning markers for Social Platforms */}
-            <div className="flex flex-wrap gap-4 pt-1 bg-zinc-50/50 p-3 rounded-lg border border-zinc-100">
+            <div className="flex flex-wrap gap-4 pt-1 bg-zinc-50/50 p-3 rounded-none border border-black">
               {Object.entries(charLimits).map(([key, limit]) => {
                 const current = input.length;
                 const isOver = current > limit;
@@ -496,13 +496,13 @@ export default function SocialFormatter() {
                   <div key={key} className="flex-1 min-w-[120px]">
                     <div className="flex items-center justify-between mb-1 text-[9.5px] font-black uppercase tracking-wider">
                       <span className="text-zinc-400">{key}:</span>
-                      <span className={isOver ? 'text-red-500' : 'text-zinc-650'}>
+                      <span className={isOver ? 'text-red-650 font-extrabold' : 'text-black'}>
                         {current}/{limit}
                       </span>
                     </div>
-                    <div className="w-full h-1 bg-zinc-200 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-zinc-200 border border-black rounded-none overflow-hidden">
                       <div 
-                        className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-red-500' : 'bg-zinc-800'}`} 
+                        className={`h-full rounded-none transition-all duration-500 ${isOver ? 'bg-red-500' : 'bg-black'}`} 
                         style={{ width: `${pct}%` }} 
                       />
                     </div>
@@ -517,7 +517,7 @@ export default function SocialFormatter() {
             type="button"
             onClick={processText}
             disabled={loading || !input.trim()}
-            className="w-full py-4.5 bg-black text-white hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed rounded-xl font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-2.5 transition-all duration-200 shadow-md active:scale-[0.99] active:shadow-sm cursor-pointer"
+            className="w-full py-4.5 bg-black text-white hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed rounded-none font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-2.5 transition-all duration-200 border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-none translate-y-0 hover:translate-y-1 active:translate-y-1 cursor-pointer"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
             {loading ? (
@@ -529,12 +529,12 @@ export default function SocialFormatter() {
 
           {/* Error display */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl animate-in fade-in slide-in-from-top-3">
+            <div className="p-4 bg-red-55 border-4 border-black text-red-650 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,0.15)] animate-in fade-in slide-in-from-top-3">
               <div className="flex gap-3">
-                <AlertTriangle size={18} className="shrink-0 mt-0.5 text-red-500" />
+                <AlertTriangle size={18} className="shrink-0 mt-0.5 text-black" />
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-red-800">Hubo un problema al conectar con Gemini</p>
-                  <p className="text-xs text-red-600 mt-1 leading-relaxed">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-black">Hubo un problema al conectar con Gemini</p>
+                  <p className="text-xs text-black mt-1 leading-relaxed font-mono">
                     {error}
                   </p>
                 </div>
@@ -547,10 +547,10 @@ export default function SocialFormatter() {
         {/* Right Preview Pane & Live Smartphone Simulator (Col: 5) */}
         <div className="lg:col-span-5 space-y-6">
           
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border-2 border-black rounded-none p-5 shadow-[4px_4px_0px_rgba(0,0,0,1)] space-y-4">
             
             {/* Platform Mockup Tabs */}
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <div className="flex items-center justify-between border-b-2 border-black pb-3">
               <span className="text-[10px] font-black text-black uppercase tracking-[0.18em]">
                 Previsualización en Vivo
               </span>
@@ -564,10 +564,10 @@ export default function SocialFormatter() {
                     key={plat.id}
                     type="button"
                     onClick={() => setPreviewPlatform(plat.id as PreviewPlatform)}
-                    className={`px-2 py-1.5 rounded-md text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    className={`px-2 py-1.5 rounded-none text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                       previewPlatform === plat.id 
-                        ? 'bg-zinc-100 text-zinc-950 font-bold border border-zinc-300' 
-                        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
+                        ? 'bg-black text-white font-black border-2 border-black' 
+                        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 border border-transparent'
                     }`}
                   >
                     {plat.label}
@@ -833,9 +833,7 @@ export default function SocialFormatter() {
                       )}
                     </>
                   )}
-
                 </div>
-
                 {/* Mockup bottom home bar */}
                 <div className="w-full pt-1 flex justify-center bg-zinc-50 select-none">
                   <div className="w-28 h-1 bg-zinc-400 rounded-full mb-1" />
@@ -847,16 +845,16 @@ export default function SocialFormatter() {
 
             {/* Evaluation Tools: Variant switcher, Semaphore and Hashtags */}
             {variantA && !loading && (
-              <div className="space-y-4 pt-3 border-t border-zinc-100 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="space-y-4 pt-3 border-t-2 border-black animate-in fade-in slide-in-from-top-4 duration-300">
                 
                 {/* Variant Selector Tabs */}
                 {variantB && (
-                  <div className="flex bg-zinc-105 p-1 rounded-xl border border-zinc-200">
+                  <div className="flex bg-zinc-100 p-1 rounded-none border-2 border-black">
                     <button
                       type="button"
                       onClick={() => { setSelectedVariant('A'); setOutput(variantA); }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
-                        selectedVariant === 'A' ? 'bg-white text-zinc-950 shadow-sm border border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900'
+                      className={`flex-1 py-2 rounded-none text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                        selectedVariant === 'A' ? 'bg-black text-white border border-black' : 'text-zinc-500 hover:text-zinc-900'
                       }`}
                     >
                       🎯 Propuesta A (Directo)
@@ -864,8 +862,8 @@ export default function SocialFormatter() {
                     <button
                       type="button"
                       onClick={() => { setSelectedVariant('B'); setOutput(variantB); }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
-                        selectedVariant === 'B' ? 'bg-white text-zinc-950 shadow-sm border border-zinc-200/50' : 'text-zinc-500 hover:text-zinc-900'
+                      className={`flex-1 py-2 rounded-none text-xs font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                        selectedVariant === 'B' ? 'bg-black text-white border border-black' : 'text-zinc-500 hover:text-zinc-900'
                       }`}
                     >
                       ✨ Propuesta B (Foco Profesional)
@@ -878,22 +876,22 @@ export default function SocialFormatter() {
                   <button 
                     type="button"
                     onClick={copyToClipboard}
-                    className="flex-1 py-3 bg-zinc-950 text-white hover:bg-zinc-850 rounded-lg text-[10.5px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer"
+                    className="flex-1 py-3 bg-black text-white hover:bg-zinc-805 rounded-none text-[10.5px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer border-2 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] active:shadow-none translate-y-0 active:translate-y-0.5"
                   >
-                    {copied ? <CheckCircle2 size={14} className="text-green-400" /> : <Copy size={13} />}
+                    {copied ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Copy size={13} />}
                     {copied ? '¡Propuesta Copiada!' : `Copiar Propuesta ${selectedVariant}`}
                   </button>
                 </div>
 
                 {/* 📊 MOBILE READABILITY SEMAPHORE */}
                 {readability && (
-                  <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl text-left space-y-3">
+                  <div className="bg-zinc-50 border-2 border-black p-4 rounded-none text-left space-y-3 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                     <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                      <span className="text-[10px] font-black tracking-widest uppercase text-zinc-600 flex items-center gap-1.5 font-sans">
+                      <span className="text-[10px] font-black tracking-widest uppercase text-zinc-650 flex items-center gap-1.5 font-sans">
                         📊 Semáforo de Lectura en Móvil
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${
+                        <span className={`w-2 h-2 rounded-none ${
                           readability.level === 'green' ? 'bg-emerald-500' :
                           readability.level === 'yellow' ? 'bg-amber-400' : 'bg-rose-500'
                         } animate-pulse`} />
@@ -914,11 +912,11 @@ export default function SocialFormatter() {
                       </p>
                     </div>
                     {/* Visual bar meter */}
-                    <div className="w-full h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-zinc-200 border border-black rounded-none overflow-hidden">
                       <div 
-                        className={`h-full rounded-full transition-all duration-500 ${
+                        className={`h-full rounded-none transition-all duration-500 ${
                           readability.level === 'green' ? 'bg-emerald-500' :
-                          readability.level === 'yellow' ? 'bg-amber-405' : 'bg-rose-500'
+                          readability.level === 'yellow' ? 'bg-amber-400' : 'bg-rose-500'
                         }`} 
                         style={{ width: `${readability.score}%` }} 
                       />
@@ -928,15 +926,15 @@ export default function SocialFormatter() {
 
                 {/* #️⃣ AUTO-SUGERIDOR DE HASHTAGS CONTEXTUALES */}
                 {suggestedHashtags && suggestedHashtags.length > 0 && (
-                  <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl text-left space-y-2 font-sans">
-                    <span className="text-[10px] font-black tracking-widest uppercase text-zinc-650 flex items-center gap-1.5 font-sans">
+                  <div className="bg-zinc-50 border-2 border-black p-4 rounded-none text-left space-y-2 font-sans shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                    <span className="text-[10px] font-black tracking-widest uppercase text-zinc-850 flex items-center gap-1.5 font-sans">
                       #️⃣ Hashtags Sugeridos
                     </span>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {suggestedHashtags.map((tag, idx) => (
                         <span 
                           key={idx} 
-                          className="px-2 py-1 bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-700 text-[10px] font-mono rounded-md transition-colors"
+                          className="px-2 py-1 bg-white hover:bg-zinc-100 border-2 border-black text-black text-[10px] font-mono rounded-none transition-colors"
                         >
                           {tag.startsWith('#') ? tag : `#${tag}`}
                         </span>
@@ -947,21 +945,21 @@ export default function SocialFormatter() {
                 )}
 
                 {/* Quality Checklist fallback */}
-                <div className="bg-zinc-50 border border-zinc-150 p-4 rounded-xl text-left">
-                  <div className="flex items-center justify-between mb-3 border-b border-zinc-200 pb-2">
-                    <span className="text-[9.5px] font-black tracking-widest uppercase text-zinc-650 flex items-center gap-1 font-sans">
-                      <Sparkles size={11} className="text-zinc-650" /> Checklist de Calidad
+                <div className="bg-zinc-50 border-2 border-black p-4 rounded-none text-left shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                  <div className="flex items-center justify-between mb-3 border-b-2 border-black pb-2">
+                    <span className="text-[9.5px] font-black tracking-widest uppercase text-black flex items-center gap-1 font-sans">
+                      <Sparkles size={11} className="text-black" /> Checklist de Calidad
                     </span>
-                    <span className="text-[9px] font-bold text-green-600 font-mono">100% OK</span>
+                    <span className="text-[9px] font-black text-black font-mono">100% OK</span>
                   </div>
 
-                  <ul className="space-y-2 text-xs text-zinc-500 leading-normal font-mono">
+                  <ul className="space-y-2 text-xs text-zinc-650 leading-normal font-mono">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-500 font-bold shrink-0">✓</span>
+                      <span className="text-black font-extrabold shrink-0">✓</span>
                       <span><strong>Voseo Rioplatense:</strong> Español natural adaptado con total fluidez.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-500 font-bold shrink-0">✓</span>
+                      <span className="text-black font-extrabold shrink-0">✓</span>
                       <span><strong>Antilectura IA:</strong> Sin clichés repetitivos o introducciones robóticas.</span>
                     </li>
                   </ul>

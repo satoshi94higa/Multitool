@@ -708,7 +708,7 @@ export default function ScreenwriterIA() {
               playProceduralSound('click');
               setShowHistory(!showHistory);
             }}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border-2 border-zinc-200"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border-2 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] active:translate-y-0.5 rounded-none"
           >
             <History size={14} />
             {showHistory ? 'Ocultar Historial' : `Archivos (${history.length})`}
@@ -724,7 +724,7 @@ export default function ScreenwriterIA() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-zinc-50 border-4 border-black p-6 mb-8 mt-4 shadow-sm">
+            <div className="bg-zinc-50 border-4 border-black p-6 mb-8 mt-4 shadow-[4px_4px_0px_rgba(0,0,0,1)] rounded-none">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Archivos Cinemáticos Guardados</span>
                 <span className="text-[9px] font-mono text-zinc-300">Autoguardado Seguro Local</span>
@@ -739,7 +739,7 @@ export default function ScreenwriterIA() {
                     <div 
                       key={item.id}
                       onClick={() => loadFromHistory(item)}
-                      className="group p-4 bg-white border-2 border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative"
+                      className="group p-4 bg-white border-2 border-black hover:bg-zinc-50 cursor-pointer transition-all flex flex-col gap-3 relative rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -767,17 +767,14 @@ export default function ScreenwriterIA() {
       </AnimatePresence>
 
       {/* WORKSPACE PREPARATION DESK */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* PANEL 1: PLATFORM & TENSION CONFIG (2 Col-span equivalent) */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="space-y-6">
           
           {/* PLATFORM BUTTONS */}
           <div className="space-y-2">
             <span className="text-[9px] font-black uppercase text-zinc-400 tracking-widest pl-1 flex items-center gap-2">
               <Sliders size={12} /> Formato de Transmisión
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-zinc-100 p-1.5 border-2 border-black rounded-none">
               {(['instagram', 'youtube', 'tiktok', 'tiktok-extendido', 'cinema'] as const).map((p) => (
                 <button
                   key={p}
@@ -785,7 +782,7 @@ export default function ScreenwriterIA() {
                     playProceduralSound('click');
                     setPlatform(p);
                   }}
-                  className={`flex flex-col items-center justify-center p-3 gap-1.5 transition-all font-black text-[9px] uppercase tracking-wider ${platform === p ? 'bg-black text-white shadow-xl' : 'text-zinc-400 bg-white hover:text-black hover:border-black border border-transparent'}`}
+                  className={`flex flex-col items-center justify-center p-3 gap-1.5 transition-all font-black text-[9px] uppercase tracking-wider rounded-none ${platform === p ? 'bg-black text-white border-2 border-black' : 'text-zinc-500 bg-white hover:text-black hover:border-black border-2 border-zinc-200'}`}
                 >
                   {p === 'instagram' && <Instagram size={16} />}
                   {p === 'youtube' && <Youtube size={16} />}
@@ -796,7 +793,7 @@ export default function ScreenwriterIA() {
                 </button>
               ))}
             </div>
-            <div className="p-3 bg-zinc-100/50 text-[10px] text-zinc-500 uppercase tracking-tighter leading-normal">
+            <div className="p-3 bg-zinc-150 text-[10px] text-zinc-600 uppercase tracking-tighter leading-normal border-2 border-black rounded-none font-mono">
               {platformInfo[platform]}
             </div>
           </div>
@@ -836,7 +833,7 @@ export default function ScreenwriterIA() {
                       setNarrator(n);
                     }}
                     className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight ${
-                      narrator === n ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                      narrator === n ? 'bg-black border-black text-white' : 'bg-white border-zinc-150 text-zinc-400 hover:border-black'
                     }`}
                   >
                     <span>{n === 'expert' ? 'Experto' : n === 'creator' ? 'Creador' : n === 'storyteller' ? 'Relator' : n === 'minimalist' ? 'Minimal' : 'Hype'}</span>
@@ -849,9 +846,9 @@ export default function ScreenwriterIA() {
           </div>
 
           {/* LINGUISTIC SLANG ADAPTER */}
-          <div className="space-y-2 bg-gradient-to-r from-zinc-50 to-zinc-100 p-4 border border-zinc-200">
-            <span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest pl-1 block flex items-center gap-2">
-              <Sparkles size={11} className="text-yellow-500" /> Sintonizador de Modismos Regionales
+          <div className="space-y-2 bg-zinc-50 p-4 border-2 border-black rounded-none">
+            <span className="text-[9px] font-black uppercase text-zinc-550 tracking-widest pl-1 block flex items-center gap-2">
+              <Sparkles size={11} className="text-yellow-500 animate-pulse" /> Sintonizador de Modismos Regionales
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {(['voseo_porteño', 'voseo_regio', 'latino_neutral', 'seseo_peninsular', 'hype_mrbeast'] as const).map((sl) => (
@@ -861,7 +858,7 @@ export default function ScreenwriterIA() {
                     playProceduralSound('click');
                     setSlang(sl);
                   }}
-                  className={`py-2 px-1 text-[8px] border font-black uppercase tracking-wider leading-snug text-center transition-all ${slang === sl ? 'bg-black text-white border-black shadow' : 'bg-white text-zinc-400 border-zinc-200 hover:border-black hover:text-black'}`}
+                  className={`py-2 px-1 text-[8px] border-2 font-black uppercase tracking-wider leading-snug text-center transition-all rounded-none ${slang === sl ? 'bg-black text-white border-black shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'bg-white text-zinc-400 border-zinc-200 hover:border-black hover:text-black'}`}
                 >
                   {sl === 'voseo_porteño' && '🇦🇷 Rioplatense'}
                   {sl === 'voseo_regio' && '🇦🇷 Voseo Neutro'}
@@ -874,69 +871,17 @@ export default function ScreenwriterIA() {
             <p className="text-[9px] font-mono text-zinc-450 uppercase pl-1 pt-1 italic transition-all">Adaptación: {slangInfo[slang]}</p>
           </div>
 
-        </div>
-
-        {/* PROPUESTAS Y REFACTORIZACIONES SUGERIDAS (Muro interactivo de sugerencias de optimización) */}
-        <div className="bg-zinc-50 border-4 border-black p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] space-y-5 flex flex-col justify-between" id="simplification-suggestions-panel">
-          <div>
-            <div className="flex items-center justify-between border-b-2 border-black pb-3">
-              <span className="text-[10px] font-mono font-black text-zinc-900 tracking-wider flex items-center gap-2">
-                <BookOpen size={14} className="text-black" /> Mesa de Simplificación & Próximas Refactorizaciones
-              </span>
-              <span className="text-[8px] font-mono text-black font-black uppercase tracking-widest bg-yellow-400 px-1.5 py-0.5 animate-pulse">PLAN CINE</span>
-            </div>
-
-            <p className="text-[10px] text-zinc-600 leading-relaxed mt-2.5 font-sans">
-              Seguimos alineados al principio de economía de interfaces. Analizamos los módulos de pre-producción del estudio y sugerimos estas mejoras:
-            </p>
-
-            <div className="space-y-3.5 pt-4">
-              <div className="p-3 bg-white border border-zinc-200 space-y-1">
-                <span className="block text-[8px] font-black uppercase text-black tracking-widest">🔄 1. Consolidación de Versión A/B</span>
-                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
-                  Sugerimos integrar los dos cuadros actuales en una sola ventana interactiva de refinación por bloques de escenas. Simplifica la lectura comparativa de guiones.
-                </p>
-              </div>
-
-              <div className="p-3 bg-white border border-zinc-200 space-y-1">
-                <span className="block text-[8px] font-black uppercase text-black tracking-widest">📋 2. Unificar Escaleta & Preview</span>
-                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
-                  Rediseñar la escaleta técnica para que las descripciones de cámaras y lentes se editen directamente sobre la misma fila, eliminando la asincronía del panel lateral.
-                </p>
-              </div>
-
-              <div className="p-3 bg-white border border-zinc-200 space-y-1">
-                <span className="block text-[8px] font-black uppercase text-black tracking-widest">🛠️ 3. Reducción de Metadatos y Tags</span>
-                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
-                  Quitar ideas de miniatura automáticas y tags para centrarnos en el archivo de video procesado, facilitando un flujo 100% de escritura de guionistas profesionales.
-                </p>
-              </div>
-
-              <div className="p-3 bg-white border border-zinc-200 space-y-1">
-                <span className="block text-[8px] font-black uppercase text-black tracking-widest">📄 4. jsPDF Bajo Demanda</span>
-                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
-                  Mudar el cargado de la librería de PDF a un bundle diferido (lazy loading) para reducir el tiempo de renderización inicial del módulo en más de un 40%.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-zinc-200 text-center">
-            <p className="text-[8px] font-mono text-zinc-400 uppercase leading-relaxed font-black">Filosofía de desarrollo: Pruning & Craftsmanship absoluto.</p>
-          </div>
-        </div>
-
       </div>
 
       {/* DETAILED HIGH RETENTION POWER-HOOK OPTION GROUP */}
-      <div className="space-y-3 bg-zinc-50 p-4 border border-zinc-200">
+      <div className="space-y-3 bg-white p-4 border-2 border-black rounded-none">
         <button
           onClick={() => {
             playProceduralSound('click');
             setPowerHook(!powerHook);
           }}
-          className={`w-full flex items-center justify-between px-6 py-4 border-2 transition-all group ${
-            powerHook ? 'bg-zinc-900 border-black text-white shadow-xl' : 'bg-white border-zinc-150 text-zinc-400 hover:border-black'
+          className={`w-full flex items-center justify-between px-6 py-4 border-2 transition-all group rounded-none ${
+            powerHook ? 'bg-black border-black text-white shadow-[3px_3px_0px_rgba(0,0,0,1)]' : 'bg-white border-zinc-200 text-zinc-400 hover:border-black'
           }`}
         >
           <div className="flex items-center gap-4">
@@ -977,8 +922,8 @@ export default function ScreenwriterIA() {
                         playProceduralSound('click');
                         setHookType(h);
                       }}
-                      className={`py-3 px-2 border text-[8px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight text-center ${
-                        hookType === h ? 'bg-black border-black text-white shadow-md font-black' : 'bg-white border-zinc-200 text-zinc-400 hover:border-black hover:text-black'
+                      className={`py-3 px-2 border-2 text-[8px] font-black uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-1 leading-tight text-center rounded-none ${
+                        hookType === h ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-450 hover:border-black hover:text-black'
                       }`}
                     >
                       <span>{labels[h]}</span>
@@ -999,7 +944,7 @@ export default function ScreenwriterIA() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Introduce la premisa, tema general, idea guía o núcleo de información..."
-            className="w-full min-h-[160px] p-6 bg-zinc-50 border-2 border-black/5 rounded-none text-sm focus:outline-none focus:border-black font-sans text-black placeholder-zinc-300"
+            className="w-full min-h-[160px] p-6 bg-white border-2 border-black rounded-none text-sm focus:outline-none focus:bg-zinc-50 font-sans text-black placeholder-zinc-300 shadow-[2px_2px_0px_rgba(0,0,0,1)]"
           />
           <div className="absolute bottom-6 right-6 flex gap-6 text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] pointer-events-none">
             <span>Palabras: {wordCount}</span>
@@ -1016,14 +961,14 @@ export default function ScreenwriterIA() {
             value={extraPrompt}
             onChange={(e) => setExtraPrompt(e.target.value)}
             placeholder="Parámetros extra (ej: 'Menciona mi canal @TechSpace', 'Introduce ruidos bruscos', 'Haz cortes vertiginosos')..."
-            className="w-full pl-14 pr-6 py-4 bg-zinc-50 border-2 border-black/5 rounded-none text-[11px] font-mono focus:outline-none focus:border-black placeholder:text-zinc-300 text-black"
+            className="w-full pl-14 pr-6 py-4 bg-white border-2 border-black rounded-none text-[11px] font-mono focus:outline-none focus:bg-zinc-50 placeholder:text-zinc-300 text-black shadow-[2px_2px_0px_rgba(0,0,0,1)]"
           />
         </div>
         
         <button
           onClick={generateScript}
           disabled={loading || !input.trim()}
-          className="w-full py-5 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-xl active:scale-[0.98]"
+          className="w-full py-5 bg-black text-white hover:bg-zinc-900 border-2 border-black rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-30 transition-all shadow-[4px_4px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1"
         >
           {loading ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
           {loading ? 'Compilando Cerebro Cinematográfico...' : 'ENRUTAR & CORRER_GUION_IA'}
@@ -1166,7 +1111,7 @@ export default function ScreenwriterIA() {
                     playProceduralSound('rise');
                     setShowTeleprompter(true);
                   }}
-                  className="px-4 py-2 bg-gradient-to-r from-zinc-800 to-zinc-950 text-white rounded-none transition-all shadow active:scale-95 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider"
+                  className="px-4 py-2 bg-black hover:bg-zinc-900 border-2 border-black text-white rounded-none transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5 flex items-center gap-2 text-[10px] font-black uppercase tracking-wider"
                 >
                   <Monitor size={14} />
                   <span>Teleprompter</span>
@@ -1557,7 +1502,7 @@ export default function ScreenwriterIA() {
                       const isSunset = lightType.toLowerCase().includes('gold') || lightType.toLowerCase().includes('atarde');
                       const isCyber = lightType.toLowerCase().includes('cyber') || lightType.toLowerCase().includes('neon');
                       const isNoir = lightType.toLowerCase().includes('noir') || lightType.toLowerCase().includes('claro');
-                      const gradientColor = isSunset ? 'from-amber-600 via-yellow-700 to-zinc-950' : isCyber ? 'from-fuchsia-700 via-indigo-900 to-zinc-950' : isNoir ? 'from-zinc-800 to-zinc-950' : 'from-sky-900 via-zinc-900 to-zinc-950';
+                      const gradientColor = isSunset ? 'from-zinc-700 to-zinc-900' : isCyber ? 'from-zinc-850 to-zinc-950' : isNoir ? 'from-black to-zinc-900' : 'from-zinc-800 to-zinc-950';
 
                       return (
                         <div className="space-y-4">
@@ -1565,7 +1510,7 @@ export default function ScreenwriterIA() {
                           <h4 className="text-sm font-black uppercase text-zinc-100 leading-tight">PREVIEW: {activeItem.scene}</h4>
                           
                           {/* THE DRAWN GRAPHICS GRID PORT */}
-                          <div className={`relative w-full h-44 bg-gradient-to-tr ${gradientColor} border border-zinc-800 flex items-center justify-center overflow-hidden shadow-inner`}>
+                          <div className={`relative w-full h-44 bg-gradient-to-tr ${gradientColor} border-2 border-black flex items-center justify-center overflow-hidden [box-shadow:inset_3px_3px_0px_rgba(0,0,0,1)]`}>
                             {/* Regla de tercios guides */}
                             <div className="absolute inset-x-0 top-1/3 h-[1px] bg-zinc-600/25" />
                             <div className="absolute inset-x-0 top-2/3 h-[1px] bg-zinc-600/25" />

@@ -241,7 +241,7 @@ export default function RedactorIA() {
         </h1>
         <button 
           onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none"
         >
           <History size={14} />
           {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
@@ -256,7 +256,7 @@ export default function RedactorIA() {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-zinc-50 border-2 border-black p-6 mb-8">
+            <div className="bg-zinc-50 border-2 border-black p-6 mb-8 rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Últimas 10 Generaciones</span>
                 <span className="text-[9px] font-bold text-zinc-300">Autoguardado Local</span>
@@ -271,7 +271,7 @@ export default function RedactorIA() {
                     <div 
                       key={item.id}
                       onClick={() => loadFromHistory(item)}
-                      className="group p-4 bg-white border border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative"
+                      className="group p-4 bg-white border-2 border-black hover:bg-zinc-50 cursor-pointer transition-all flex flex-col gap-3 relative rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -306,8 +306,8 @@ export default function RedactorIA() {
               <button
                 key={s}
                 onClick={() => setStructure(s)}
-                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 flex flex-col items-center justify-center gap-1 leading-tight ${
-                  structure === s ? 'bg-black border-black text-white' : 'bg-white border-zinc-100 text-zinc-400 hover:border-black'
+                className={`px-4 py-3 text-[9px] font-black uppercase tracking-tighter transition-all border-2 flex flex-col items-center justify-center gap-1 leading-tight rounded-none ${
+                  structure === s ? 'bg-black border-black text-white shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'bg-white border-zinc-200 text-zinc-500 hover:border-black hover:text-black'
                 }`}
               >
                 <span>{s.replace('_', ' ')}</span>
@@ -317,7 +317,7 @@ export default function RedactorIA() {
           </div>
 
           {structure === 'carrusel' && (
-            <div className="bg-zinc-100 p-6 space-y-4 animate-in fade-in slide-in-from-left-4">
+            <div className="bg-zinc-50 p-6 border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)] space-y-4 animate-in fade-in slide-in-from-left-4">
               <div className="flex justify-between items-center text-[10px] font-black text-zinc-500 uppercase tracking-widest">
                 <div className="flex items-center gap-3">
                   <Share2 size={14} />
@@ -347,11 +347,11 @@ export default function RedactorIA() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Entrada de datos crudos, declaraciones o registros de entrevistas..."
-              className="w-full min-h-[200px] p-8 bg-zinc-50 border-2 border-black/5 rounded-none text-base focus:outline-none focus:border-black font-sans text-black placeholder-zinc-300 transition-all shadow-sm"
+              className="w-full min-h-[200px] p-8 bg-white border-2 border-black rounded-none text-base focus:outline-none focus:bg-zinc-50 font-sans text-black placeholder-zinc-300 transition-all shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             />
           </div>
 
-          <div className="bg-zinc-100 p-6 space-y-4">
+          <div className="bg-zinc-50 border-2 border-black p-6 space-y-4 rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center gap-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
               <MessageSquarePlus size={14} />
               <span>Prompts_Extras / Instrucciones_Personalizadas</span>
@@ -360,14 +360,14 @@ export default function RedactorIA() {
               value={extraInstructions}
               onChange={(e) => setExtraInstructions(e.target.value)}
               placeholder="Ej: 'Usa un tono más sarcástico', 'Enfócate en los datos económicos', 'Limita a 3 párrafos'..."
-              className="w-full min-h-[80px] p-4 bg-white border border-zinc-200 rounded-none text-sm focus:outline-none focus:border-black font-sans text-black placeholder-zinc-400"
+              className="w-full min-h-[80px] p-4 bg-white border-2 border-black rounded-none text-sm focus:outline-none focus:bg-zinc-50 font-sans text-black placeholder-zinc-400"
             />
           </div>
           
           <button
             onClick={processNews}
             disabled={loading || !input.trim()}
-            className="w-full py-6 bg-black text-white rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-zinc-800 disabled:opacity-30 transition-all shadow-2xl active:scale-[0.98]"
+            className="w-full py-6 bg-black text-white border-2 border-black rounded-none font-black text-[11px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-zinc-900 disabled:opacity-30 transition-all shadow-[4px_4px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1"
           >
             {loading ? <Loader2 size={20} className="animate-spin" /> : <Zap size={20} />}
             {loading ? 'Generando Redactor.Sistema...' : 'PROCESAR_INTEL.SERIALIZAR'}
@@ -390,24 +390,24 @@ export default function RedactorIA() {
         <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="grid gap-10">
             {/* Titulares */}
-            <div className="bg-white border-2 border-black rounded-none p-10 shadow-2xl">
-              <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-50 pb-8">
-                <Heading1 size={18} />
+            <div className="bg-white border-4 border-black rounded-none p-10 shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-100 pb-8">
+                <Heading1 size={18} className="text-black" />
                 <span>Matriz de Titulares de Impacto</span>
               </div>
               <div className="space-y-10">
                 <div>
-                  <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block italic underline decoration-zinc-100 underline-offset-4">Titular de Impacto Directo</span>
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 block italic underline decoration-black underline-offset-4">Titular de Impacto Directo</span>
                   <p className="text-2xl font-black text-black leading-[1.1]">{data.headlines.direct}</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 pt-10 border-t border-zinc-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 pt-10 border-t border-zinc-200">
                   <div>
                     <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block">Optimización SEO</span>
-                    <p className="text-[13px] text-zinc-500 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border border-zinc-100">{data.headlines.seo}</p>
+                    <p className="text-[13px] text-zinc-650 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">{data.headlines.seo}</p>
                   </div>
                   <div>
                     <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-4 block">Contexto Narrativo</span>
-                    <p className="text-[13px] text-zinc-500 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border border-zinc-100">{data.headlines.narrative}</p>
+                    <p className="text-[13px] text-zinc-650 font-mono tracking-tight leading-relaxed py-4 px-5 bg-zinc-50 border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">{data.headlines.narrative}</p>
                   </div>
                 </div>
               </div>
@@ -415,28 +415,28 @@ export default function RedactorIA() {
 
             {/* Carrusel de Instagram */}
             {data.carousel_slides && data.carousel_slides.length > 0 && (
-              <div className="bg-white border-2 border-black p-10 shadow-2xl">
-                <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-50 pb-8">
-                  <Share2 size={18} />
+              <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_rgba(0,0,0,1)] rounded-none">
+                <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-10 border-b-2 border-zinc-100 pb-8">
+                  <Share2 size={18} className="text-black" />
                   <span>Plan de Carrusel de Instagram</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {data.carousel_slides.map((slide, i) => (
-                    <div key={i} className="group border border-zinc-100 bg-zinc-50 flex flex-col h-full hover:border-black transition-colors">
+                    <div key={i} className="group border-2 border-black bg-zinc-50 flex flex-col h-full rounded-none shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                       <div className="p-4 bg-black text-white flex justify-between items-center">
                         <span className="text-[10px] font-black uppercase tracking-widest">DIAPOSITIVA_{slide.slide_number}</span>
-                        <div className="w-2 h-2 bg-white rounded-full" />
+                        <div className="w-2.5 h-2.5 bg-yellow-405" />
                       </div>
                       <div className="p-6 flex-1 flex flex-col space-y-6">
                         <div className="space-y-2">
-                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Texto_en_Imagen</span>
-                          <p className="text-sm font-medium leading-relaxed italic text-black bg-white p-4 border border-zinc-100">
+                          <span className="text-[9px] font-black text-zinc-405 uppercase tracking-widest block font-mono">Texto_en_Imagen</span>
+                          <p className="text-sm font-black leading-relaxed italic text-black bg-white p-4 border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                             {slide.text || '(Solo imagen/visual)'}
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block italic">Sugerencia_Visual</span>
-                          <p className="text-[11px] leading-relaxed text-zinc-600 font-mono">
+                          <span className="text-[9px] font-black text-zinc-405 uppercase tracking-widest block italic font-mono">Sugerencia_Visual</span>
+                          <p className="text-[11px] leading-relaxed text-zinc-800 font-mono">
                             {slide.photo_suggestion}
                           </p>
                         </div>
@@ -449,15 +449,15 @@ export default function RedactorIA() {
 
             {/* Redacción y Briefing */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-              <div className="lg:col-span-2 bg-white border-2 border-black rounded-none p-12 relative overflow-hidden shadow-[30px_30px_0px_rgba(0,0,0,0.02)]">
-                <div className="flex justify-between items-center mb-10 border-b-2 border-zinc-50 pb-8">
+              <div className="lg:col-span-2 bg-white border-4 border-black rounded-none p-12 relative overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+                <div className="flex justify-between items-center mb-10 border-b-2 border-zinc-200 pb-8">
                   <div className="flex items-center gap-4 text-[11px] font-black text-zinc-400 uppercase tracking-[0.6em]">
-                    <FileText size={20} />
+                    <FileText size={20} className="text-black" />
                     <span>Texto Redactado</span>
                   </div>
                   <button 
                     onClick={sendToProcessor}
-                    className="px-8 py-4 bg-black text-white hover:bg-zinc-800 rounded-none transition-all flex items-center gap-3 active:scale-95 shadow-xl group border-2 border-black"
+                    className="px-8 py-4 bg-black text-white hover:bg-zinc-900 border-2 border-black rounded-none transition-all flex items-center gap-3 active:translate-y-0.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] active:shadow-none"
                   >
                     {sent ? <Check size={16} /> : <Send size={16} />}
                     <span className="text-[11px] font-black uppercase tracking-[0.2em]">{sent ? 'TRANSFERENCIA_OK' : 'ENVIAR_AL_EDITOR'}</span>
@@ -470,9 +470,9 @@ export default function RedactorIA() {
 
               {/* Briefing Redes */}
               {data.social_briefing && (
-                <div className="bg-zinc-950 text-white p-10 space-y-10">
+                <div className="bg-zinc-950 text-white border-2 border-black p-10 space-y-10 shadow-[8px_8px_0px_rgba(0,0,0,1)] rounded-none">
                   <div className="flex items-center gap-3 border-b border-zinc-800 pb-6">
-                    <Share2 size={18} className="text-zinc-500" />
+                    <Share2 size={18} className="text-zinc-400" />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em]">Briefing_Social</span>
                   </div>
                   
@@ -485,7 +485,7 @@ export default function RedactorIA() {
                     <div className="space-y-4">
                       <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">Hooks_Plataformas</span>
                       {data.social_briefing.platform_hooks.map((hook, i) => (
-                        <div key={i} className="p-4 bg-zinc-900 border border-zinc-800 text-[11px] leading-relaxed">
+                        <div key={i} className="p-4 bg-zinc-900 border-2 border-zinc-800 text-[11px] leading-relaxed rounded-none">
                           {hook}
                         </div>
                       ))}
@@ -503,29 +503,29 @@ export default function RedactorIA() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="bg-zinc-50 border-2 border-zinc-100 rounded-none p-10">
+              <div className="bg-zinc-50 border-2 border-black rounded-none p-10 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center gap-4 text-[10px] font-black text-black uppercase tracking-[0.3em] mb-8">
                   <Quote size={18} />
                   <span>Citas Destacadas</span>
                 </div>
                 <div className="space-y-6">
                   {data.key_quotes.map((quote, i) => (
-                    <div key={i} className="bg-white p-8 border border-zinc-100 leading-relaxed font-serif text-[14px]">
+                    <div key={i} className="bg-white p-8 border-2 border-black leading-relaxed font-serif text-[14px] rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                        "{quote}"
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-zinc-50 border-2 border-zinc-100 rounded-none p-10">
+              <div className="bg-zinc-50 border-2 border-black rounded-none p-10 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center gap-4 text-[10px] font-black text-black uppercase tracking-[0.3em] mb-8">
                   <Info size={18} />
                   <span>Ángulos Proyectados</span>
                 </div>
                 <ul className="space-y-5">
                   {data.angles.map((angle, i) => (
-                    <li key={i} className="text-[13px] text-zinc-600 flex items-start gap-6 p-6 bg-white border border-zinc-100">
-                      <div className="w-2 h-0.5 bg-black mt-2 flex-none shrink-0" />
-                      <span className="uppercase font-medium tracking-tight">{angle}</span>
+                    <li key={i} className="text-[13px] text-zinc-800 flex items-start gap-6 p-6 bg-white border-2 border-black rounded-none shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                      <div className="w-2.5 h-2.5 bg-black mt-1.5 flex-none shrink-0" />
+                      <span className="uppercase font-black tracking-tight leading-snug">{angle}</span>
                     </li>
                   ))}
                 </ul>

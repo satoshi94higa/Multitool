@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, Menu, Settings, X, Key, Captions, CircleDollarSign, TrendingUp } from 'lucide-react';
+import { 
+  LayoutDashboard, Monitor, SquarePen, Gauge, RotateCcw, Brain, Video, 
+  Newspaper, Share2, QrCode, Calculator, Zap, ChevronLeft, ChevronRight, 
+  Menu, Settings, X, Key, Captions, CircleDollarSign, TrendingUp,
+  Search, Keyboard, Clipboard, Wifi, WifiOff, Copy, FileText, CheckCircle, Info, Trash, RefreshCw
+} from 'lucide-react';
 import TextProcessor from './components/TextProcessor';
 import PercentageCalculator from './components/PercentageCalculator';
 import SocialFormatter from './components/SocialFormatter';
@@ -40,6 +45,210 @@ export default function App() {
   const [tempModel, setTempModel] = useState('gemini-3-flash-preview');
   const [testingKey, setTestingKey] = useState(false);
   const [notification, setNotification] = useState<{message: string, show: boolean}>({ message: '', show: false });
+
+  // UX Optimization States
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState('');
+  const [paletteIndex, setPaletteIndex] = useState(0);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showScratchpad, setShowScratchpad] = useState(false);
+  const [scratchpadText, setScratchpadText] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('hub-global-scratchpad') || '' : '');
+
+  // Slots del Scratchpad de Creadores
+  const [slotA, setSlotA] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('hub-scratchpad-slot-a') || '' : '');
+  const [slotB, setSlotB] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('hub-scratchpad-slot-b') || '' : '');
+  const [slotC, setSlotC] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('hub-scratchpad-slot-c') || '' : '');
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      showNotification('Conexión reestablecida. Herramientas de IA disponibles.');
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      showNotification('Sin conexión de red. Funciones de IA inactivas; herramientas locales activas.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K o Cmd+K para abrir Buscador de Herramientas (Command Palette)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(prev => !prev);
+        setPaletteQuery('');
+        setPaletteIndex(0);
+        return;
+      }
+
+      // Cerrar todo con Escape
+      if (e.key === 'Escape') {
+        setShowCommandPalette(false);
+        setShowShortcutsModal(false);
+        setShowScratchpad(false);
+        setShowSettings(false);
+        return;
+      }
+
+      // Evitar interceptaciones si se escribe en inputs, textarea o tip-tap contenteditable
+      const target = e.target as HTMLElement;
+      if (target && (
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.getAttribute('contenteditable') === 'true' ||
+        target.closest('.ProseMirror')
+      )) {
+        return;
+      }
+
+      // Tecla h o ? para ver atajos de teclado
+      if (e.key.toLowerCase() === 'h' || e.key === '?') {
+        e.preventDefault();
+        setShowShortcutsModal(prev => !prev);
+        return;
+      }
+
+      // Tecla c para toggle de Scratchpad
+      if (e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setShowScratchpad(prev => !prev);
+        return;
+      }
+
+      // Alt + 1..9 para navegación ágil
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        const idx = parseInt(e.key, 10) - 1;
+        if (TOOLS[idx]) {
+          e.preventDefault();
+          navigate(TOOLS[idx].path);
+          showNotification(`Cargando: ${TOOLS[idx].short}`);
+        }
+        return;
+      }
+
+      // Alt + 0 / Alt + P para volver al Panel
+      if (e.altKey && (e.key === '0' || e.key.toLowerCase() === 'p')) {
+        e.preventDefault();
+        navigate('/');
+        showNotification('Panel Principal');
+        return;
+      }
+
+      // Alt + M para Teleprompter
+      if (e.altKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setShowTeleprompter(prev => !prev);
+        return;
+      }
+
+      // Alt + S para Ajustes
+      if (e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setShowSettings(prev => !prev);
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
+  const saveScratchpadValue = (newText: string) => {
+    setScratchpadText(newText);
+    localStorage.setItem('hub-global-scratchpad', newText);
+  };
+
+  const handleSaveSlot = (slot: 'a' | 'b' | 'c') => {
+    if (slot === 'a') {
+      setSlotA(scratchpadText);
+      localStorage.setItem('hub-scratchpad-slot-a', scratchpadText);
+    } else if (slot === 'b') {
+      setSlotB(scratchpadText);
+      localStorage.setItem('hub-scratchpad-slot-b', scratchpadText);
+    } else if (slot === 'c') {
+      setSlotC(scratchpadText);
+      localStorage.setItem('hub-scratchpad-slot-c', scratchpadText);
+    }
+    showNotification(`Guardado en ranura ${slot.toUpperCase()}`);
+  };
+
+  const handleLoadSlot = (slot: 'a' | 'b' | 'c') => {
+    let content = '';
+    if (slot === 'a') content = slotA;
+    else if (slot === 'b') content = slotB;
+    else if (slot === 'c') content = slotC;
+
+    if (!content) {
+      showNotification(`La ranura ${slot.toUpperCase()} está vacía.`);
+      return;
+    }
+    saveScratchpadValue(content);
+    showNotification(`Cargado desde ranura ${slot.toUpperCase()}`);
+  };
+
+  const handleCopySlotToClipboard = async (slot: 'a' | 'b' | 'c') => {
+    let content = '';
+    if (slot === 'a') content = slotA;
+    else if (slot === 'b') content = slotB;
+    else if (slot === 'c') content = slotC;
+
+    if (!content) {
+      showNotification(`La ranura ${slot.toUpperCase()} está vacía.`);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(content);
+      showNotification(`Copiado ranura ${slot.toUpperCase()} al portapapeles`);
+    } catch (e) {
+      showNotification('Error al copiar al portapapeles.');
+    }
+  };
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        saveScratchpadValue(scratchpadText ? scratchpadText + '\n\n' + text : text);
+        showNotification('Texto pegado del portapapeles.');
+      } else {
+        showNotification('El portapapeles del sistema está vacío.');
+      }
+    } catch (e) {
+      showNotification('Concede permisos de portapapeles para pegar.');
+    }
+  };
+
+  const handleCopyScratchpad = async () => {
+    if (!scratchpadText.trim()) {
+      showNotification('El bloc está vacío para copiar');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(scratchpadText);
+      showNotification('¡Bloc copiado al portapapeles!');
+    } catch (e) {
+      showNotification('Error al copiar');
+    }
+  };
+
+  const handleInjectToActive = () => {
+    if (!scratchpadText.trim()) {
+      showNotification('Escribe algo en el bloc antes de enviarlo');
+      return;
+    }
+    const event = new CustomEvent('app-set-text', { detail: { text: scratchpadText } });
+    window.dispatchEvent(event);
+    showNotification('Texto inyectado al procesador de texto');
+  };
 
   useEffect(() => {
     setTempApiKey(getLocalApiKey());
@@ -202,17 +411,70 @@ export default function App() {
                <div className="flex items-center gap-2">
                   <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400">Modular_04</span>
                   <span className="hidden md:block w-4 h-[1px] bg-zinc-200" />
-                  <span className="hidden md:block text-[9px] font-mono text-zinc-400 uppercase">Estado: Nominal</span>
+                  <span className={`hidden md:flex items-center gap-1.5 text-[9px] font-mono uppercase ${isOnline ? 'text-green-600 font-bold' : 'text-amber-600 font-bold'}`}>
+                    <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-amber-400'}`} />
+                    Estado: {isOnline ? 'En línea' : 'Sin conexión'}
+                  </span>
                </div>
             </div>
           </div>
+
+          {/* Buscador premium al centro (desktrop/large) */}
+          <button 
+            onClick={() => { setShowCommandPalette(true); setPaletteQuery(''); setPaletteIndex(0); }}
+            className="hidden lg:flex items-center gap-3 bg-zinc-50 hover:bg-zinc-100 hover:border-black border border-zinc-200 px-4 py-2 font-mono text-[11px] text-zinc-400 group transition-all w-80 rounded-none cursor-pointer"
+          >
+            <Search size={14} className="text-zinc-400 group-hover:text-black transition-colors shrink-0" />
+            <span className="flex-1 text-left antialiased text-zinc-400 group-hover:text-zinc-600 transition-colors font-sans font-black uppercase tracking-widest text-[8px] truncate">Buscar herramienta...</span>
+            <span className="bg-white border border-zinc-200 group-hover:border-black px-1.5 py-0.5 text-[8px] text-zinc-400 group-hover:text-black font-semibold transition-colors rounded-none shadow-sm uppercase">Ctrl + K</span>
+          </button>
           
-          <div className="flex items-center gap-4">
-             <button onClick={() => setShowSettings(true)} className="w-10 h-10 bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+          <div className="flex items-center gap-2 md:gap-4">
+             {/* Buscador móvil/médium */}
+             <button 
+               onClick={() => { setShowCommandPalette(true); setPaletteQuery(''); setPaletteIndex(0); }} 
+               className="lg:hidden w-10 h-10 bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+               title="Buscar herramientas [Ctrl+K]"
+             >
+               <Search size={18} />
+             </button>
+
+             {/* Atajos de teclado */}
+             <button 
+               onClick={() => setShowShortcutsModal(true)} 
+               className="w-10 h-10 bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+               title="Ver atajos de teclado [?]"
+             >
+               <Keyboard size={18} />
+             </button>
+
+             {/* Portapapeles Único */}
+             <button 
+               onClick={() => setShowScratchpad(prev => !prev)} 
+               className={`w-10 h-10 border flex items-center justify-center transition-all relative ${showScratchpad ? 'bg-black text-white border-black' : 'bg-zinc-50 border-zinc-200 text-zinc-950 hover:bg-black hover:text-white'}`}
+               title="Portapapeles Inteligente [C]"
+             >
+               <Clipboard size={18} />
+               {scratchpadText.trim() && (
+                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-black rounded-full border border-white animate-bounce" />
+               )}
+             </button>
+
+             <button onClick={() => setShowSettings(true)} className="w-10 h-10 bg-zinc-50 border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors" title="Ajustes [Alt+S]">
                 <Settings size={20} />
              </button>
           </div>
         </header>
+
+        {!isOnline && (
+          <div className="bg-amber-500 text-black border-b-2 border-black py-2.5 px-6 md:px-12 flex items-center justify-between text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-2">
+              <WifiOff size={14} className="shrink-0 animate-bounce" />
+              <span>Estás navegando sin conexión. Las calculadoras y herramientas locales funcionan al 100%, pero se pausaron las funciones de IA de Gemini.</span>
+            </div>
+            <span className="hidden sm:inline bg-black text-white px-2 py-0.5 text-[8px] font-bold tracking-normal rounded-none">Offline</span>
+          </div>
+        )}
 
         <main className="flex-1 p-4 md:p-12 pb-24 overflow-x-hidden">
           <div className="max-w-[1600px] mx-auto">
@@ -401,6 +663,347 @@ export default function App() {
       {notification.show && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[110] bg-black text-white px-8 py-4 font-black uppercase tracking-widest text-[10px] shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
            {notification.message}
+        </div>
+      )}
+
+      {/* Portapapeles Inteligente Drawer */}
+      {showScratchpad && (
+        <div className="fixed inset-y-0 right-0 z-[95] w-full sm:w-96 bg-white border-l-4 border-black shadow-[-20px_0px_0px_rgba(0,0,0,0.05)] flex flex-col animate-in slide-in-from-right-12 duration-300">
+          <div className="p-6 border-b-2 border-black flex items-center justify-between bg-zinc-50 flex-none">
+            <div className="flex items-center gap-3">
+              <Clipboard size={18} />
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-tighter italic">Portapapeles</h3>
+                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mt-0.5">Bloc de notas offline interactivo [C]</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowScratchpad(false)} 
+              className="p-1.5 px-3 border border-black text-[10px] font-black uppercase hover:bg-black hover:text-white transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Espacio de Notas</label>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handlePasteFromClipboard}
+                    className="text-[8px] font-black uppercase tracking-wider text-zinc-500 hover:text-black flex items-center gap-1 border border-zinc-200 p-1 bg-white"
+                    title="Pegar del portapapeles de tu sistema"
+                  >
+                    <Clipboard size={10} /> Pegar Sis.
+                  </button>
+                  <button 
+                    onClick={() => saveScratchpadValue('')}
+                    className="text-[8px] font-black uppercase tracking-wider text-red-500 hover:text-red-700 flex items-center gap-1 border border-red-100 p-1 bg-white"
+                    title="Limpiar notas"
+                  >
+                    <Trash size={10} /> Limpiar
+                  </button>
+                </div>
+              </div>
+              
+              <textarea
+                value={scratchpadText}
+                onChange={(e) => saveScratchpadValue(e.target.value)}
+                placeholder="Escribí, pegá o editá texto libremente acá. Se almacena localmente y podés enviarlo al módulo activo de la suite..."
+                className="w-full h-80 border-2 border-black p-4 font-mono text-xs focus:ring-0 outline-none leading-relaxed resize-none focus:border-zinc-500 bg-zinc-50"
+              />
+            </div>
+
+            {/* Ranuras de Memoria */}
+            <div className="space-y-3">
+              <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Ranuras rápidas de snippets</h4>
+              <div className="space-y-2">
+                {[
+                  { id: 'a', label: 'Snippet Alfa', val: slotA },
+                  { id: 'b', label: 'Snippet Beta', val: slotB },
+                  { id: 'c', label: 'Snippet Gamma', val: slotC },
+                ].map((slot) => {
+                  return (
+                    <div key={slot.id} className="border border-zinc-200 bg-zinc-50 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[8px] font-black uppercase tracking-widest">{slot.label}</span>
+                        {slot.val ? (
+                          <span className="text-[8px] font-mono text-green-600 bg-white border border-green-200 px-1 py-0.5 font-bold uppercase">Activo</span>
+                        ) : (
+                          <span className="text-[8px] font-mono text-zinc-400 uppercase">Vacío</span>
+                        )}
+                      </div>
+                      
+                      {slot.val && (
+                        <p className="text-[10px] text-zinc-650 font-mono line-clamp-2 bg-white p-1.5 border border-zinc-100 leading-normal">
+                          {slot.val}
+                        </p>
+                      )}
+
+                      <div className="grid grid-cols-3 gap-1 pt-1">
+                        <button
+                          onClick={() => handleSaveSlot(slot.id as 'a'|'b'|'c')}
+                          className="text-[8px] font-black uppercase tracking-widest bg-black text-white hover:bg-zinc-850 p-1.5 text-center transition-colors shadow-sm"
+                          title="Guardar contenido actual en esta ranura"
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          onClick={() => handleLoadSlot(slot.id as 'a'|'b'|'c')}
+                          disabled={!slot.val}
+                          className="text-[8px] font-black uppercase tracking-widest bg-zinc-200 hover:bg-black hover:text-white p-1.5 text-center transition-all disabled:opacity-30 disabled:pointer-events-none"
+                          title="Cargar texto de esta ranura en el bloc"
+                        >
+                          Pegar
+                        </button>
+                        <button
+                          onClick={() => handleCopySlotToClipboard(slot.id as 'a'|'b'|'c')}
+                          disabled={!slot.val}
+                          className="text-[8px] font-black uppercase tracking-widest bg-white hover:bg-zinc-100 p-1.5 border border-zinc-200 text-center transition-all disabled:opacity-30 disabled:pointer-events-none"
+                          title="Copiar snippet al portapapeles del sistema"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border-t-2 border-black bg-zinc-50 space-y-2 flex-none">
+            <button 
+              onClick={handleCopyScratchpad}
+              className="w-full h-11 bg-zinc-100 border border-black hover:bg-black hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+            >
+              <Copy size={12} /> Copiar Bloc al Sistema
+            </button>
+            <button 
+              onClick={handleInjectToActive}
+              className="w-full h-11 bg-black text-white hover:bg-zinc-800 text-[10px] font-black uppercase tracking-[0.12em] transition-colors flex items-center justify-center gap-2 shadow-md animate-pulse"
+            >
+              <FileText size={12} /> Inyectar en Procesador
+            </button>
+            <p className="text-[8px] font-sans text-center text-zinc-400 uppercase leading-normal pt-1 flex items-center justify-center gap-1">
+              <Info size={10} /> Inyecta de forma directa con TipTap
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Command Palette Modal */}
+      {showCommandPalette && (() => {
+        const getPaletteOptions = () => {
+          const toolOptions = TOOLS.map((t, idx) => ({
+            id: t.id,
+            title: t.short,
+            subtitle: `Módulo de ${t.category === 'creativity' ? 'Creatividad' : 'Utilidades'} [Alt+${idx + 1}]`,
+            icon: t.icon,
+            action: () => {
+              navigate(t.path);
+              setShowCommandPalette(false);
+            }
+          }));
+
+          const systemOptions = [
+            {
+              id: 'go-home',
+              title: 'Volver al Panel Principal',
+              subtitle: 'Vista general con todos los módulos de precisión [Alt+P]',
+              icon: LayoutDashboard,
+              action: () => { navigate('/'); setShowCommandPalette(false); }
+            },
+            {
+              id: 'open-teleprompter',
+              title: 'Monitor Teleprompter',
+              subtitle: 'Asistente de lectura rápida con espejo y velocidad regulable [Alt+M]',
+              icon: Monitor,
+              action: () => { setShowTeleprompter(true); setShowCommandPalette(false); }
+            },
+            {
+              id: 'open-scratchpad',
+              title: 'Portapapeles Inteligente',
+              subtitle: 'Bloc rápido integrado para transferir textos fácilmente [C]',
+              icon: Clipboard,
+              action: () => { setShowScratchpad(true); setShowCommandPalette(false); }
+            },
+            {
+              id: 'open-shortcuts',
+              title: 'Ver Atajos de Teclado',
+              subtitle: 'Ayuda y atajos para navegar como un profesional [H / ?]',
+              icon: Keyboard,
+              action: () => { setShowShortcutsModal(true); setShowCommandPalette(false); }
+            },
+            {
+              id: 'open-settings',
+              title: 'Configurar Clave (Gemini)',
+              subtitle: 'Gestor y selector de API Key/Modelos [Alt+S]',
+              icon: Settings,
+              action: () => { setShowSettings(true); setShowCommandPalette(false); }
+            }
+          ];
+
+          return [...toolOptions, ...systemOptions];
+        };
+
+        const allOptions = getPaletteOptions();
+        const filteredOptions = allOptions.filter(opt => 
+          opt.title.toLowerCase().includes(paletteQuery.toLowerCase()) || 
+          opt.subtitle.toLowerCase().includes(paletteQuery.toLowerCase())
+        );
+
+        const handlePaletteKeyDown = (e: React.KeyboardEvent) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setPaletteIndex(prev => (prev + 1) % filteredOptions.length);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setPaletteIndex(prev => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (filteredOptions[paletteIndex]) {
+              filteredOptions[paletteIndex].action();
+            }
+          }
+        };
+
+        return (
+          <div className="fixed inset-0 z-[120] flex items-start justify-center pt-20 md:pt-36 p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-205" onClick={() => setShowCommandPalette(false)} />
+            <div className="relative bg-white border-4 border-black w-full max-w-2xl shadow-[24px_24px_0px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+              {/* Input Buscador */}
+              <div className="flex items-center gap-4 px-6 border-b-2 border-black bg-zinc-50 py-4 flex-none">
+                <Search size={22} className="text-black shrink-0" />
+                <input
+                  type="text"
+                  value={paletteQuery}
+                  onChange={(e) => { setPaletteQuery(e.target.value); setPaletteIndex(0); }}
+                  onKeyDown={handlePaletteKeyDown}
+                  placeholder="Escribe para buscar herramientas o atajos..."
+                  className="flex-1 bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none focus:ring-0 placeholder:text-zinc-350"
+                  autoFocus
+                />
+                <button 
+                  onClick={() => setShowCommandPalette(false)}
+                  className="text-[10px] font-black uppercase border border-black px-2.5 py-1 hover:bg-black hover:text-white transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+
+              {/* Lista de Herramientas Filtrada */}
+              <div className="max-h-96 overflow-y-auto divide-y divide-zinc-200">
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((opt, idx) => {
+                    const isCurrent = idx === paletteIndex;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => opt.action()}
+                        onMouseEnter={() => setPaletteIndex(idx)}
+                        className={`w-full p-4 flex items-center justify-between text-left transition-all ${isCurrent ? 'bg-black text-white shadow-inner scale-[1.01]' : 'bg-white hover:bg-zinc-50'}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${isCurrent ? 'bg-white text-black' : 'bg-zinc-150 text-black border border-black'}`}>
+                            <opt.icon size={16} />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-black uppercase tracking-widest leading-none">{opt.title}</h4>
+                            <p className={`text-[9px] tracking-wide mt-1.5 ${isCurrent ? 'text-zinc-300' : 'text-zinc-400'}`}>{opt.subtitle}</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-mono uppercase tracking-[0.2em] opacity-30">Abrir</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="p-8 text-center bg-zinc-50">
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-400">No se encontraron resultados para "{paletteQuery}"</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Pie de Buscador con tips */}
+              <div className="p-4 border-t-2 border-black bg-zinc-50 text-[8px] md:text-[9px] font-mono uppercase tracking-widest text-zinc-400 flex items-center justify-between flex-none">
+                <span>↑↓ para navegar • Enter para Abrir • Esc para cerrar</span>
+                <span className="font-bold text-black border-b border-black">Atajo: Ctrl+K</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Keyboard Shortcuts Cheat Sheet Modal */}
+      {showShortcutsModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowShortcutsModal(false)} />
+          <div className="relative bg-white border-4 border-black p-8 md:p-12 w-full max-w-xl shadow-[24px_24px_0px_rgba(0,0,0,0.15)] animate-in zoom-in-95 duration-200 flex flex-col">
+             <button onClick={() => setShowShortcutsModal(false)} className="absolute top-6 right-6 text-zinc-450 hover:text-black transition-colors" title="Cerrar [Esc]">
+               <X size={24} />
+             </button>
+
+             <div className="flex items-center gap-4 mb-8 border-b-2 border-black pb-6">
+                <div className="w-12 h-12 bg-black flex items-center justify-center text-white shrink-0">
+                   <Keyboard size={24} />
+                </div>
+                <div>
+                   <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">Atajos de Teclado</h2>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Maximiza tu productividad en Estudio.Modular</p>
+                </div>
+             </div>
+
+             <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-2">
+                <div className="space-y-3">
+                   <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Atajos Globales</h3>
+                   {[
+                     { keys: ['Ctrl', 'K'], desc: 'Buscador instantáneo (Command Palette)' },
+                     { keys: ['C'], desc: 'Abrir / Cerrar Portapapeles Inteligente' },
+                     { keys: ['H', 'o', '?'], desc: 'Ver este panel de ayuda de atajos' },
+                     { keys: ['Esc'], desc: 'Cerrar cualquier panel, menú o modal activo' },
+                   ].map((item, idx) => (
+                     <div key={idx} className="flex justify-between items-center text-xs py-1.5 border-b border-zinc-100">
+                       <span className="text-zinc-600 font-medium">{item.desc}</span>
+                       <div className="flex gap-1">
+                         {item.keys.map((k, kIdx) => (
+                           <kbd key={kIdx} className="bg-zinc-55 border-2 border-black px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide">{k}</kbd>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                </div>
+
+                <div className="space-y-3">
+                   <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Herramientas & Secciones</h3>
+                   {[
+                     { keys: ['Alt', '1..6'], desc: 'Herramientas de Creatividad directas' },
+                     { keys: ['Alt', '7..9'], desc: 'Calculadoras y utilidades directas' },
+                     { keys: ['Alt', '0', 'o', 'P'], desc: 'Volver al panel principal (Dashboard)' },
+                     { keys: ['Alt', 'M'], desc: 'Lanzar el Monitor (Teleprompter)' },
+                     { keys: ['Alt', 'S'], desc: 'Ir a Configuración (API Key Gemini)' },
+                   ].map((item, idx) => (
+                     <div key={idx} className="flex justify-between items-center text-xs py-1.5 border-b border-zinc-100">
+                       <span className="text-zinc-650 font-medium">{item.desc}</span>
+                       <div className="flex gap-1 flex-shrink-0">
+                         {item.keys.map((k, kIdx) => (
+                           <kbd key={kIdx} className="bg-zinc-55 border-2 border-black px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide">{k}</kbd>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                </div>
+             </div>
+
+             <div className="mt-8 pt-6 border-t border-zinc-100 flex justify-end">
+                <button 
+                  onClick={() => setShowShortcutsModal(false)}
+                  className="w-full h-12 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-lg"
+                >
+                  Entendido
+                </button>
+             </div>
+          </div>
         </div>
       )}
     </div>

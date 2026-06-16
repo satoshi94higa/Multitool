@@ -29,7 +29,7 @@ const renderTextWithBolds = (text: string) => {
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
-        <strong key={index} className="font-extrabold text-zinc-900 bg-indigo-50/40 px-1 rounded-sm">
+        <strong key={index} className="font-extrabold text-zinc-900 bg-zinc-100 px-1 rounded-none">
           {part.slice(2, -2)}
         </strong>
       );
@@ -49,22 +49,22 @@ const renderFormattedResult = (text: string) => {
                               /^(PLAN DE ACCIÓN|PLAN DE ACCION|PROPUESTA DE GUION|PROPUESTA DE GUIÓN|LOGÍSTICA|LOGISTICA|PROPUESTA DE GUION Y RECURSOS|LOGÍSTICA Y EQUIPAMIENTO SUTIL)/i.test(trimmed);
 
     if (isNumberedHeading) {
-      let icon = <Sparkles size={14} className="text-indigo-500 shrink-0" />;
-      let styleClasses = "bg-indigo-50/60 text-indigo-800 border-indigo-100/80";
+      let icon = <Sparkles size={14} className="text-black shrink-0" />;
+      let styleClasses = "bg-zinc-100 text-black border-zinc-300";
 
       if (/plan/i.test(trimmed) || /1\./.test(trimmed)) {
-        icon = <Check size={14} className="text-emerald-600 shrink-0 font-bold" />;
-        styleClasses = "bg-emerald-50/70 text-emerald-900 border-emerald-100/75 mt-4";
+        icon = <Check size={14} className="text-black shrink-0 font-bold" />;
+        styleClasses = "bg-zinc-50 text-black border-zinc-200 mt-4";
       } else if (/guion|guión/i.test(trimmed) || /2\./.test(trimmed)) {
-        icon = <Video size={14} className="text-red-600 shrink-0" />;
-        styleClasses = "bg-red-50/70 text-red-900 border-red-100/75 mt-5";
+        icon = <Video size={14} className="text-black shrink-0" />;
+        styleClasses = "bg-zinc-50 text-black border-zinc-200 mt-5";
       } else if (/log/i.test(trimmed) || /equi/i.test(trimmed) || /3\./.test(trimmed)) {
-        icon = <Users size={14} className="text-blue-600 shrink-0" />;
-        styleClasses = "bg-blue-50/70 text-blue-900 border-blue-100/75 mt-5";
+        icon = <Users size={14} className="text-black shrink-0" />;
+        styleClasses = "bg-zinc-50 text-black border-zinc-200 mt-5";
       }
 
       return (
-        <div key={idx} className={`flex items-center gap-2.5 mb-2.5 px-3.5 py-2 border rounded-xl font-bold text-xs ${styleClasses} select-none shadow-xs`}>
+        <div key={idx} className={`flex items-center gap-2.5 mb-2.5 px-3.5 py-2 border rounded-none font-bold text-xs ${styleClasses} select-none`}>
           {icon}
           <span className="font-sans uppercase tracking-wider">{trimmed}</span>
         </div>
@@ -77,8 +77,8 @@ const renderFormattedResult = (text: string) => {
     if (isBullet) {
       const cleanLine = trimmed.replace(/^[-*\s]+/, '').replace(/^\d+\s*[\.\-]\s+/, '');
       return (
-        <div key={idx} className="flex items-start gap-2.5 pl-3 py-1.5 leading-relaxed text-[11px] text-zinc-700 font-sans font-medium hover:text-zinc-900 transition-colors">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0 animate-pulse" />
+        <div key={idx} className="flex items-start gap-2.5 pl-3 py-1.5 leading-relaxed text-[11px] text-zinc-700 font-sans font-medium hover:text-black transition-colors">
+          <span className="w-1.5 h-1.5 rounded-none bg-black mt-1.5 shrink-0" />
           <span>{renderTextWithBolds(cleanLine)}</span>
         </div>
       );
@@ -453,29 +453,19 @@ export default function ContentBrainstormer() {
   };
 
   return (
-    <div className="space-y-8 bg-slate-50/50 p-1 rounded-2xl" id="content-brainstormer">
+    <div className="space-y-12 bg-transparent pb-4" id="content-brainstormer">
       
       {/* Refined Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-200/60 pb-5 gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight inline-flex items-center gap-2.5 text-zinc-900">
-            <span className="p-2 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-600/10">
-              <Brain size={20} className="animate-pulse" />
-            </span>
-            Lluvia de Ideas
-          </h1>
-          <p className="text-xs text-zinc-500 mt-1">Estrategia táctica de cobertura con un rediseño de usabilidad moderno.</p>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-4 border-black pb-2 gap-4">
+        <h1 className="text-xl font-black uppercase tracking-tighter inline-block self-start">
+          Lluvia de Ideas
+        </h1>
         
         <button 
           onClick={() => setShowHistory(!showHistory)}
-          className={`group flex items-center justify-center gap-2 px-3.5 py-2 border transition-all text-xs font-semibold rounded-xl ${
-            showHistory 
-              ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm' 
-              : 'bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-600 hover:border-zinc-300'
-          }`}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-zinc-200"
         >
-          <History size={14} className="text-zinc-400 group-hover:text-zinc-600 transition-colors" />
+          <History size={14} />
           {showHistory ? 'Ocultar Historial' : `Historial (${history.length})`}
         </button>
       </div>
@@ -487,43 +477,44 @@ export default function ContentBrainstormer() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-white border border-zinc-200/80 rounded-2xl shadow-sm"
+            className="overflow-hidden bg-zinc-50 border-2 border-black p-6 mb-8 rounded-none"
           >
-            <div className="p-5 border-b border-zinc-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-3">Sesiones Recientes</span>
-              {history.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-xs text-zinc-400">No hay sesiones guardadas.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {history.map((item) => (
-                    <div 
-                      key={item.id}
-                      onClick={() => loadFromHistory(item)}
-                      className="group p-3.5 bg-zinc-50/50 hover:bg-indigo-50/20 rounded-xl border border-zinc-200/75 hover:border-indigo-400 cursor-pointer transition-all flex flex-col justify-between shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-zinc-800 truncate group-hover:text-indigo-600 transition-colors">{item.title}</p>
-                          <p className="text-[10px] text-zinc-400 mt-0.5">{new Date(item.timestamp).toLocaleDateString('es-AR')}</p>
-                        </div>
-                        <button 
-                          onClick={(e) => removeHistoryItem(e, item.id)}
-                          className="text-zinc-300 hover:text-red-500 transition-colors p-1"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-1 text-zinc-500 group-hover:text-indigo-600 transition-colors mt-2 text-[10px] font-semibold">
-                        <span>Restaurar sesión</span>
-                        <ChevronRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Últimas Generaciones</span>
+              <span className="text-[9px] font-bold text-zinc-300">Autoguardado Local</span>
             </div>
+            {history.length === 0 ? (
+              <div className="text-center py-10 border-2 border-dashed border-zinc-200">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No hay registros guardados</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {history.map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => loadFromHistory(item)}
+                    className="group p-4 bg-white border border-zinc-200 hover:border-black cursor-pointer transition-all flex flex-col gap-3 relative rounded-none"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-black uppercase tracking-tight text-black truncate">{item.title}</p>
+                        <p className="text-[9px] font-bold text-zinc-400 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
+                      </div>
+                      <button 
+                        onClick={(e) => removeHistoryItem(e, item.id)}
+                        className="text-zinc-300 hover:text-red-500 transition-colors p-1"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 text-zinc-300 group-hover:text-black transition-colors">
+                      <span className="text-[8px] font-black uppercase tracking-widest">Recuperar</span>
+                      <ChevronRight size={10} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -533,14 +524,14 @@ export default function ContentBrainstormer() {
         
         {/* Step 1 & Textarea Block */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4 hover:border-zinc-300/80 transition-colors flex-1 flex flex-col justify-between">
+          <div className="bg-white border-2 border-black p-6 shadow-[8px_8px_0px_rgba(0,0,0,0.05)] space-y-4 hover:border-black transition-colors flex-1 flex flex-col justify-between rounded-none">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-black">1</span>
-                  <h2 className="text-sm font-bold text-zinc-800">Definí el Tema, Cobertura o Idea Central</h2>
+                  <span className="w-5 h-5 rounded-none bg-zinc-100 text-black flex items-center justify-center text-[10px] font-black border border-black">1</span>
+                  <h2 className="text-[11px] font-black text-zinc-950 uppercase tracking-widest">Definí el Tema, Cobertura o Idea Central</h2>
                 </div>
-                <span className="text-[10px] text-zinc-400 font-medium bg-zinc-50 border border-zinc-100 rounded-md px-2 py-0.5 select-none">
+                <span className="text-[10px] text-zinc-400 font-mono bg-zinc-50 border border-zinc-150 rounded-none px-2 py-0.5 select-none">
                   {input.length} caracteres
                 </span>
               </div>
@@ -550,15 +541,15 @@ export default function ContentBrainstormer() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ej: Cobertura del festival de foodtrucks con bandas en vivo este finde, inauguración de un local de café de especialidad con propuesta estética minimalista, o un hilo informativo sobre las historias ocultas de los comercios del barrio..."
-                  className="w-full h-36 p-4 bg-zinc-50/50 hover:bg-zinc-50/80 focus:bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 resize-none font-medium text-zinc-800 placeholder-zinc-400 transition-all shadow-inner leading-relaxed"
+                  className="w-full h-36 p-4 bg-zinc-50 hover:bg-white focus:bg-white border-2 border-zinc-200 focus:border-black text-sm focus:outline-none resize-none font-sans text-black placeholder-zinc-300 transition-all leading-relaxed rounded-none shadow-sm"
                 />
               </div>
             </div>
 
             {/* Micro details or quick tips inside the textarea footer */}
-            <div className="pt-3 border-t border-zinc-100/80 flex items-center gap-2 text-[10px] text-zinc-400 font-medium">
-              <Sparkle size={11} className="text-indigo-400" />
-              <span>Podés escribir cualquier tema libremente, la IA procesará la mejor estrategia audiovisual, narrativa y física.</span>
+            <div className="pt-3 border-t border-zinc-100 flex items-center gap-2 text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+              <Sparkle size={11} className="text-black animate-pulse" />
+              <span>Escribe libremente y la IA procesará la cobertura estratégica audiovisual.</span>
             </div>
           </div>
         </div>
@@ -567,7 +558,7 @@ export default function ContentBrainstormer() {
         <div className="lg:col-span-4 flex flex-col gap-6">
           
           {/* Step 2: Equipo con Representación Visual de Avatares */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between hover:border-zinc-300/80 transition-colors">
+          <div className="bg-white border-2 border-black p-6 shadow-[8px_8px_0px_rgba(0,0,0,0.05)] space-y-4 flex flex-col justify-between hover:border-black transition-colors rounded-none">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-black">2</span>
@@ -773,28 +764,28 @@ export default function ContentBrainstormer() {
 
             {/* Quick Helper Widget to give life to empty spaces or add interaction values */}
             {activeTab === 'all' && (
-              <div className="p-6 bg-white border border-zinc-200 rounded-2xl flex flex-col justify-between gap-5 relative overflow-hidden shadow-sm">
+              <div className="p-8 bg-zinc-50 border-2 border-black rounded-none flex flex-col justify-between gap-6 relative overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.05)]">
                 <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 opacity-[0.03]">
                   <Sparkles size={160} />
                 </div>
                 
-                <div className="space-y-2.5">
-                  <h3 className="text-xs font-extrabold text-zinc-800 tracking-wider uppercase flex items-center gap-1.5">
-                    <Sparkle size={13} className="text-indigo-600" />
+                <div className="space-y-3">
+                  <h3 className="text-[10px] font-black text-zinc-950 uppercase tracking-widest flex items-center gap-1.5 pb-2 border-b border-zinc-200">
+                    <Sparkle size={13} className="text-black" />
                     Guía de Trabajo Modular
                   </h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-sans">
-                    Hacé clic en el ícono de estrella <Sparkle className="inline" size={10} /> para marcar ideas específicas. Podés enviar solamente tu selección estrella directo a tu espacio de trabajo.
+                  <p className="text-xs text-zinc-500 leading-relaxed font-sans font-medium">
+                    Hacé clic en el ícono de estrella <Sparkle className="inline text-black" size={10} /> para marcar ideas específicas. Podés enviar solamente tu selección estrella directo a tu espacio de trabajo.
                   </p>
-                  <p className="text-[10px] text-zinc-400 leading-relaxed font-sans mt-1">
-                    Usa el botón de varita <Sparkles className="inline text-indigo-500" size={10} /> para planificar en profundidad, el cual te entregará guion de audio, tomas de recurso y logística exacta.
+                  <p className="text-[10px] text-zinc-400 leading-relaxed font-sans mt-1 font-bold">
+                    Usa el botón de varita <Sparkles className="inline text-black" size={10} /> para planificar en profundidad, el cual te entregará guion de audio, tomas de recurso y logística exacta.
                   </p>
                 </div>
                 
-                <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200/60 transition-colors hover:border-zinc-300">
+                <div className="bg-white p-4 border-2 border-black rounded-none">
                   <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block text-center mb-1">Tu Selección</span>
                   <div className="flex items-center justify-center gap-1">
-                    <CheckCircle2 size={13} className="text-indigo-600" />
+                    <CheckCircle2 size={13} className="text-black" />
                     <span className="text-sm font-extrabold text-zinc-800 font-mono">{favorites.length} de 15 ideas estrella</span>
                   </div>
                 </div>
@@ -811,27 +802,27 @@ export default function ContentBrainstormer() {
                 exit={{ y: 50, opacity: 0 }}
                 className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] w-full max-w-lg px-4"
               >
-                <div className="bg-zinc-950 border border-zinc-800 text-white rounded-2xl shadow-xl p-4 flex items-center justify-between gap-4 backdrop-blur bg-zinc-950/95">
+                <div className="bg-black border-2 border-white text-white rounded-none shadow-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-black text-white">
+                    <div className="h-8 w-8 rounded-none border border-white/20 bg-white/10 flex items-center justify-center text-xs font-black text-white">
                       {favorites.length}
                     </div>
                     <div>
-                      <p className="text-xs font-bold font-sans">Ideas seleccionadas</p>
-                      <p className="text-[10px] text-zinc-400 font-sans">Listas para ser pegadas en el editor modular.</p>
+                      <p className="text-xs font-black uppercase text-white tracking-widest">Ideas Seleccionadas</p>
+                      <p className="text-[10px] text-zinc-400 font-sans mt-0.5">Listas para ser pegadas en el editor modular.</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => setFavorites([])}
-                      className="px-3 py-1.5 bg-zinc-850 hover:bg-zinc-800 text-zinc-400 hover:text-white text-[11px] font-bold rounded-xl transition-colors cursor-pointer"
+                      className="px-3 py-1.5 border border-white/20 hover:bg-white/10 text-zinc-300 hover:text-white text-[10px] font-black uppercase tracking-wider rounded-none cursor-pointer"
                     >
                       Limpiar
                     </button>
                     <button 
                       onClick={() => sendToProcessor(true)}
-                      className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 font-bold text-[11px] text-white rounded-xl transition-colors flex items-center gap-1 px-3 cursor-pointer shadow-md shadow-indigo-600/10"
+                      className="px-4 py-1.5 bg-white hover:bg-zinc-200 font-black text-[10px] uppercase tracking-wider text-black rounded-none transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <Send size={11} />
                       Enviar Selección
@@ -861,12 +852,12 @@ export default function ContentBrainstormer() {
               initial={{ scale: 0.96, y: 10, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.96, y: 10, opacity: 0 }}
-              className="relative bg-white border border-zinc-200 rounded-2xl p-6 md:p-8 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl flex flex-col justify-between"
+              className="relative bg-white border-4 border-black rounded-none p-6 md:p-8 w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-[24px_24px_0px_rgba(0,0,0,0.15)] flex flex-col justify-between"
             >
               {/* Close Button */}
               <button 
                 onClick={() => setExpandedIdea(null)}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-650 hover:bg-zinc-100 p-2 rounded-full transition-all"
+                className="absolute top-4 right-4 text-zinc-400 hover:text-black hover:bg-zinc-100 p-2 rounded-none transition-all"
               >
                 <X size={18} />
               </button>
@@ -874,18 +865,18 @@ export default function ContentBrainstormer() {
               <div className="space-y-6">
                 
                 {/* Modal Title Block */}
-                <div className="flex items-center gap-3">
-                  <span className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                <div className="flex items-center gap-3 pb-4 border-b border-zinc-200">
+                  <span className="p-2.5 bg-zinc-100 text-black border border-zinc-300 rounded-none">
                     <Sparkles size={18} className="animate-pulse" />
                   </span>
                   <div>
-                    <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider font-sans">Estrategia Detallada de Campo</h3>
+                    <h3 className="text-[11px] font-black text-black uppercase tracking-widest font-sans">Estrategia Detallada de Campo</h3>
                     <p className="text-[10px] text-zinc-400 mt-0.5">Diseño logístico de cobertura generado a medida.</p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-zinc-50 border border-zinc-200/60 rounded-xl">
-                  <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Propuesta original</span>
+                <div className="p-4 bg-zinc-50 border-2 border-black/5 rounded-none">
+                  <span className="text-[9px] font-black text-zinc-400 uppercase tracking-wider block mb-1">Propuesta original</span>
                   <p className="text-xs text-zinc-800 font-bold leading-relaxed font-sans">
                     {expandedIdea.idea}
                   </p>
@@ -893,7 +884,7 @@ export default function ContentBrainstormer() {
 
                 {/* Main Markdown / Text content rendered beautifully */}
                 <div className="space-y-1">
-                  <div className="bg-zinc-50 border border-zinc-150 p-4.5 rounded-2xl shadow-inner text-zinc-700 font-sans leading-relaxed">
+                  <div className="bg-zinc-50 border-2 border-black p-6 rounded-none shadow-sm text-zinc-700 font-sans leading-relaxed">
                     {renderFormattedResult(expandedIdea.result)}
                   </div>
                 </div>
@@ -902,7 +893,7 @@ export default function ContentBrainstormer() {
 
               {/* Modal Actions */}
               <div className="border-t border-zinc-150 mt-6 pt-5 flex items-center justify-between gap-4">
-                <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1 uppercase tracking-wider">
                   <Clock size={11} />
                   Listo para plan de rodaje
                 </span>
@@ -913,7 +904,7 @@ export default function ContentBrainstormer() {
                       copyToClipboard(`IDEA CREATIVA: ${expandedIdea.idea}\n\n${expandedIdea.result}`);
                       showTemporaryToast();
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-4 py-2 border-2 border-black bg-white hover:bg-zinc-50 text-xs font-black uppercase rounded-none transition-all cursor-pointer"
                   >
                     <Copy size={13} />
                     Copiar
@@ -927,7 +918,7 @@ export default function ContentBrainstormer() {
                       }));
                       setExpandedIdea(null);
                     }}
-                    className="flex items-center gap-1.5 px-4.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-600/10"
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 bg-black text-white text-xs font-black uppercase rounded-none transition-all cursor-pointer hover:bg-zinc-800"
                   >
                     <Send size={13} />
                     Pegar en editor
@@ -940,9 +931,9 @@ export default function ContentBrainstormer() {
       </AnimatePresence>
 
       {/* Mini notification system for copy paste events */}
-      <div id="ideas-clipboard-toast" className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-800 text-white rounded-xl px-4 py-2.5 text-xs font-bold shadow-2xl z-[150] transition-opacity opacity-0 pointer-events-none flex items-center gap-2">
+      <div id="ideas-clipboard-toast" className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-black text-white rounded-none px-4 py-2.5 text-xs font-bold shadow-2xl z-[150] transition-opacity opacity-0 pointer-events-none flex items-center gap-2 border border-white/10">
         <Check size={13} className="text-emerald-400" />
-        <span>Texto copiado al portapapeles</span>
+        <span className="uppercase tracking-widest text-[9px]">Texto copiado al portapapeles</span>
       </div>
 
     </div>
@@ -989,29 +980,29 @@ function CategorySection({
   
   const themes = {
     indigo: {
-      border: 'hover:border-indigo-300 border-zinc-200/80',
-      tagBg: 'bg-indigo-50 text-indigo-700 border border-indigo-100/55',
-      iconText: 'text-indigo-600',
+      border: 'hover:border-black border-zinc-200/80',
+      tagBg: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+      iconText: 'text-black',
     },
     blue: {
-      border: 'hover:border-blue-300 border-zinc-200/80',
-      tagBg: 'bg-blue-50 text-blue-700 border border-blue-100/55',
-      iconText: 'text-blue-600',
+      border: 'hover:border-black border-zinc-200/80',
+      tagBg: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+      iconText: 'text-black',
     },
     red: {
-      border: 'hover:border-red-300 border-zinc-200/80',
-      tagBg: 'bg-red-50 text-red-700 border border-red-100/55',
-      iconText: 'text-red-600',
+      border: 'hover:border-black border-zinc-200/80',
+      tagBg: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+      iconText: 'text-black',
     },
     purple: {
-      border: 'hover:border-purple-300 border-zinc-200/80',
-      tagBg: 'bg-purple-50 text-purple-700 border border-purple-100/55',
-      iconText: 'text-purple-600',
+      border: 'hover:border-black border-zinc-200/80',
+      tagBg: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+      iconText: 'text-black',
     },
     amber: {
-      border: 'hover:border-amber-300 border-zinc-200/80',
-      tagBg: 'bg-amber-50 text-amber-700 border border-amber-100/55',
-      iconText: 'text-amber-600',
+      border: 'hover:border-black border-zinc-200/80',
+      tagBg: 'bg-zinc-100 text-zinc-900 border border-zinc-300',
+      iconText: 'text-black',
     }
   };
 
@@ -1029,17 +1020,17 @@ function CategorySection({
   };
 
   return (
-    <div className={`p-5 bg-white rounded-2xl border ${themes[themeColor].border} transition-all shadow-sm flex flex-col justify-between hover:shadow-md animate-in fade-in zoom-in-95 duration-200`}>
+    <div className="p-6 bg-white rounded-none border-2 border-black transition-all shadow-[6px_6px_0px_rgba(0,0,0,0.06)] flex flex-col justify-between hover:shadow-[10px_10px_0px_rgba(0,0,0,0.12)] animate-in fade-in zoom-in-95 duration-200">
       <div className="space-y-4">
         
         {/* Card Header */}
-        <div className="flex items-center gap-2.5 pb-2.5 border-b border-zinc-150">
-          <div className={`p-2 rounded-xl ${themes[themeColor].tagBg} shrink-0`}>
+        <div className="flex items-center gap-2.5 pb-2.5 border-b border-zinc-200">
+          <div className="p-2 rounded-none bg-zinc-100 text-black border border-zinc-300 shrink-0">
             <Icon size={16} />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-zinc-800 font-sans tracking-tight leading-none">{title}</h3>
-            <span className="text-[9px] text-zinc-400 mt-1 block font-medium">{subtitle}</span>
+            <h3 className="text-xs font-black text-black font-sans uppercase tracking-tight leading-none">{title}</h3>
+            <span className="text-[9px] text-zinc-400 mt-1 block font-bold uppercase tracking-wider">{subtitle}</span>
           </div>
         </div>
 
@@ -1052,27 +1043,27 @@ function CategorySection({
             return (
               <li 
                 key={index} 
-                className={`p-3 rounded-xl border text-xs leading-relaxed transition-all flex flex-col gap-2.5 font-sans ${
+                className={`p-3 rounded-none border text-xs leading-relaxed transition-all flex flex-col gap-2.5 font-sans ${
                   isFav 
-                    ? 'bg-zinc-50 border-indigo-300 text-zinc-900 shadow-sm shadow-indigo-100/10' 
-                    : 'bg-zinc-50/20 border-zinc-200/70 hover:border-zinc-300 hover:bg-zinc-50/45 text-zinc-650'
+                    ? 'bg-zinc-50 border-2 border-black text-zinc-950 font-semibold shadow-sm' 
+                    : 'bg-zinc-50/20 border-zinc-200 hover:border-black/50 hover:bg-zinc-50 text-zinc-650'
                 }`}
               >
                 <div className="flex items-start gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 mt-1.5 flex-none shrink-0" />
-                  <span className={`block flex-grow ${isFav ? 'font-bold text-zinc-800' : 'font-medium text-zinc-600'}`}>
+                  <div className="w-1.5 h-1.5 rounded-none bg-zinc-400 mt-1.5 flex-none shrink-0" />
+                  <span className={`block flex-grow ${isFav ? 'font-bold text-black' : 'font-medium text-zinc-600'}`}>
                     {item}
                   </span>
                 </div>
 
                 {/* Hover Quick actions bar */}
-                <div className="flex items-center justify-between border-t border-zinc-200/40 pt-2 pb-0.5 bg-transparent">
+                <div className="flex items-center justify-between border-t border-zinc-200/60 pt-2 pb-0.5 bg-transparent">
                   <div className="flex items-center gap-0.5">
                     <button 
                       onClick={() => toggleFavorite(item)}
                       title={isFav ? "Quitar del plan estrella" : "Marcar con estrella"}
-                      className={`p-1.5 rounded-lg hover:bg-zinc-100/80 transition-colors cursor-pointer ${
-                        isFav ? 'text-amber-500' : 'text-zinc-300 hover:text-amber-400'
+                      className={`p-1.5 rounded-none hover:bg-zinc-100 transition-colors cursor-pointer ${
+                        isFav ? 'text-black' : 'text-zinc-300 hover:text-black'
                       }`}
                     >
                       <Sparkle size={12} fill={isFav ? "currentColor" : "none"} className="transition-transform active:scale-125" />
@@ -1081,7 +1072,7 @@ function CategorySection({
                     <button 
                       onClick={() => copyItemText(item)}
                       title="Copiar texto de la idea"
-                      className="p-1.5 text-zinc-300 hover:text-zinc-600 hover:bg-zinc-100/80 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-zinc-300 hover:text-black hover:bg-zinc-100 rounded-none transition-colors cursor-pointer"
                     >
                       <Copy size={11} />
                     </button>
@@ -1090,10 +1081,10 @@ function CategorySection({
                   <button
                     onClick={() => onExpand(categoryKey, item, index)}
                     disabled={isThisExpanding}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-[9.5px] font-bold rounded-lg transition-colors cursor-pointer ${
+                    className={`flex items-center gap-1 px-2.5 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-none transition-colors cursor-pointer border ${
                       isThisExpanding 
-                        ? 'text-indigo-600 cursor-not-allowed bg-indigo-50' 
-                        : 'text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50'
+                        ? 'text-zinc-400 border-zinc-200 cursor-not-allowed bg-zinc-50' 
+                        : 'text-black border-black hover:bg-black hover:text-white bg-white'
                     }`}
                   >
                     {isThisExpanding ? (
@@ -1103,7 +1094,7 @@ function CategorySection({
                       </>
                     ) : (
                       <>
-                        <Sparkles size={9} className="text-indigo-500" />
+                        <Sparkles size={9} className="text-black" />
                         <span>Tácticas de rodaje</span>
                       </>
                     )}
