@@ -55,88 +55,12 @@ const InfoTooltip = ({ text }: { text: string }) => {
   );
 };
 
-// Procedural Synthesizer for Atmos and Sound Effects in Hollywood Studio Workspace
+// Procedural Synthesizer for Atmos and Sound Effects in Hollywood Studio Workspace - SILENCED/REMOVED
 const playProceduralSound = (type: 'swoosh' | 'drone' | 'click' | 'rise' | 'tick' | 'wood') => {
-  if (typeof window === 'undefined') return;
-  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContextClass) return;
-  
-  try {
-    const ctx = new AudioContextClass();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    const now = ctx.currentTime;
-    
-    switch (type) {
-      case 'swoosh':
-        // Frequency sweep from 1400Hz to 120Hz in 0.3 seconds - Perfect cine transition swoosh
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1400, now);
-        osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-        break;
-      case 'click':
-        // Professional camera mechanical click
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1800, now);
-        osc.frequency.setValueAtTime(150, now + 0.04);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
-        osc.start(now);
-        osc.stop(now + 0.08);
-        break;
-      case 'rise':
-        // Synthesizer rise sweep representing high energy buildup
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now);
-        osc.frequency.linearRampToValueAtTime(850, now + 0.4);
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-        osc.start(now);
-        osc.stop(now + 0.45);
-        break;
-      case 'drone':
-        // Immersive cinema suspense sub-drone
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(75, now);
-        osc.frequency.linearRampToValueAtTime(55, now + 1.5);
-        gain.gain.setValueAtTime(0.45, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
-        osc.start(now);
-        osc.stop(now + 1.65);
-        break;
-      case 'tick':
-        // Clean digital clock countdown tick
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1000, now);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.setValueAtTime(0, now + 0.02);
-        osc.start(now);
-        osc.stop(now + 0.03);
-        break;
-      case 'wood':
-        // Film clapper board wooden snap
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(450, now);
-        osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-        osc.start(now);
-        osc.stop(now + 0.13);
-        break;
-    }
-  } catch (e) {
-    console.warn("AudioContext block", e);
-  }
+  // Silent execution to save resources
 };
 
-type Platform = 'instagram' | 'youtube' | 'tiktok' | 'cinema';
+type Platform = 'instagram' | 'youtube' | 'tiktok' | 'tiktok-extendido' | 'cinema';
 type Tone = 'casual' | 'professional' | 'energetic' | 'humorous' | 'epic' | 'noir';
 type NarratorProfile = 'expert' | 'creator' | 'storyteller' | 'minimalist' | 'hype';
 type Slang = 'voseo_porteño' | 'voseo_regio' | 'latino_neutral' | 'seseo_peninsular' | 'hype_mrbeast';
@@ -144,9 +68,10 @@ type LayoutStyle = 'av-script' | 'standard-hollywood' | 'bento-grid';
 type AtmosPreset = 'none' | 'lofi' | 'synthwave' | 'drums';
 
 const platformInfo = {
-  instagram: 'Scripts cortos (50-70s) optimizados para formato vertical de Reel, ganchos rápidos y alta retención visual.',
+  instagram: 'Scripts de hasta 90 segundos optimizados para formato vertical de Reel, ganchos rápidos y retención sostenida.',
   youtube: 'Guiones estructurados en formato horizontal (16:9), ideales para profundizar temáticas paso a paso.',
   tiktok: 'Scripts de ritmo hiper-veloz con cambios de plano constantes y lenguaje ultradinamizado de tendencia.',
+  'tiktok-extendido': 'Scripts de formato largo vertical (hasta 10 minutos) diseñados para monetizar en el programa de creadores de TikTok.',
   cinema: 'Formato estándar de cortometraje/narración ficcional que respeta la estructura de guion literario clásica.'
 };
 
@@ -197,144 +122,10 @@ interface Scene {
   };
 }
 
-// Simulated backend loop generator for atmospheric synth waves to keep a steady rhythm during reading
+// Simulated backend loop generator for atmospheric synth waves to keep a steady rhythm during reading - SILENCED/REMOVED
 class ProceduralAtmosSynth {
-  private ctx: AudioContext | null = null;
-  private nodes: { osc: OscillatorNode; filter: BiquadFilterNode; gain: GainNode }[] = [];
-  private active = false;
-  private type: AtmosPreset = 'none';
-  private timer: any = null;
-
-  public start(type: AtmosPreset) {
-    if (typeof window === 'undefined') return;
-    this.stop();
-    this.type = type;
-    if (type === 'none') return;
-    
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    try {
-      this.ctx = new AudioContextClass();
-      const now = this.ctx.currentTime;
-      this.active = true;
-
-      if (type === 'lofi') {
-        // Lofi Ambient Preset: A clean gentle rhodes-style repeating single triangle chord
-        const triggerNotes = () => {
-          if (!this.active || !this.ctx) return;
-          const rootFreq = 164.81; // E3
-          const notes = [rootFreq, rootFreq * 1.25, rootFreq * 1.5, rootFreq * 1.88]; // E G# B D# (Emaj7)
-          
-          notes.forEach((freq, idx) => {
-            if (!this.ctx) return;
-            const osc = this.ctx.createOscillator();
-            const filter = this.ctx.createBiquadFilter();
-            const gainNode = this.ctx.createGain();
-
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(320, this.ctx.currentTime); // Soft lofi filter
-
-            osc.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(this.ctx.destination);
-
-            const startTime = this.ctx.currentTime + (idx * 0.15); // gentle arpeggio
-            gainNode.gain.setValueAtTime(0, this.ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.06, startTime + 0.1);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 3.0);
-
-            osc.start(startTime);
-            osc.stop(startTime + 3.1);
-          });
-          
-          this.timer = setTimeout(triggerNotes, 5000); // repeat chord every 5 seconds
-        };
-        triggerNotes();
-      } else if (type === 'synthwave') {
-        // Synthwave Tension Preset: Alternating low filter-sweep saw chords
-        const triggerSynthwave = () => {
-          if (!this.active || !this.ctx) return;
-          const rootFreqs = [110.00, 130.81]; // A2 then C3
-          const currentRoot = rootFreqs[Math.floor(this.ctx.currentTime / 4) % rootFreqs.length];
-          const notes = [currentRoot, currentRoot * 1.5, currentRoot * 2.0];
-          
-          notes.forEach((freq, idx) => {
-            if (!this.ctx) return;
-            const osc = this.ctx.createOscillator();
-            const filter = this.ctx.createBiquadFilter();
-            const gainNode = this.ctx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            
-            filter.type = 'lowpass';
-            // Slow sweeps on filter freq to create tension and space
-            filter.frequency.setValueAtTime(150, this.ctx.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 1.8);
-            filter.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 3.6);
-
-            osc.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(this.ctx.destination);
-
-            gainNode.gain.setValueAtTime(0, this.ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.04, this.ctx.currentTime + 0.4);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 3.8);
-
-            osc.start(this.ctx.currentTime);
-            osc.stop(this.ctx.currentTime + 3.9);
-          });
-          
-          this.timer = setTimeout(triggerSynthwave, 3800);
-        };
-        triggerSynthwave();
-      } else if (type === 'drums') {
-        // High Retention Ticking Beat Preset: Steady rhythm tracker
-        const triggerMetronome = () => {
-          if (!this.active || !this.ctx) return;
-          
-          const pulse = () => {
-            if (!this.ctx) return;
-            const osc = this.ctx.createOscillator();
-            const gainNode = this.ctx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(this.ctx.destination);
-            
-            osc.type = 'sine';
-            const beatId = Math.floor(this.ctx!.currentTime * 2) % 4;
-            osc.frequency.setValueAtTime(beatId === 0 ? 500 : 350, this.ctx.currentTime); // High tick on start of bar
-            
-            gainNode.gain.setValueAtTime(0.08, this.ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
-            
-            osc.start(this.ctx.currentTime);
-            osc.stop(this.ctx.currentTime + 0.05);
-          };
-          
-          pulse();
-          this.timer = setTimeout(triggerMetronome, 500); // 120 BPM
-        };
-        triggerMetronome();
-      }
-    } catch (e) {
-      console.warn("Could not start procedual atmospheric backing", e);
-    }
-  }
-
-  public stop() {
-    this.active = false;
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-    if (this.ctx) {
-      this.ctx.close().catch();
-      this.ctx = null;
-    }
-  }
+  public start(type: AtmosPreset) {}
+  public stop() {}
 }
 
 // Pre-instantiated singleton to control procedural music across state transitions
@@ -986,21 +777,22 @@ export default function ScreenwriterIA() {
             <span className="text-[9px] font-black uppercase text-zinc-400 tracking-widest pl-1 flex items-center gap-2">
               <Sliders size={12} /> Formato de Transmisión
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
-              {(['instagram', 'youtube', 'tiktok', 'cinema'] as const).map((p) => (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-zinc-50 p-1.5 border border-zinc-200">
+              {(['instagram', 'youtube', 'tiktok', 'tiktok-extendido', 'cinema'] as const).map((p) => (
                 <button
                   key={p}
                   onClick={() => {
                     playProceduralSound('click');
                     setPlatform(p);
                   }}
-                  className={`flex flex-col items-center justify-center p-3 gap-1.5 transition-all font-black text-[10px] uppercase tracking-wider ${platform === p ? 'bg-black text-white shadow-xl' : 'text-zinc-400 bg-white hover:text-black hover:border-black border border-transparent'}`}
+                  className={`flex flex-col items-center justify-center p-3 gap-1.5 transition-all font-black text-[9px] uppercase tracking-wider ${platform === p ? 'bg-black text-white shadow-xl' : 'text-zinc-400 bg-white hover:text-black hover:border-black border border-transparent'}`}
                 >
                   {p === 'instagram' && <Instagram size={16} />}
                   {p === 'youtube' && <Youtube size={16} />}
                   {p === 'tiktok' && <MonitorSmartphone size={16} />}
+                  {p === 'tiktok-extendido' && <Video size={16} />}
                   {p === 'cinema' && <ScrollText size={16} />}
-                  <span>{p}</span>
+                  <span>{p === 'tiktok-extendido' ? 'Tiktok Ext' : p}</span>
                 </button>
               ))}
             </div>
@@ -1084,68 +876,53 @@ export default function ScreenwriterIA() {
 
         </div>
 
-        {/* HOLLYWOOD SFX SOUNDSTAGE & ATMOS (Interactive Soundboard Widget) */}
-        <div className="bg-zinc-900 text-white p-6 border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] space-y-6 flex flex-col justify-between">
+        {/* PROPUESTAS Y REFACTORIZACIONES SUGERIDAS (Muro interactivo de sugerencias de optimización) */}
+        <div className="bg-zinc-50 border-4 border-black p-6 shadow-[8px_8px_0px_rgba(0,0,0,1)] space-y-5 flex flex-col justify-between" id="simplification-suggestions-panel">
           <div>
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <span className="text-[9px] font-mono font-black text-zinc-400 tracking-widest flex items-center gap-2">
-                <Music size={14} className="text-yellow-400" /> Mezcladora Atmosférica Procedural
+            <div className="flex items-center justify-between border-b-2 border-black pb-3">
+              <span className="text-[10px] font-mono font-black text-zinc-900 tracking-wider flex items-center gap-2">
+                <BookOpen size={14} className="text-black" /> Mesa de Simplificación & Próximas Refactorizaciones
               </span>
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[8px] font-mono text-black font-black uppercase tracking-widest bg-yellow-400 px-1.5 py-0.5 animate-pulse">PLAN CINE</span>
             </div>
 
-            {/* BACKING AUDIO CONTROLLER */}
-            <div className="space-y-3 pt-4">
-              <span className="block text-[8px] font-black uppercase text-zinc-450 tracking-widest">Procedural Backing track</span>
-              <div className="grid grid-cols-2 gap-2">
-                {(['none', 'lofi', 'synthwave', 'drums'] as const).map((preset) => (
-                  <button
-                    key={preset}
-                    onClick={() => handleAtmosPresetChange(preset)}
-                    className={`py-2 px-3 text-[9px] font-black uppercase border tracking-wider transition-all flex items-center justify-center gap-2 ${atmosPreset === preset ? 'bg-yellow-400 text-black border-yellow-400 shadow-lg' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}`}
-                  >
-                    <span>{preset === 'none' ? '🔇 OFF' : preset === 'lofi' ? '☕ Lofi' : preset === 'synthwave' ? '🛸 Tension' : '🥁 Beat'}</span>
-                  </button>
-                ))}
+            <p className="text-[10px] text-zinc-600 leading-relaxed mt-2.5 font-sans">
+              Seguimos alineados al principio de economía de interfaces. Analizamos los módulos de pre-producción del estudio y sugerimos estas mejoras:
+            </p>
+
+            <div className="space-y-3.5 pt-4">
+              <div className="p-3 bg-white border border-zinc-200 space-y-1">
+                <span className="block text-[8px] font-black uppercase text-black tracking-widest">🔄 1. Consolidación de Versión A/B</span>
+                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
+                  Sugerimos integrar los dos cuadros actuales en una sola ventana interactiva de refinación por bloques de escenas. Simplifica la lectura comparativa de guiones.
+                </p>
               </div>
-            </div>
 
-            {/* INSTANT MANUAL SOUNDBOARD TRIGGERS */}
-            <div className="space-y-3 pt-6">
-              <span className="block text-[8px] font-black uppercase text-zinc-450 tracking-widest flex items-center gap-1">
-                <Volume size={11} /> Manual SFX Trigger (Corte del Director)
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={() => playProceduralSound('swoosh')}
-                  className="py-3 bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-300 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-                >
-                  🎧 Swoosh Cine
-                </button>
-                <button 
-                  onClick={() => playProceduralSound('click')}
-                  className="py-3 bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-300 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-                >
-                  📷 Click Cámara
-                </button>
-                <button 
-                  onClick={() => playProceduralSound('rise')}
-                  className="py-3 bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-300 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-                >
-                  ⚡ Subida Rise
-                </button>
-                <button 
-                  onClick={() => playProceduralSound('drone')}
-                  className="py-3 bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-300 font-mono text-[9px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-transform active:scale-95"
-                >
-                  🎬 Drone Drone
-                </button>
+              <div className="p-3 bg-white border border-zinc-200 space-y-1">
+                <span className="block text-[8px] font-black uppercase text-black tracking-widest">📋 2. Unificar Escaleta & Preview</span>
+                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
+                  Rediseñar la escaleta técnica para que las descripciones de cámaras y lentes se editen directamente sobre la misma fila, eliminando la asincronía del panel lateral.
+                </p>
+              </div>
+
+              <div className="p-3 bg-white border border-zinc-200 space-y-1">
+                <span className="block text-[8px] font-black uppercase text-black tracking-widest">🛠️ 3. Reducción de Metadatos y Tags</span>
+                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
+                  Quitar ideas de miniatura automáticas y tags para centrarnos en el archivo de video procesado, facilitando un flujo 100% de escritura de guionistas profesionales.
+                </p>
+              </div>
+
+              <div className="p-3 bg-white border border-zinc-200 space-y-1">
+                <span className="block text-[8px] font-black uppercase text-black tracking-widest">📄 4. jsPDF Bajo Demanda</span>
+                <p className="text-[9px] font-sans text-zinc-500 leading-normal">
+                  Mudar el cargado de la librería de PDF a un bundle diferido (lazy loading) para reducir el tiempo de renderización inicial del módulo en más de un 40%.
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-zinc-800 text-center">
-            <p className="text-[8px] font-mono text-zinc-500 uppercase leading-relaxed">Synthesizer procedimental nativo 0-frecuencias.</p>
+          <div className="pt-3 border-t border-zinc-200 text-center">
+            <p className="text-[8px] font-mono text-zinc-400 uppercase leading-relaxed font-black">Filosofía de desarrollo: Pruning & Craftsmanship absoluto.</p>
           </div>
         </div>
 
